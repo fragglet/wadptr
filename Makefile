@@ -20,6 +20,8 @@ OBJECTS		= $(OBJECTSO)
 
 DOSFLAGS	= CC=gcc EXECUTABLE=wadptr.exe DELETE=del CFLAGS=-O3
 
+LINUXFLAGS      = CC=gcc EXECUTABLE=wadptr DELETE=rm CFLAGS='-O3 -DANSILIBS -DNORMALUNIX'
+
 RISCFLAGS	= CC=gcc EXECUTABLE=wadptr DELETE=wipe CFLAGS='-O3 -DANSILIBS -DSCL_VA_HACK -I$(WIMPLIBPATH)' LDFLAGS='-mstubs -l$(WIMPLIBPATH).o.libwimp' OBJECTS='$(OOBJECTS)'
 
 SUNFLAGS	= CC=cc EXECUTABLE=wadptr DELETE=rm CFLAGS='-xO4 -DANSILIBS -DNORMALUNIX'
@@ -29,8 +31,6 @@ HPFLAGS		= CC=cc EXECUTABLE=wadptr DELETE=rm CFLAGS='+O3 -Ae -DANSILIBS -DNORMAL
 
 
 all : $(EXECUTABLE)
-
-
 
 dos:
 	make $(DOSFLAGS)
@@ -56,6 +56,11 @@ hp:
 hp_clean:
 	make $(HPFLAGS) clean
 
+linux:
+	make $(LINUXFLAGS)
+
+linux_clean:
+	make $(LINUXFLAGS) clean
 
 
 $(EXECUTABLE) : $(OBJECTS)

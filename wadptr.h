@@ -29,7 +29,7 @@
 
 /** MAIN.C **/
 
-#define VERSION "2.1"
+#define VERSION "2.3"
 
 #define HELP 0
 #define COMPRESS 1

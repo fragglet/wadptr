@@ -42,7 +42,9 @@ int main(int argc, char *argv[])
         printf(
           "\n"                             /* Display startup message */
           "WADPTR - WAD Compressor  Version " VERSION "\n"
-          "Copyright (c)1997,1998 Simon Howard.\n"
+          "Copyright (c)1997-1999 Simon Howard.\n"
+          "Enhancements/Portability by Andreas Dehmel\n"
+          "http://fraggle.tsx.org/ \n"
         );
 
                 /* set error signals */
