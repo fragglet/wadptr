@@ -9,10 +9,16 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#ifndef ANSILIBS
 #include <conio.h>
+#endif
 #include <stdarg.h>
-#include <dirent.h>
 #include <string.h>
+#ifdef __riscos
+#include <ROlib.h>
+#else
+#include <dirent.h>
+#endif
 
 #include "lumps.h"
 #include "waddir.h"
@@ -34,14 +40,13 @@
 
 /** MAIN.C **/
 
-extern int g_argc;                      // global cmd-line list
+extern int g_argc;                      /* global cmd-line list */
 extern char **g_argv;
-extern char wadname[50];
-extern char filespec[50];                  // -tweak file name
-
-extern int allowpack;                     // level packing on
-extern int allowsquash;                   // picture squashing on
-extern int allowmerge;                    // lump merging on
+extern char wadname[256];
+extern char filespec[256];                /* -tweak file name */
+extern int allowpack;                     /* level packing on */
+extern int allowsquash;                   /* picture squashing on */
+extern int allowmerge;                    /* lump merging on */
 
 
 /******************************* PROTOTYPES ********************************/
@@ -60,7 +65,40 @@ void list_entries();
 
 char *find_filename(char *s);
 int filecmp(char *filename, char *templaten);
-void *__crt0_glob_function();   // needed to disable globbing(expansion of
-                                  // wildcards on the command line)
+void *__crt0_glob_function();   /* needed to disable globbing(expansion of */
+                                  /* wildcards on the command line) */
 int iwad_warning();
 
+int findperc(int before, int after);
+
+
+extern const char *pwad_name;
+extern const char *iwad_name;
+
+
+#ifdef ANSILIBS
+int wherex(void);
+int wherey(void);
+int gotoxy(int x, int y);
+#endif
+
+#ifdef NORMALUNIX
+# define DIRSEP		"/"
+# define EXTSEP		"."
+# define CURDIR		"."
+# else
+# ifdef __riscos
+#  define DIRSEP	"."
+#  define EXTSEP	"/"
+#  define CURDIR	"@"
+# else
+#  define DIRSEP	"\\"
+#  define EXTSEP	"."
+#  define CURDIR	"."
+# endif
+#endif
+
+#define READ_SHORT(p)	(short)((p)[0] | ((p)[1] << 8))
+#define READ_LONG(p)	(long)((p)[0] | ((p)[1] << 8) | ((p)[2] << 16) | ((p)[3] << 24))
+#define WRITE_SHORT(p,s) (p)[0] = (s)&0xff, (p)[1] = ((s)>>8)&0xff
+#define WRITE_LONG(p,l)  (p)[0] = (l)&0xff, (p)[1] = ((l)>>8)&0xff, (p)[2] = ((l)>>16)&0xff, (p)[3] = ((l)>>24)&0xff

@@ -5,31 +5,80 @@
 # *                                                                    *
 # **********************************************************************
 
-all : wadptr.exe
+# for PC:
+#CC		= gcc
+#EXECUTABLE	= wadptr.exe
+#DELETE		= del
+#CFLAGS		= -O3
 
-wadptr.exe : main.o waddir.o errors.o wadmerge.o lumps.o
-	gcc main.o waddir.o errors.o wadmerge.o lumps.o -o wadptr.exe
+# for Unix (Solaris)
+CC		= cc
+EXECUTABLE	= wadptr
+DELETE		= rm
+CFLAGS		= -xO4 -DANSILIBS -DNORMALUNIX
+
+# for RISC OS
+#CC		= gcc
+#EXECUTABLE	= wadptr
+#DELETE		= wipe
+#WIMPLIBPATH	= scsi::5.$.vice1_1.src.arch.riscos.wimplib
+#CFLAGS		= -O3 -DANSILIBS -DSCL_VA_HACK -I$(WIMPLIBPATH)
+#LDFLAGS		= -mstubs -l$(WIMPLIBPATH).o.libwimp
+
+
+
+# Objects for Unix / DOS
+OBJECTS	= main.o waddir.o errors.o wadmerge.o lumps.o
+
+
+# Objects for RISC OS
+#OBJECTS		= o.main o.waddir o.errors o.wadmerge o.lumps
+
+
+
+all : $(EXECUTABLE)
+
+
+$(EXECUTABLE) : $(OBJECTS)
+	$(PURIFY) $(CC) -o $(EXECUTABLE) $(OBJECTS) $(LDFLAGS)
 
 ######### C source files ##########
 
 main.o : main.c wadptr.h errors.h waddir.h wadmerge.h lumps.h
-	gcc -c main.c
+	$(CC) $(CFLAGS) -c main.c
 
 waddir.o : waddir.c waddir.h errors.h
-	gcc -c waddir.c
+	$(CC) $(CFLAGS) -c waddir.c
 
 errors.o : errors.c errors.h
-	gcc -c errors.c
+	$(CC) $(CFLAGS) -c errors.c
 
 lumps.o : lumps.c lumps.h waddir.h errors.h
-	gcc -c lumps.c
+	$(CC) $(CFLAGS) -c lumps.c
 
 wadmerge.o : wadmerge.c wadmerge.h waddir.h errors.h
-	gcc -c wadmerge.c
+	$(CC) $(CFLAGS) -c wadmerge.c
+
+
+# RISC OS filenames
+o.main:	c.main h.wadptr h.errors h.waddir h.wadmerge h.lumps
+	$(CC) $(CFLAGS) -c c.main
+
+o.waddir: c.waddir h.waddir h.errors
+	$(CC) $(CFLAGS) -c c.waddir
+
+o.errors: c.errors h.errors
+	$(CC) $(CFLAGS) -c c.errors
+
+o.lumps: c.lumps h.lumps h.waddir h.errors
+	$(CC) $(CFLAGS) -c c.lumps
+
+o.wadmerge: c.wadmerge h.wadmerge h.waddir h.errors
+	$(CC) $(CFLAGS) -c c.wadmerge
+
 
 ########## Functions ############
 
 clean : 
-	del wadptr.exe 
-	del *.o
-
+	-$(DELETE) $(EXECUTABLE)
+	-$(DELETE) *.o

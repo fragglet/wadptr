@@ -6,6 +6,9 @@
  **************************************************************************/
 
 #include "errors.h"
+#ifdef __riscos
+#include "ROlib.h"
+#endif
 
 /* Display an error (Last remnant of the DMWAD heritage) ******************/
 
@@ -15,9 +18,11 @@ void errorexit(char *s, ...)
         va_list args;
         va_start(args, s);
 
-        sound( 640);                    // thanks to the deu authors!
+#ifndef ANSILIBS
+        sound( 640);                    /* thanks to the deu authors! */
         delay( 100);
         nosound();
+#endif
 
         vfprintf(stderr, s, args);
 

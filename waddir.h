@@ -35,6 +35,12 @@ typedef struct
         char name[8];
 } entry_t;
 
+/* portable structure IO (see lumps.h) */
+#define ENTRY_OFF	0
+#define ENTRY_LEN	4
+#define ENTRY_NAME	8
+#define ENTRY_SIZE	16
+
 /*************************** Prototypes ***********************************/
 
 int readwad();
@@ -46,16 +52,25 @@ int entry_exist(char *entrytofind);
 void *cachelump(int entrynum);
 void copywad(char *newfile);
 
+int readwadheader(FILE *fp);
+int writewadheader(FILE *fp);
+int readwaddir(FILE *fp);
+int readwadentry(FILE *fp, entry_t *entry);
+int writewaddir(FILE *fp);
+int writewadentry(FILE *fp, entry_t *entry);
+
 int islevel(int entry);
 int isnum(char n);
 int islevelname(char *s);
+int islevelentry(char *s);
+int findlevelsize(char *s);
 
 /*************************** Globals *************************************/
 
 /** WADDIR.C **/
 
 extern FILE *wadfp;
-extern union REGS r;       //how am I supposed to twiddle any frobs without this? :)
+extern union REGS r;       /*how am I supposed to twiddle any frobs without this? :) */
 extern char picentry[8];
 extern long numentries, diroffset;
 extern entry_t wadentry[MAXENTRIES];

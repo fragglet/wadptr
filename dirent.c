@@ -5,8 +5,8 @@
 
 char *find_filename(char *s);
 int filecmp(char *filename, char *template);
-void *__crt0_glob_function();   // needed to disable globbing(expansion of
-                                // wildcards on the command line)
+void *__crt0_glob_function();   /* needed to disable globbing(expansion of */
+                                /* wildcards on the command line) */
 
 void main(int argc,  char *argv[])
 {
@@ -44,7 +44,7 @@ char *find_filename(char *s)
         while(1)
         {
                 tempstr=strchr(backstr,'\\');
-                if(!tempstr)    // no more slashes
+                if(!tempstr)    /* no more slashes */
                 {
                         tempstr=strchr(backstr,'/');
                         if(!tempstr)
@@ -59,19 +59,19 @@ char *find_filename(char *s)
 
 int filecmp(char *filename, char *template)
 {
-        char filename1[50], template1[50];      // filename
-        char *filename2 ,   *template2;      // extension
+        char filename1[50], template1[50];      /* filename */
+        char *filename2 ,   *template2;      /* extension */
         int count;
 
         strcpy(filename1,filename);
         strcpy(template1,template);
 
         filename2=strchr(filename1,'.');
-        if(!filename2) filename2=""; // no extension
+        if(!filename2) filename2=""; /* no extension */
         else
-        {                       // extension
-                *filename2=0; // end of main filename
-                filename2++;  // set to start of extension
+        {                       /* extension */
+                *filename2=0; /* end of main filename */
+                filename2++;  /* set to start of extension */
         }
 
         template2=strchr(template1,'.');
@@ -82,24 +82,24 @@ int filecmp(char *filename, char *template)
                 template2++;
         }
 
-        for(count=0;count<8;count++)    // compare the filenames
+        for(count=0;count<8;count++)    /* compare the filenames */
         {
                 if(filename1[count]=='\0'
                  && template1[count]!='\0') return 0;
                 if(template1[count]=='?') continue;
                 if(template1[count]=='*') break;
                 if(template1[count]!=filename1[count]) return 0;
-                if(template1[count]=='\0') break; // end of string
+                if(template1[count]=='\0') break; /* end of string */
         }
 
-        for(count=0;count<3;count++)    // compare the extensions
+        for(count=0;count<3;count++)    /* compare the extensions */
         {
                 if(filename2[count]=='\0'
                  && template2[count]!='\0') return 0;
                 if(template2[count]=='?') continue;
                 if(template2[count]=='*') break;
                 if(template2[count]!=filename2[count]) return 0;
-                if(template2[count]=='\0') break; // end of string
+                if(template2[count]=='\0') break; /* end of string */
         }
 
         return 1;

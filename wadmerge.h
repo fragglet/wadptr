@@ -13,7 +13,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#ifndef ANSILIBS
 #include <conio.h>
+#endif
 
 #include "waddir.h"
 #include "errors.h"
