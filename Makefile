@@ -5,38 +5,57 @@
 # *                                                                    *
 # **********************************************************************
 
-# for PC:
-#CC		= gcc
-#EXECUTABLE	= wadptr.exe
-#DELETE		= del
-#CFLAGS		= -O3
-
-# for Unix (Solaris)
-CC		= cc
-EXECUTABLE	= wadptr
-DELETE		= rm
-CFLAGS		= -xO4 -DANSILIBS -DNORMALUNIX
-
-# for RISC OS
-#CC		= gcc
-#EXECUTABLE	= wadptr
-#DELETE		= wipe
-#WIMPLIBPATH	= scsi::5.$.vice1_1.src.arch.riscos.wimplib
-#CFLAGS		= -O3 -DANSILIBS -DSCL_VA_HACK -I$(WIMPLIBPATH)
-#LDFLAGS		= -mstubs -l$(WIMPLIBPATH).o.libwimp
-
+# library for RISC OS
+WIMPLIBPATH	= scsi::5.$.vice1_1.src.arch.riscos.wimplib
 
 
 # Objects for Unix / DOS
-OBJECTS	= main.o waddir.o errors.o wadmerge.o lumps.o
-
-
+OBJECTSO	= main.o waddir.o errors.o wadmerge.o lumps.o
 # Objects for RISC OS
-#OBJECTS		= o.main o.waddir o.errors o.wadmerge o.lumps
+OOBJECTS	= o.main o.waddir o.errors o.wadmerge o.lumps
+
+# default
+OBJECTS		= $(OBJECTSO)
+
+
+DOSFLAGS	= CC=gcc EXECUTABLE=wadptr.exe DELETE=del CFLAGS=-O3
+
+RISCFLAGS	= CC=gcc EXECUTABLE=wadptr DELETE=wipe CFLAGS='-O3 -DANSILIBS -DSCL_VA_HACK -I$(WIMPLIBPATH)' LDFLAGS='-mstubs -l$(WIMPLIBPATH).o.libwimp' OBJECTS='$(OOBJECTS)'
+
+SUNFLAGS	= CC=cc EXECUTABLE=wadptr DELETE=rm CFLAGS='-xO4 -DANSILIBS -DNORMALUNIX'
+
+HPFLAGS		= CC=cc EXECUTABLE=wadptr DELETE=rm CFLAGS='+O3 -Ae -DANSILIBS -DNORMALUNIX'
 
 
 
 all : $(EXECUTABLE)
+
+
+
+dos:
+	make $(DOSFLAGS)
+
+dos_clean:
+	make $(DOSFLAGS) clean
+
+riscos:
+	make $(RISCFLAGS)
+
+riscos_clean:
+	make $(RISCFLAGS) clean
+
+sun:
+	make $(SUNFLAGS)
+
+sun_clean:
+	make $(SUNFLAGS) clean
+
+hp:
+	make $(HPFLAGS)
+
+hp_clean:
+	make $(HPFLAGS) clean
+
 
 
 $(EXECUTABLE) : $(OBJECTS)

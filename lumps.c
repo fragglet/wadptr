@@ -663,7 +663,7 @@ linedef_t *readlinedefs(int lumpnum, FILE *fp)
     if (validbytes < LDEF_SIZE)
     {
       if (validbytes != 0) memcpy(convbuffer, cptr, validbytes);
-      validbytes += fread(convbuffer + validbytes, 1, convbuffer + convbuffsize - cptr, fp);
+      validbytes += fread(convbuffer + validbytes, 1, convbuffsize - validbytes, fp);
       cptr = convbuffer;
     }
     lines[i].vertex1 = READ_SHORT(cptr + LDEF_VERT1);
