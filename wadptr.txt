@@ -1,49 +1,12 @@
-     ____       ____           __
-     \  /\      \  /\   /\    |  \
-     |  ||  _   |  ||  /  \   | _ \
-     |  || / \  |  || / /\ \  ||\\|\ 
-     |  || | |\ |  ||/ /__\ \ ||||||
-     |  \| | || /  ||| ____ |\||_/||   * * * * * * * * * * * * * * * * * * *
-     \   \_| |_/   /\| |\_| |||   /\
-      \     _     / /|_|| |_|||__/ /
-       \___/\\___/ /  \_\  \_\ \_\/
-        \__\/ \__\/         
-                            ___
-                           | _ \   __  __ __  __ ____ __  ____
-                           || | \ /  \ || |\  || |__|/ _| |   \
-                           || / | |/\| || |\\ ||  || ||_  |() /  
-                           ||/  / |\/| || ||\\||  || ||_  |   \  
-    * * * * * * * * * * *  |   /  \__/ \/ || \_|  || \__| |_|\|   \
-                           |  /                                    \ 
-    _____________________  | |  ____________________________________\
-                           | |                                      /
-                           |_|                                     /
-                                                                  /
                         WADPTR - WAD Compressor
                              Version 2.3
-                           By Simon Howard 
+                   By Simon Howard and Andreas Dehmel
 
-                   Copyright(C) 1998 Simon Howard
+         Copyright(C) 1998-2001 Simon Howard, Andreas Dehmel
 
-                             Disclaimer
-                             ----------
-           The author will not accept any responsibility
-           for any damages incurred as a result of the
-           use of WADPTR. It has been thoroughly tested
-           and debugged and contains checks to prevent
-           against accidental damage to files. However,
-           there is still a remote chance of your files
-           becoming corrupted, especially if the program
-           used in an improper way. You use this program
-           at your own risk.
-           Although the program is designed to make WAD
-           files smaller, the author does not give any
-           guarantee of this, nor does he guarantee
-           that files changed with the program will
-           function correctly with other programs or
-           Doom itself.
-                           
-
+      This program is available for distributions under the terms of
+      the GNU General Public License Version 2, as published by the
+      Free Software Foundation. See the file COPYING for details.
 
                            Contents
                            --------
@@ -335,6 +298,7 @@ your IWAD).
 [3-1] Version history
 ---------------------
 
+18/7/2001 -   Re-released under the GPL.
 v2.3    -     Enhancements by Andreas Dehmel <dehmel@forwiss.tu-muenchen.de>.
               Removal of another limit, slightly better graphic squashing.
               More portable code: UNIX/RISCOS/Linux version. -o (output file)
@@ -370,9 +334,9 @@ v1.1    -     Original release, only options are '-list',
 -------------------------------
 
 I can be e-mailed on the Internet at:
-        sfraggle@teamons.freeserve.co.uk
+        fraggle@alkali.org
 Also, check out my homepage at:
-        http://fraggle.tsx.org/
+        http://fraggle.alkali.org/
 Updates and bug fixes of WADPTR will be placed here if
 neccesary.
 
