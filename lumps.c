@@ -396,7 +396,7 @@ char *s_squash(char *s)
 		               o1 = READ_LONG(s_columns+4*s_equalcolumn[count])
 			          + s_colsize[s_equalcolumn[count]]-s_colsize[count];
 		               o2 = READ_LONG(newptr+4*count);
-		               if (memcmp(working+o1, newres+o2, s_colsize[count]) != 0) printf("ARGH!\n");
+		               if (memcmp(working+o1, newres+o2, s_colsize[count]) != 0) errorexit("ARGH!\n");
 		       }*/
 #endif		       
 	       }
@@ -511,7 +511,7 @@ int s_findgraf(unsigned char *x)
                      if (s_colsize[count] > s_colsize[count2])
                             continue;   /* new column longer than previous, can't be postfix */
 
-                     if (!memcmp(x+tmpcol+s_colsize[count2]-s_colsize[count], x+READ_LONG(s_columns+4*count2), s_colsize[count]))
+                     if (!memcmp(x+tmpcol, x+READ_LONG(s_columns+4*count2)+s_colsize[count2]-s_colsize[count], s_colsize[count]))
                      {
                             s_equalcolumn[count]=count2;
                             num_killed++;

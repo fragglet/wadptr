@@ -86,10 +86,6 @@ int parsecmdline()
                  ||(!strcmp(g_argv[count],"-u")) )
                         action=UNCOMPRESS;
 
-                if((!strcmp(g_argv[count],"-output"))
-		 ||(!strcmp(g_argv[count],"-o")) )
-		        strcpy(outputwad, g_argv[++count]);
-
                            /* specific disabling */
                 if(!strcmp(g_argv[count],"-nomerge"))
                         allowmerge=0;
@@ -101,6 +97,10 @@ int parsecmdline()
                 if(g_argv[count][0]!='-')
                         if(!strcmp(filespec,""))
                                 strcpy(filespec,g_argv[count]);
+
+                if((!strcmp(g_argv[count],"-output"))
+		 ||(!strcmp(g_argv[count],"-o")) )
+		        strcpy(outputwad, g_argv[++count]);
 
 		count++;
         }
@@ -657,13 +657,11 @@ void *__crt0_glob_function()
 
 int findperc(int before, int after)
 {
-         int perc;
+         double perc;
 
-         perc=(after*100)/before;
+         perc = 1 - (((double)after)/before);
 
-         perc=100-perc;
-
-         return perc;
+         return (int)(100*perc);
 }
 
 /* Warning not to change IWAD **********************************************/
@@ -703,7 +701,7 @@ int wherey(void)
 
 int gotoxy(int x, int y)
 {
-  printf("\r");
+  printf("                \r");
   return 0;
 }
 #endif

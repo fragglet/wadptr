@@ -22,13 +22,17 @@ short sameas[4000];
 int suggest()
 {
         int count, count2, linkcnt=0;
-        short links[MAXLINKS][2];     /* possible links */
+        short *links;     /* possible links */
         char *check1, *check2;
         /*long shrink=0;*/   /* count on how much would be saved */
         /*char filen[30];*/
         int px, py;
         int perctime=20;
-
+        int maxlinks = MAXLINKS;
+	
+	if ((links = (short*)malloc(2*maxlinks*sizeof(short))) == NULL)
+	       errorexit("suggest: couldn't alloc memory for links!\n");
+	       
         px=wherex(); py=wherey(); /* for % count */
 
                /* find similar entries */
@@ -39,11 +43,15 @@ int suggest()
                       if((wadentry[count].length == wadentry[count2].length)
                           && wadentry[count].length!=0)
                       {                   /* same length, might be same lump */
-                          links[linkcnt][0]=count;
-                          links[linkcnt][1]=count2;
+                          if(linkcnt>=maxlinks)
+			  {
+			          maxlinks += MAXLINKS;
+				  if ((links = (short*)realloc(links, 2*maxlinks*sizeof(short))) == NULL)
+				          errorexit("suggest: couldn't realloc memory for links!\n");
+			  }
+                          links[2*linkcnt]=count;
+                          links[2*linkcnt+1]=count2;
                           ++linkcnt;
-                          if(linkcnt>MAXLINKS)
-                            errorexit("suggest: Upper limit of possible links hit!\n");
                       }
                }
         }
@@ -53,15 +61,15 @@ int suggest()
 
         for(count=0;count<linkcnt;count++)
         {
-               if(sameas[links[count][0]]!=-1) continue; /*already done that */
+               if(sameas[links[2*count]]!=-1) continue; /*already done that */
                                                           /* one */
-               check1=cachelump(links[count][0]); /* cache both lumps */
-               check2=cachelump(links[count][1]);
+               check1=cachelump(links[2*count]); /* cache both lumps */
+               check2=cachelump(links[2*count+1]);
 
                               /* compare them */
-               if(!memcmp(check1,check2,wadentry[links[count][0]].length))
+               if(!memcmp(check1,check2,wadentry[links[2*count]].length))
                {                 /* they are the same ! */
-                       sameas[links[count][0]]=links[count][1];
+                       sameas[links[2*count]]=links[2*count+1];
                }
 
                free(check1); /* free back both lumps */
@@ -76,6 +84,8 @@ int suggest()
                }
         }
         gotoxy(px,py);
+
+        free(links);
 
 	return 0;
 }
