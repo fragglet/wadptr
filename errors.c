@@ -22,6 +22,7 @@
  *                                                                        *
  **************************************************************************/
 
+#include <stdlib.h>
 #include "errors.h"
 #ifdef __riscos
 #include "ROlib.h"
