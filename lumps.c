@@ -250,8 +250,9 @@ void p_dopack(sidedef_t *sidedefs)
                         /* time for a percent-done update */
                         int x, y;
                         x = wherex(); y = wherey();
-                        printf("%%%i  ",
-                                (count*100) / p_num_sidedefs);
+                        double c = count;
+                        double p = p_num_sidedefs;
+                        printf("%%%.0f  ", 100*(c*c+c)/(p*p+p));
                         fflush(stdout);
                         gotoxy(x, y);
                 }
