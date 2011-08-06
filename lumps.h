@@ -48,19 +48,21 @@ typedef struct
          char upper[8];
          char middle[8];
          char lower[8];
-         short sector_ref;
+         unsigned short sector_ref;
 } sidedef_t;
 
 typedef struct
 {
-         short vertex1;
-         short vertex2;
-         short flags;
-         short types;
-         short tag;
-         short sidedef1;
-         short sidedef2;
+         unsigned short vertex1;
+         unsigned short vertex2;
+         unsigned short flags;
+         unsigned short types;
+         unsigned short tag;
+         unsigned short sidedef1;
+         unsigned short sidedef2;
 } linedef_t;
+
+#define NO_SIDEDEF ((unsigned short)-1)
 
 /*
  * Portable structure IO

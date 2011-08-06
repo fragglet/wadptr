@@ -1,6 +1,6 @@
 /**************************************************************************
  *                                                                        *
- * Copyright(C) 1998-2001 Simon Howard, Andreas Dehmel                    *
+ * Copyright(C) 1998-2011 Simon Howard, Andreas Dehmel                    *
  *                                                                        *
  * This program is free software; you can redistribute it and/or modify   *
  * it under the terms of the GNU General Public License as published by   *
@@ -46,7 +46,7 @@
 
 /** MAIN.C **/
 
-#define VERSION "2.3"
+#define VERSION "2.4"
 
 #define HELP 0
 #define COMPRESS 1

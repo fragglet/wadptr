@@ -1,6 +1,6 @@
 /**************************************************************************
  *                                                                        *
- * Copyright(C) 1998-2001 Simon Howard, Andreas Dehmel                    *
+ * Copyright(C) 1998-2011 Simon Howard, Andreas Dehmel                    *
  *                                                                        *
  * This program is free software; you can redistribute it and/or modify   *
  * it under the terms of the GNU General Public License as published by   *
@@ -153,7 +153,7 @@ int p_ispacked(char *s)
 
          for(count=0;count<p_num_linedefs;count++)   /* now check */
          {
-                 if(linedefs[count].sidedef1 !=-1) /* sidedef on that linedef */
+                 if(linedefs[count].sidedef1 != NO_SIDEDEF)
                  {                                 /* side */
                         if(p_movedto[linedefs[count].sidedef1]) /* already used */
                         {                            /* on a previous linedef */
@@ -164,7 +164,7 @@ int p_ispacked(char *s)
                         else        /* mark it as used for later reference */
                                 p_movedto[linedefs[count].sidedef1]=1;
                  }
-                 if(linedefs[count].sidedef2 !=-1) /* now the other side */
+                 if(linedefs[count].sidedef2 != NO_SIDEDEF)
                  {
                         if(p_movedto[linedefs[count].sidedef2])
                         {
@@ -250,8 +250,9 @@ void p_dopack(sidedef_t *sidedefs)
                         /* time for a percent-done update */
                         int x, y;
                         x = wherex(); y = wherey();
-                        printf("%%%i  ",
-                                (count*100) / p_num_sidedefs);
+                        double c = count;
+                        double p = p_num_sidedefs;
+                        printf("%%%.0f  ", 100*(c*c+c)/(p*p+p));
                         fflush(stdout);
                         gotoxy(x, y);
                 }
@@ -287,9 +288,9 @@ void p_buildlinedefs(linedef_t *linedefs)
 
        for(count=0;count<p_num_linedefs;count++)
        {
-               if(linedefs[count].sidedef1!=-1) /* this side has a sidedef */
+               if(linedefs[count].sidedef1 != NO_SIDEDEF)
                  linedefs[count].sidedef1=p_movedto[linedefs[count].sidedef1];
-               if(linedefs[count].sidedef2!=-1) /* check the other side */
+               if(linedefs[count].sidedef2 != NO_SIDEDEF)
                  linedefs[count].sidedef2=p_movedto[linedefs[count].sidedef2];
        }
 
@@ -321,7 +322,7 @@ void p_rebuild()
 
          for(count=0;count<p_num_linedefs;count++)
          {
-                if(linedefs[count].sidedef1!=-1) /* sidedef on that side */
+                if(linedefs[count].sidedef1 != NO_SIDEDEF)
                 {
                        memcpy(&(p_newsidedef[p_newnum]),
                           &(sidedefs[linedefs[count].sidedef1]),
@@ -329,7 +330,7 @@ void p_rebuild()
                        linedefs[count].sidedef1=p_newnum;
                        p_newnum++;
                 }
-                if(linedefs[count].sidedef2!=-1) /* sidedef on that side */
+                if(linedefs[count].sidedef2 != NO_SIDEDEF)
                 {
                        memcpy(&(p_newsidedef[p_newnum]),
                           &(sidedefs[linedefs[count].sidedef2]),

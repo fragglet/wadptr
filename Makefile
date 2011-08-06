@@ -5,6 +5,9 @@
 # *                                                                    *
 # **********************************************************************
 
+# install prefix:
+PREFIX          = /usr/local
+
 # library for RISC OS
 WIMPLIBPATH	= scsi::5.$.vice1_1.src.arch.riscos.wimplib
 
@@ -100,9 +103,13 @@ o.lumps: c.lumps h.lumps h.waddir h.errors
 o.wadmerge: c.wadmerge h.wadmerge h.waddir h.errors
 	$(CC) $(CFLAGS) -c c.wadmerge
 
-
 ########## Functions ############
+
+install :
+	install -D wadptr $(DESTDIR)$(PREFIX)/bin/wadptr
+	install -D wadptr.txt $(DESTDIR)$(PREFIX)/share/doc/wadptr/wadptr.txt
 
 clean : 
 	-$(DELETE) $(EXECUTABLE)
 	-$(DELETE) *.o
+

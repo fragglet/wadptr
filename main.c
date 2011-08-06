@@ -1,6 +1,6 @@
 /**************************************************************************
  *                                                                        *
- * Copyright(C) 1998-2001 Simon Howard, Andreas Dehmel                    *
+ * Copyright(C) 1998-2011 Simon Howard, Andreas Dehmel                    *
  *                                                                        *
  * This program is free software; you can redistribute it and/or modify   *
  * it under the terms of the GNU General Public License as published by   *
@@ -59,9 +59,9 @@ int main(int argc, char *argv[])
         printf(
           "\n"                             /* Display startup message */
           "WADPTR - WAD Compressor  Version " VERSION "\n"
-          "Copyright (c)1997-1999 Simon Howard.\n"
+          "Copyright (c)1997-2011 Simon Howard.\n"
           "Enhancements/Portability by Andreas Dehmel\n"
-          "http://fraggle.tsx.org/ \n"
+          "http://www.soulsphere.org/projects/wadptr/\n"
         );
 
                 /* set error signals */

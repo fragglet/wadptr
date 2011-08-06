@@ -1,6 +1,6 @@
 /**************************************************************************
  *                                                                        *
- * Copyright(C) 1998-2001 Simon Howard, Andreas Dehmel                    *
+ * Copyright(C) 1998-2011 Simon Howard, Andreas Dehmel                    *
  *                                                                        *
  * This program is free software; you can redistribute it and/or modify   *
  * it under the terms of the GNU General Public License as published by   *
@@ -22,6 +22,7 @@
  *                                                                        *
  **************************************************************************/
 
+#include <stdlib.h>
 #include "errors.h"
 #ifdef __riscos
 #include "ROlib.h"
@@ -53,7 +54,7 @@ void sig_func(int signalnum)
         printf("\n\n");
         switch(signalnum)
         {
-                default:        errorexit("Bizarre signal error??!!\n");
+                default:        errorexit("Bizarre signal error?\n");
                 case SIGINT:    errorexit("User Interrupted\n");
                 case SIGNOFP:   errorexit("Error:no FPU\n");
                 case SIGSEGV:   errorexit("Segment violation error(memory fault)\n");
