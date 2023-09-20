@@ -26,10 +26,10 @@
 
 /****************************** Includes **********************************/
 
-#include <stdio.h>
 #include <stdarg.h>
+#include <stdio.h>
 #ifdef ANSILIBS
-#define SIGNOFP	SIGFPE
+#define SIGNOFP SIGFPE
 #else
 #include <pc.h>
 #endif

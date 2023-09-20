@@ -34,8 +34,8 @@
 #include <conio.h>
 #endif
 
-#include "waddir.h"
 #include "errors.h"
+#include "waddir.h"
 
 /****************************** Defines ***********************************/
 
@@ -46,4 +46,3 @@
 void rebuild(char *newname);
 
 #endif
-
