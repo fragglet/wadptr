@@ -28,11 +28,6 @@
 
 #include <stdarg.h>
 #include <stdio.h>
-#ifdef ANSILIBS
-#define SIGNOFP SIGFPE
-#else
-#include <pc.h>
-#endif
 #include <signal.h>
 
 /***************************** Prototypes *********************************/

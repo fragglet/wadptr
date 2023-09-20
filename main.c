@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
     /* set error signals */
     signal(SIGINT, sig_func);
     signal(SIGSEGV, sig_func);
-    signal(SIGNOFP, sig_func);
+    signal(SIGFPE, sig_func);
 
     parsecmdline(); /* Check cmd-lines */
 
@@ -749,7 +749,6 @@ int iwad_warning()
     }
 }
 
-#ifdef ANSILIBS
 int wherex(void)
 {
     return 0;
@@ -765,4 +764,3 @@ int gotoxy(int x, int y)
     printf("                \r");
     return 0;
 }
-#endif

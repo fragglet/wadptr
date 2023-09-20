@@ -26,9 +26,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#ifndef ANSILIBS
-#include <conio.h>
-#endif
 #include <stdarg.h>
 #include <string.h>
 #ifdef __riscos
@@ -90,11 +87,9 @@ int findperc(int before, int after);
 extern const char *pwad_name;
 extern const char *iwad_name;
 
-#ifdef ANSILIBS
 int wherex(void);
 int wherey(void);
 int gotoxy(int x, int y);
-#endif
 
 #ifdef NORMALUNIX
 #define DIRSEP "/"

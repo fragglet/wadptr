@@ -30,9 +30,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#ifndef ANSILIBS
-#include <conio.h>
-#endif
 
 #include "errors.h"
 #include "waddir.h"
