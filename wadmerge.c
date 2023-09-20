@@ -41,8 +41,6 @@ int suggest()
     int count, count2, linkcnt = 0;
     short *links; /* possible links */
     char *check1, *check2;
-    /*long shrink=0;*/ /* count on how much would be saved */
-    /*char filen[30];*/
     int px, py;
     int perctime = 20;
     int maxlinks = MAXLINKS;
@@ -54,13 +52,15 @@ int suggest()
     py = wherey(); /* for % count */
 
     /* find similar entries */
-    for (count = 0; count < numentries; count++) /* each lump in turn */
+    for (count = 0; count < numentries; count++)
     {
-        for (count2 = 0; count2 < count; count2++) /* check against previous */
+        /* check against previous */
+        for (count2 = 0; count2 < count; count2++)
         {
             if ((wadentry[count].length == wadentry[count2].length) &&
                 wadentry[count].length != 0)
-            { /* same length, might be same lump */
+            {
+                /* same length, might be same lump */
                 if (linkcnt >= maxlinks)
                 {
                     maxlinks += MAXLINKS;
@@ -82,14 +82,17 @@ int suggest()
     for (count = 0; count < linkcnt; count++)
     {
         if (sameas[links[2 * count]] != -1)
-            continue;                         /*already done that */
-                                              /* one */
-        check1 = cachelump(links[2 * count]); /* cache both lumps */
+        {
+            /* already done that one */
+            continue;
+        }
+
+        check1 = cachelump(links[2 * count]);
         check2 = cachelump(links[2 * count + 1]);
 
-        /* compare them */
         if (!memcmp(check1, check2, wadentry[links[2 * count]].length))
-        { /* they are the same ! */
+        {
+            /* they are the same ! */
             sameas[links[2 * count]] = links[2 * count + 1];
         }
 
@@ -116,9 +119,6 @@ int suggest()
 
 void rebuild(char *newname)
 {
-    /*int num_suggest=0, count2;
-    char tempstr[5];
-    char a;*/
     int count;
     char *tempchar;
     FILE *newwad;
@@ -133,30 +133,27 @@ void rebuild(char *newname)
     if (!newwad)
         errorexit("rebuild: Couldn't open to %s\n", newname);
 
-    fwrite(iwad_name, 1, 4, newwad); /* temp header */
+    fwrite(iwad_name, 1, 4, newwad);
     fwrite(&along, 4, 1, newwad);
     fwrite(&along, 4, 1, newwad);
 
     px = wherex();
     py = wherey(); /* for % count */
 
-    for (count = 0; count < numentries; count++) /* add each entry in turn */
+    for (count = 0; count < numentries; count++)
     {
-
-        /* first check if it's a compressed(linked) */
+        /* first check if it's compressed(linked) */
         if (sameas[count] != -1)
         {
             wadentry[count].offset = wadentry[sameas[count]].offset;
         }
         else
         {
-            filepos = ftell(newwad);     /* find where this lump will be */
-            tempchar = cachelump(count); /* cache the lump */
-                                         /*write to new file */
+            filepos = ftell(newwad);
+            tempchar = cachelump(count);
             fwrite(tempchar, 1, wadentry[count].length, newwad);
-            free(tempchar);                   /* free lump back again */
-            wadentry[count].offset = filepos; /* update the wad directory */
-                                              /* with new lump location */
+            free(tempchar);
+            wadentry[count].offset = filepos;
         }
         nextperc--; /* % count */
         if (!nextperc)
@@ -167,11 +164,11 @@ void rebuild(char *newname)
             nextperc = 50;
         }
     }
-    diroffset = ftell(newwad); /* write the wad directory */
+    /* write the wad directory */
+    diroffset = ftell(newwad);
     writewaddir(newwad);
     writewadheader(newwad);
-
-    fclose(newwad); /* close the new wad */
+    fclose(newwad);
 
     gotoxy(px, py);
     printf("         ");

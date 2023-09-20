@@ -64,8 +64,6 @@ int findlevelsize(char *s);
 /** WADDIR.C **/
 
 extern FILE *wadfp;
-extern union REGS
-    r; /*how am I supposed to twiddle any frobs without this? :) */
 extern char picentry[8];
 extern long numentries, diroffset;
 extern entry_t wadentry[MAXENTRIES];

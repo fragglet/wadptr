@@ -99,7 +99,6 @@ int readwad()
 
     if (numentries > MAXENTRIES)
     {
-        /* errorexit("readwad: Cannot handle > %i entry wads!\n",MAXENTRIES); */
         printf("Cannot handle > %i entry wads!\n", MAXENTRIES);
         return true;
     }
@@ -212,10 +211,9 @@ entry_t findinfo(char *entrytofind)
 void addentry(entry_t entry)
 {
     char buffer[10];
-    /*long temp;*/
 
-    strcpy(buffer, convert_string8(entry)); /* copying to temp does have a */
-    if (entry_exist(buffer) != -1)          /* point, incidentally. */
+    strcpy(buffer, convert_string8(entry));
+    if (entry_exist(buffer) != -1)
         printf("\tWarning! Resource %s already exists!\n",
                convert_string8(entry));
     memcpy(&wadentry[numentries], &entry, sizeof(entry_t));
@@ -251,7 +249,7 @@ void copywad(char *newfile)
     if (!newwad)
         errorexit("copywad: Couldn't copy a wad (filename:%s)\n", newfile);
 
-    rewind(wadfp); /* I just love this function */
+    rewind(wadfp);
     while (!feof(wadfp))
     {
         fread(&a, 1, 1, wadfp);

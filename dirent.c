@@ -71,7 +71,7 @@ int filecmp(char *filename, char *template)
     if (!filename2)
         filename2 = ""; /* no extension */
     else
-    {                   /* extension */
+    {
         *filename2 = 0; /* end of main filename */
         filename2++;    /* set to start of extension */
     }
