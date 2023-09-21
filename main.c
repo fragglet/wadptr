@@ -174,12 +174,10 @@ static int OpenWad(char *filename)
         return 1;
     }
 
-    printf("\nSearching WAD: %s\n", filename);
     a = ReadWad();
     if (a)
         return 1;
 
-    printf("\n");
     return 0;
 }
 
