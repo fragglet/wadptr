@@ -33,6 +33,5 @@
 /***************************** Prototypes *********************************/
 
 void ErrorExit(char *s, ...);
-void SignalFunction(int signalnum);
 
 #endif

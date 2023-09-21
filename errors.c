@@ -37,20 +37,3 @@ void ErrorExit(char *s, ...)
     exit(0xff);
 }
 
-/* Signal handling stuff **************************************************/
-
-void SignalFunction(int signalnum)
-{
-    printf("\n\n");
-    switch (signalnum)
-    {
-    default:
-        ErrorExit("Bizarre signal error?\n");
-    case SIGINT:
-        ErrorExit("User Interrupted\n");
-    case SIGFPE:
-        ErrorExit("Floating point exception\n");
-    case SIGSEGV:
-        ErrorExit("Segment violation error(memory fault)\n");
-    }
-}

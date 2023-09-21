@@ -66,11 +66,6 @@ int main(int argc, char *argv[])
     g_argc = argc; /* Set global cmd-line list */
     g_argv = argv;
 
-    /* set error signals */
-    signal(SIGINT, SignalFunction);
-    signal(SIGSEGV, SignalFunction);
-    signal(SIGFPE, SignalFunction);
-
     ParseCommandLine(); /* Check cmd-lines */
 
     for (index = filelist_index; index < g_argc; ++index)
