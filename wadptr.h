@@ -50,9 +50,6 @@
 
 /** MAIN.C **/
 
-extern int g_argc; /* global cmd-line list */
-extern char **g_argv;
-extern char filespec[256]; /* -tweak file name */
 extern int allowpack;      /* level packing on */
 extern int allowsquash;    /* picture squashing on */
 extern int allowmerge;     /* lump merging on */
