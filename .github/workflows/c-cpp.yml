@@ -2,9 +2,9 @@ name: C/C++ CI
 
 on:
   push:
-    branches: [ "trunk" ]
+    branches: [ "main" ]
   pull_request:
-    branches: [ "trunk" ]
+    branches: [ "main" ]
 
 jobs:
   build:
