@@ -47,7 +47,7 @@ static char **g_argv;
 static int filelist_index;
 static char *wadname;
 static char outputwad[256] = "";
-static int action;          /* list, Compress, Uncompress */
+static int action;   /* list, Compress, Uncompress */
 int allowpack = 1;   /* level packing on */
 int allowsquash = 1; /* picture squashing on */
 int allowmerge = 1;  /* lump merging on */

@@ -50,12 +50,12 @@ static sidedef_t *ReadSidedefs(int lumpnum, FILE *fp);
 
 /******************************* GLOBALS **********************************/
 
-static int p_levelnum;   /* entry number (not 1 as in map01, 1 as in entry 1 in wad) */
+static int p_levelnum;   /* entry number (index in WAD directory) */
 static int p_sidedefnum; /* sidedef wad entry number */
 static int p_linedefnum; /* linedef wad entry number */
 static int p_num_linedefs = 0,
            p_num_sidedefs = 0; /* number of sd/lds do not get confused */
-static const char *p_working;     /* the name of the level resource eg. "MAP01" */
+static const char *p_working;  /* the name of the level resource eg. "MAP01" */
 
 static sidedef_t *p_newsidedef; /* the new sidedefs */
 static linedef_t *p_newlinedef; /* the new linedefs */
@@ -65,10 +65,11 @@ static int p_newnum = 0;        /* the new number of sidedefs */
 char *p_linedefres = 0; /* the new linedef resource */
 char *p_sidedefres = 0; /* the new sidedef resource */
 
-/*    Graphic squashing globals */
-static int s_equalcolumn[400]; /* 1 for each column: another column which is */
-                        /* identical or -1 if there isn't one */
-static short s_height, s_width, s_loffset, s_toffset; /* picture width, height etc. */
+/* Graphic squashing globals */
+static int s_equalcolumn[400];  /* 1 for each column: another column which is */
+                                /* identical or -1 if there isn't one */
+static short s_height, s_width; /* picture width, height etc. */
+static short s_loffset, s_toffset;
 static unsigned char *s_columns; /* the location of each column in the lump */
 static long s_colsize[400];      /* the length(in bytes) of each column */
 

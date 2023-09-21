@@ -24,11 +24,11 @@
 
 /***************************** INCLUDES ************************************/
 
+#include <dirent.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
 #include <string.h>
-#include <dirent.h>
 
 #include "errors.h"
 #include "lumps.h"
@@ -50,9 +50,9 @@
 
 /** MAIN.C **/
 
-extern int allowpack;      /* level packing on */
-extern int allowsquash;    /* picture squashing on */
-extern int allowmerge;     /* lump merging on */
+extern int allowpack;   /* level packing on */
+extern int allowsquash; /* picture squashing on */
+extern int allowmerge;  /* lump merging on */
 
 extern const char *pwad_name;
 extern const char *iwad_name;

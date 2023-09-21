@@ -36,4 +36,3 @@ void ErrorExit(char *s, ...)
 
     exit(0xff);
 }
-
