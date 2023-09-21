@@ -234,7 +234,7 @@ static void Compress(void)
         {
             if (IsLevel(count))
             {
-                printf("\tPacking ");
+                printf("\tPacking");
                 fflush(stdout);
                 findshrink = FindLevelSize(resname);
 
@@ -242,7 +242,7 @@ static void Compress(void)
                 P_Pack(resname);
 
                 findshrink = FindPerc(findshrink, FindLevelSize(resname));
-                printf("(%i%%), done.\n", findshrink);
+                printf(" (%i%%), done.\n", findshrink);
 
                 written = 2; /* silently write this lump (if any) */
             }
@@ -311,7 +311,7 @@ static void Compress(void)
     if (allowmerge)
     {
         wadfp = fopen(tempwad_name, "rb+");
-        printf("\nMerging identical lumps.. ");
+        printf("\nMerging identical lumps...");
         fflush(stdout);
 
         if (outputwad[0] == 0)
@@ -325,7 +325,7 @@ static void Compress(void)
         {
             Rebuild(outputwad);
         }
-        printf("done.\n");
+        printf(" done.\n");
         fclose(wadfp);
         remove(tempwad_name);
     }
@@ -573,18 +573,3 @@ static bool IwadWarning(void)
     }
 }
 
-int wherex(void)
-{
-    return 0;
-}
-
-int wherey(void)
-{
-    return 0;
-}
-
-int gotoxy(int x, int y)
-{
-    printf("                \r");
-    return 0;
-}

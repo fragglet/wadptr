@@ -26,15 +26,11 @@ static int Suggest(void)
     int count, count2, linkcnt = 0;
     short *links; /* possible links */
     char *check1, *check2;
-    int px, py;
     int perctime = 20;
     int maxlinks = MAXLINKS;
 
     if ((links = (short *) malloc(2 * maxlinks * sizeof(short))) == NULL)
         ErrorExit("Suggest: couldn't alloc memory for links!\n");
-
-    px = wherex();
-    py = wherey(); /* for % count */
 
     /* find similar entries */
     for (count = 0; count < numentries; count++)
@@ -87,13 +83,11 @@ static int Suggest(void)
         perctime--; /* % count */
         if (!perctime)
         {
-            gotoxy(px, py);
-            printf("%i%%", (50 * count) / linkcnt);
+            printf("%4d%%\b\b\b\b\b", (50 * count) / linkcnt);
             fflush(stdout);
-            perctime = 50;
+            perctime = 200;
         }
     }
-    gotoxy(px, py);
 
     free(links);
 
@@ -108,7 +102,7 @@ void Rebuild(char *newname)
     char *tempchar;
     FILE *newwad;
     long along = 0, filepos;
-    int nextperc = 50, px, py;
+    int nextperc = 50;
 
     /* first run Suggest mode to find how to make it smaller */
     Suggest();
@@ -121,9 +115,6 @@ void Rebuild(char *newname)
     fwrite(iwad_name, 1, 4, newwad);
     fwrite(&along, 4, 1, newwad);
     fwrite(&along, 4, 1, newwad);
-
-    px = wherex();
-    py = wherey(); /* for % count */
 
     for (count = 0; count < numentries; count++)
     {
@@ -143,8 +134,7 @@ void Rebuild(char *newname)
         nextperc--; /* % count */
         if (!nextperc)
         {
-            gotoxy(px, py);
-            printf("%ld%%", 50 + (count * 50) / numentries);
+            printf("%4d%%\b\b\b\b\b", (int) (50 + (count * 50) / numentries));
             fflush(stdout);
             nextperc = 50;
         }
@@ -155,8 +145,5 @@ void Rebuild(char *newname)
     WriteWadHeader(newwad);
     fclose(newwad);
 
-    gotoxy(px, py);
-    printf("         ");
     fflush(stdout); /* remove % count */
-    gotoxy(px, py);
 }

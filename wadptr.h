@@ -33,10 +33,6 @@ extern bool allowmerge;  /* lump merging on */
 extern const char *pwad_name;
 extern const char *iwad_name;
 
-int wherex(void);
-int wherey(void);
-int gotoxy(int x, int y);
-
 #ifdef NORMALUNIX
 #define DIRSEP "/"
 #define EXTSEP "."

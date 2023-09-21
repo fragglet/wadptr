@@ -235,14 +235,11 @@ static void P_DoPack(sidedef_t *sidedefs)
         if ((count % 100) == 0)
         {
             /* time for a percent-done update */
-            int x, y;
-            x = wherex();
-            y = wherey();
             double c = count;
             double p = p_num_sidedefs;
-            printf("%%%.0f  ", 100 * (c * c + c) / (p * p + p));
+            printf("%4d%%\b\b\b\b\b",
+                   (int) (100 * (c * c + c) / (p * p + p)));
             fflush(stdout);
-            gotoxy(x, y);
         }
         for (count2 = 0; count2 < p_newnum; count2++) /* check previous */
         {
