@@ -616,7 +616,7 @@ bool S_IsGraphic(char *s)
 {
     unsigned char *graphic;
     int entrynum, count;
-    short width, height, loffset, toffset;
+    short width, height;
     unsigned char *columns;
 
     if (!strcmp(s, "ENDOOM"))
@@ -641,8 +641,6 @@ bool S_IsGraphic(char *s)
 
     width = READ_SHORT(graphic);
     height = READ_SHORT(graphic + 2);
-    loffset = READ_SHORT(graphic + 4);
-    toffset = READ_SHORT(graphic + 6);
     columns = (unsigned char *) (graphic + 8);
 
     if ((width > 320) || (height > 200) || (width == 0) || (height == 0) ||

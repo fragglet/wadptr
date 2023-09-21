@@ -150,8 +150,6 @@ static void ParseCommandLine()
 
 static bool OpenWad(char *filename)
 {
-    int a;
-
     wadfp = fopen(filename, "rb+");
     if (!wadfp)
     {
@@ -484,7 +482,6 @@ static void Uncompress()
 static void ListEntries()
 {
     int count, count2;
-    int ypos;
     char resname[10];
 
     printf(" Number Length  Offset          Method      Name        Shared\n"
@@ -495,7 +492,6 @@ static void ListEntries()
         strcpy(resname, ConvertString8(wadentry[count]));
         if (IsLevelEntry(resname))
             continue;
-        ypos = wherey();
 
         /* wad entry number */
         printf(" %i  \t", count + 1);
