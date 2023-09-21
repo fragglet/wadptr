@@ -2,7 +2,7 @@ PREFIX = /usr/local
 EXECUTABLE = wadptr
 OBJECTS = main.o waddir.o errors.o wadmerge.o lumps.o
 DELETE = rm -f
-CFLAGS = -O3 -DNORMALUNIX
+CFLAGS = -Wall -O3 -DNORMALUNIX
 
 all: $(EXECUTABLE)
 
