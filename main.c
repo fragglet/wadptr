@@ -211,9 +211,10 @@ static void Compress()
     int written = 0; /* if 0:write 1:been written 2:write silently */
     char *temp, resname[10], a[50];
 
-    if (wad == IWAD)
-        if (!IwadWarning())
-            return;
+    if (wad == IWAD && !IwadWarning())
+    {
+        return;
+    }
 
     wadsize = diroffset + (ENTRY_SIZE * numentries);
 
@@ -276,38 +277,37 @@ static void Compress()
             }
         }
 
-        if (allowsquash)
+        if (allowsquash && S_IsGraphic(resname))
         {
-            if (S_IsGraphic(resname))
-            {
-                printf("\tSquashing ");
-                fflush(stdout);
-                findshrink = wadentry[count].length;
+            printf("\tSquashing ");
+            fflush(stdout);
+            findshrink = wadentry[count].length;
 
-                temp = S_Squash(resname);
-                wadentry[count].offset = ftell(fstream); /*update dir */
-                fwrite(temp, wadentry[count].length, 1, fstream);
+            temp = S_Squash(resname);
+            wadentry[count].offset = ftell(fstream); /*update dir */
+            fwrite(temp, wadentry[count].length, 1, fstream);
 
-                free(temp);
-                findshrink = FindPerc(findshrink, wadentry[count].length);
-                printf("(%i%%), done.\n", findshrink);
-                written = 1;
-            }
+            free(temp);
+            findshrink = FindPerc(findshrink, wadentry[count].length);
+            printf("(%i%%), done.\n", findshrink);
+            written = 1;
         }
 
+        if (written == 0)
+        {
+            printf("\tStoring ");
+            fflush(stdout);
+        }
         if ((written == 0) || (written == 2))
         {
-            if (written == 0)
-            {
-                printf("\tStoring ");
-                fflush(stdout);
-            }
             temp = CacheLump(count);
             wadentry[count].offset = ftell(fstream); /*update dir */
             fwrite(temp, wadentry[count].length, 1, fstream);
             free(temp);
-            if (written == 0) /* always 0% */
-                printf("(0%%), done.\n");
+        }
+        if (written == 0) /* always 0% */
+        {
+            printf("(0%%), done.\n");
         }
     }
 
@@ -340,17 +340,14 @@ static void Compress()
         fclose(wadfp);
         remove(tempwad_name);
     }
+    else if (outputwad[0] == 0)
+    {
+        remove(wadname);
+        rename(tempwad_name, wadname);
+    }
     else
     {
-        if (outputwad[0] == 0)
-        {
-            remove(wadname);
-            rename(tempwad_name, wadname);
-        }
-        else
-        {
-            rename(tempwad_name, outputwad);
-        }
+        rename(tempwad_name, outputwad);
     }
 
     wadfp = fopen(wadname, "rb+"); /* so there is something to close */
@@ -361,7 +358,7 @@ static void Compress()
 }
 
 /* Uncompress a WAD ********************************************************/
-
+/* TODO: This can probably be merged with Compress() above. */
 static void Uncompress()
 {
     char tempstr[50];
@@ -372,9 +369,10 @@ static void Uncompress()
     long fileloc;
     int count;
 
-    if (wad == IWAD)
-        if (!IwadWarning())
-            return;
+    if (wad == IWAD && !IwadWarning())
+    {
+        return;
+    }
 
     fstream = fopen(tempwad_name, "wb+");
     memset(tempstr, 0, 12);
@@ -421,32 +419,34 @@ static void Uncompress()
                 written = 1;
             }
         }
-        if (allowsquash)
-            if (S_IsGraphic(resname))
-            {
-                printf("\tUnsquashing");
-                fflush(stdout);
-                tempres = S_Unsquash(resname);
-                wadentry[count].offset = ftell(fstream);
-                fwrite(tempres, wadentry[count].length, 1, fstream);
-                free(tempres);
-                printf(", done\n");
-                written = 1;
-            }
+        if (allowsquash && S_IsGraphic(resname))
+        {
+            printf("\tUnsquashing");
+            fflush(stdout);
+            tempres = S_Unsquash(resname);
+            wadentry[count].offset = ftell(fstream);
+            fwrite(tempres, wadentry[count].length, 1, fstream);
+            free(tempres);
+            printf(", done\n");
+            written = 1;
+        }
+
+        if (written == 0)
+        {
+            printf("\tStoring %s", resname);
+            fflush(stdout);
+        }
         if ((written == 0) || (written == 2))
         {
-            if (!written)
-            {
-                printf("\tStoring %s", resname);
-                fflush(stdout);
-            }
             tempres = CacheLump(count);
             fileloc = ftell(fstream);
             fwrite(tempres, wadentry[count].length, 1, fstream);
             free(tempres);
             wadentry[count].offset = fileloc;
-            if (!written)
-                printf(", done.\n");
+        }
+        if (written == 0)
+        {
+            printf(", done.\n");
         }
     }
     /* update the directory location */
@@ -513,21 +513,18 @@ static void ListEntries()
             else
                 printf("Unpacked    ");
         }
+        else if (S_IsGraphic(resname))
+        {
+            /* this is a graphic */
+            if (S_IsSquashed(resname))
+                printf("Squashed    ");
+            else
+                printf("Unsquashed  ");
+        }
         else
         {
-            if (S_IsGraphic(resname))
-            {
-                /* this is a graphic */
-                if (S_IsSquashed(resname))
-                    printf("Squashed    ");
-                else
-                    printf("Unsquashed  ");
-            }
-            else
-            {
-                /* ordinary lump w/no compression */
-                printf("Stored      ");
-            }
+            /* ordinary lump w/no compression */
+            printf("Stored      ");
         }
 
         /* resource name */
