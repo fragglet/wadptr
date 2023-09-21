@@ -2,7 +2,7 @@
                              Version 2.4
                    By Simon Howard and Andreas Dehmel
 
-         Copyright(C) 1998-2011 Simon Howard, Andreas Dehmel
+         Copyright(C) 1998-2023 Simon Howard, Andreas Dehmel
 
       This program is available for distributions under the terms of
       the GNU General Public License Version 2, as published by the
