@@ -19,8 +19,6 @@
 
 #include "errors.h"
 
-/* Display an error (Last remnant of the DMWAD heritage) ******************/
-
 void ErrorExit(char *s, ...)
 {
     va_list args;

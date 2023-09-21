@@ -97,8 +97,6 @@ bool ReadWad()
     return false;
 }
 
-/* Write the WAD header and directory *************************************/
-
 int WriteWadHeader(FILE *fp)
 {
     unsigned char buff[5];
@@ -149,7 +147,7 @@ void WriteWad()
     WriteWadDirectory(wadfp);
 }
 
-/* Takes a string8 in an entry type and returns a valid string *************/
+/* Takes a string8 in an entry type and returns a valid string */
 
 char *ConvertString8(entry_t entry)
 {
@@ -166,8 +164,6 @@ char *ConvertString8(entry_t entry)
     return temp[tempnum];
 }
 
-/* Finds if an entry exists ************************************************/
-
 int EntryExists(char *entrytofind)
 {
     int count;
@@ -179,7 +175,7 @@ int EntryExists(char *entrytofind)
     return -1;
 }
 
-/* Load a lump to memory **************************************************/
+/* Load a lump to memory */
 
 void *CacheLump(int entrynum)
 {
@@ -196,7 +192,7 @@ void *CacheLump(int entrynum)
     return working;
 }
 
-/* Various WAD-related is??? functions ************************************/
+/* Various WAD-related is??? functions */
 
 bool IsLevel(int entry)
 {
@@ -236,7 +232,7 @@ bool IsLevelEntry(char *s)
     return false;
 }
 
-/* Find the total size of a level ******************************************/
+/* Find the total size of a level */
 
 int FindLevelSize(char *s)
 {

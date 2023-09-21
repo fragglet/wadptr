@@ -100,7 +100,7 @@ static int Suggest()
     return 0;
 }
 
-/* Rebuild the WAD, making it smaller in the process ***********************/
+/* Rebuild the WAD, making it smaller in the process */
 
 void Rebuild(char *newname)
 {

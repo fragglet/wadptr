@@ -49,8 +49,6 @@ const char *iwad_name = "IWAD";
 
 static const char *tempwad_name = "~wptmp" EXTSEP "wad";
 
-/* Main ********************************************************************/
-
 int main(int argc, char *argv[])
 {
     int index;
@@ -73,10 +71,6 @@ int main(int argc, char *argv[])
 
     return 0;
 }
-
-/****************** Command line handling, open wad etc. *******************/
-
-/* Parse cmd-line options **************************************************/
 
 static void ParseCommandLine()
 {
@@ -140,8 +134,6 @@ static void ParseCommandLine()
                   "-u(Uncompress) option.\n");
 }
 
-/* Open the original WAD ***************************************************/
-
 static bool OpenWad(char *filename)
 {
     wadfp = fopen(filename, "rb+");
@@ -154,7 +146,7 @@ static bool OpenWad(char *filename)
     return ReadWad();
 }
 
-/* Does an action based on command line ************************************/
+/* Does an action based on command line */
 
 static void DoAction()
 {
@@ -178,10 +170,6 @@ static void DoAction()
     }
 }
 
-/************************ Command line functions ***************************/
-
-/* Display Help ************************************************************/
-
 static void Help()
 {
     printf("\n"
@@ -202,7 +190,7 @@ static void Help()
            " -nopack   :   Disable sidedef packing\n");
 }
 
-/* Compress a WAD **********************************************************/
+/* Compress a WAD */
 
 static void Compress()
 {
@@ -358,7 +346,7 @@ static void Compress()
     printf("*** %s is %i%% smaller ***\n", wadname, findshrink);
 }
 
-/* Uncompress a WAD ********************************************************/
+/* Uncompress a WAD */
 /* TODO: This can probably be merged with Compress() above. */
 static void Uncompress()
 {
@@ -471,7 +459,7 @@ static void Uncompress()
     wadfp = fopen(wadname, "rb+");
 }
 
-/* List WAD entries ********************************************************/
+/* List WAD entries */
 
 static void ListEntries()
 {
@@ -553,9 +541,7 @@ static void ListEntries()
     }
 }
 
-/************************** Misc. functions ********************************/
-
-/* Find how much smaller something is: returns a percentage ****************/
+/* Find how much smaller something is: returns a percentage */
 
 static int FindPerc(int before, int after)
 {
@@ -565,8 +551,6 @@ static int FindPerc(int before, int after)
 
     return (int) (100 * perc);
 }
-
-/* Warning not to change IWAD **********************************************/
 
 static bool IwadWarning()
 {

@@ -60,7 +60,7 @@ static short s_loffset, s_toffset;
 static unsigned char *s_columns; /* the location of each column in the lump */
 static long s_colsize[400];      /* the length(in bytes) of each column */
 
-/* Pack a level ***********************************************************/
+/* Pack a level */
 
 /* Call P_Pack() with the level name eg. p_pack("MAP01");. p_pack will then */
 /* pack that level. The new sidedef and linedef lumps are pointed to by */
@@ -96,7 +96,7 @@ void P_Pack(char *levelname)
     wadentry[p_sidedefnum].length = p_newnum * SDEF_SIZE;
 }
 
-/* Unpack a level *********************************************************/
+/* Unpack a level */
 
 /* Same thing, in reverse. Saves the new sidedef and linedef lumps to */
 /* p_sidedefres and p_linedefres. */
@@ -112,7 +112,7 @@ void P_Unpack(char *resname)
     p_sidedefres = (char *) p_newsidedef;
 }
 
-/* Find if a level is packed **********************************************/
+/* Find if a level is packed */
 
 bool P_IsPacked(char *s)
 {
@@ -171,7 +171,7 @@ bool P_IsPacked(char *s)
     return false; /* cant be packed: none of the sidedefs are shared */
 }
 
-/* Find neccesary stuff before processing *********************************/
+/* Find neccesary stuff before processing */
 
 static void P_FindInfo()
 {
@@ -215,7 +215,7 @@ static void P_FindInfo()
     p_num_sidedefs = wadentry[p_sidedefnum].length / SDEF_SIZE;
 }
 
-/* Actually pack the sidedefs *******************************************/
+/* Actually pack the sidedefs */
 
 static void P_DoPack(sidedef_t *sidedefs)
 {
@@ -267,7 +267,7 @@ static void P_DoPack(sidedef_t *sidedefs)
     free(sidedefs); /* fly free, little sidedefs!! */
 }
 
-/* Update the linedefs and save sidedefs *********************************/
+/* Update the linedefs and save sidedefs */
 
 static void P_BuildLinedefs(linedef_t *linedefs)
 {
@@ -289,7 +289,7 @@ static void P_BuildLinedefs(linedef_t *linedefs)
     free(p_movedto);
 }
 
-/* Rebuild the sidedefs ***************************************************/
+/* Rebuild the sidedefs */
 
 static void P_Rebuild()
 {
@@ -339,9 +339,9 @@ static void P_Rebuild()
  */
 /*#define ENTIRE_COLUMNS*/
 
-/* Graphic squashing routines *********************************************/
+/* Graphic squashing routines */
 
-/* Squash a graphic lump **************************************************/
+/* Squash a graphic lump */
 
 /* Squashes a graphic. Call with the lump name - eg. S_Squash("TITLEPIC"); */
 /* returns a pointer to the new(compressed) lump. This must be free()d when */
@@ -419,7 +419,7 @@ char *S_Squash(char *s)
     }
 }
 
-/* Unsquash a picture ******************************************************/
+/* Unsquash a picture */
 
 /* Exactly the same format as S_Squash(). See there for more details. */
 
@@ -477,7 +477,7 @@ char *S_Unsquash(char *s)
     return (char *) newres;
 }
 
-/* Find the redundant columns **********************************************/
+/* Find the redundant columns */
 
 static int S_FindRedundantColumns(unsigned char *x)
 {
@@ -543,7 +543,7 @@ static int S_FindRedundantColumns(unsigned char *x)
     return num_killed;
 }
 
-/* Find the size of a column ***********************************************/
+/* Find the size of a column */
 
 static int S_FindColumnSize(unsigned char *col1)
 {
@@ -561,7 +561,7 @@ static int S_FindColumnSize(unsigned char *col1)
     }
 }
 
-/* Find if a graphic is squashed *******************************************/
+/* Find if a graphic is squashed */
 
 bool S_IsSquashed(char *s)
 {
@@ -603,7 +603,7 @@ bool S_IsSquashed(char *s)
     return false;
 }
 
-/* Is this a graphic ? *****************************************************/
+/* Is this a graphic ? */
 
 bool S_IsGraphic(char *s)
 {
