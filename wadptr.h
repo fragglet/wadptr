@@ -41,11 +41,6 @@
 
 #define VERSION "2.4"
 
-#define HELP       0
-#define COMPRESS   1
-#define UNCOMPRESS 2
-#define LIST       3
-
 /****************************** GLOBALS ************************************/
 
 /** MAIN.C **/

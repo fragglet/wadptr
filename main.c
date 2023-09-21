@@ -47,7 +47,7 @@ static char **g_argv;
 static int filelist_index;
 static char *wadname;
 static char outputwad[256] = "";
-static int action;   /* list, Compress, Uncompress */
+static enum { HELP, COMPRESS, UNCOMPRESS, LIST } action;
 int allowpack = 1;   /* level packing on */
 int allowsquash = 1; /* picture squashing on */
 int allowmerge = 1;  /* lump merging on */
@@ -155,12 +155,6 @@ static int ParseCommandLine()
 static int OpenWad(char *filename)
 {
     int a;
-
-    if (!action)
-    {
-        /* no action but i've got a wad.. whats in it? default to list */
-        action = LIST;
-    }
 
     wadfp = fopen(filename, "rb+");
     if (!wadfp)
