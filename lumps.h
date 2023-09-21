@@ -1,13 +1,12 @@
-/**************************************************************************
- *            Functions for compressing individual lumps                  *
- *                                                                        *
- * P_* : Sidedef packing extension routines. Combines sidedefs which are  *
- *       identical in a level, and shares them between multiple linedefs  *
- *                                                                        *
- * S_* : Graphic squashing routines. Combines identical columns in        *
- *       graphic lumps to make them smaller                               *
- *                                                                        *
- **************************************************************************/
+/*
+ * Functions for compressing individual lumps
+ *
+ * P_* : Sidedef packing extension routines. Combines sidedefs which are
+ *       identical in a level, and shares them between multiple linedefs
+ *
+ * S_* : Graphic squashing routines. Combines identical columns in
+ *       graphic lumps to make them smaller
+ */
 
 #ifndef __LUMPS_H_INCLUDED__
 #define __LUMPS_H_INCLUDED__
