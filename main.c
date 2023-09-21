@@ -34,8 +34,8 @@
 
 int g_argc; /* global cmd-line list */
 char **g_argv;
-char filespec[256] = ""; /* file spec on command line eg. *.wad */
-char wadname[256] = "";  /* WAD file name */
+int filelist_index;
+static char *wadname;
 static char outputwad[256] = "";
 int action;          /* list, compress, uncompress */
 int allowpack = 1;   /* level packing on */
@@ -51,7 +51,7 @@ static const char *tempwad_name = "~wptmp" EXTSEP "wad";
 
 int main(int argc, char *argv[])
 {
-    /*int action=0; unused */
+    int index;
 
     g_argc = argc; /* Set global cmd-line list */
     g_argv = argv;
@@ -69,7 +69,16 @@ int main(int argc, char *argv[])
 
     parsecmdline(); /* Check cmd-lines */
 
-    eachwad(filespec); /* do each wad */
+    for (index = filelist_index; index < g_argc; ++index)
+    {
+        wadname = g_argv[index];
+        if (!(openwad(wadname)))
+        {
+            /* no problem with wad.. do whatever (compress, uncompress etc) */
+            doaction();
+        }
+        fclose(wadfp);
+    }
 
     return 0;
 }
@@ -85,6 +94,7 @@ int parsecmdline()
     action = HELP; /* default to help if not told what to do */
 
     count = 1;
+    filelist_index = -1;
     while (count < g_argc)
     {
         if ((!strcmp(g_argv[count], "-help")) || (!strcmp(g_argv[count], "-h")))
@@ -110,8 +120,10 @@ int parsecmdline()
             allowpack = 0;
 
         if (g_argv[count][0] != '-')
-            if (!strcmp(filespec, ""))
-                strcpy(filespec, g_argv[count]);
+        {
+            filelist_index = count;
+            break;
+        }
 
         if ((!strcmp(g_argv[count], "-output")) ||
             (!strcmp(g_argv[count], "-o")))
@@ -120,7 +132,7 @@ int parsecmdline()
         count++;
     }
 
-    if (!strcmp(filespec, "")) /* no wad file given */
+    if (filelist_index < 0)
     {
         if (action == HELP)
         {
@@ -137,53 +149,6 @@ int parsecmdline()
                   "-u(uncompress) option.\n");
 
     return 0;
-}
-
-/* Do each wad specified by the wildcard in turn **************************/
-
-void eachwad(char *filespec)
-{
-    DIR *directory;
-    struct dirent *direntry;
-    char *dirname, *filename;
-    int wadcount = 0;
-
-    dirname = filespec;
-
-    filename = find_filename(dirname);
-
-    /* use the current directory if none specified */
-    if (dirname == filename)
-        dirname = CURDIR;
-
-    directory = opendir(dirname);
-    while (1)
-    {
-        direntry = readdir(directory);
-        if (!direntry)
-        {
-            /* no more entries */
-            break;
-        }
-        /* see if it conforms to the wildcard */
-        if (filecmp(direntry->d_name, filename))
-        {
-            /* build the wad name from dirname and filename */
-            sprintf(wadname, "%s" DIRSEP "%s", dirname, direntry->d_name);
-            if (!strcmp(dirname, CURDIR)) /* don't bother with dirname "." */
-                strcpy(wadname, direntry->d_name);
-            if (!(openwad(wadname)))
-            {
-                doaction();
-            }
-            wadcount++;
-            fclose(wadfp);
-        }
-    }
-    closedir(directory);
-
-    if (!wadcount)
-        errorexit("\neachwad: No files found!\n");
 }
 
 /* Open the original WAD ***************************************************/
@@ -612,105 +577,6 @@ void list_entries()
         if (count2 == count)
             printf("No\n");
     }
-}
-
-/*********************** Wildcard Functions *******************************/
-
-/* Break a filename into filename and extension ***************************/
-
-char *find_filename(char *s)
-{
-    char *tempstr, *backstr;
-
-    backstr = s;
-
-    while (1)
-    {
-        tempstr = strchr(backstr, DIRSEP[0]);
-        if (!tempstr)
-        {
-            /* no more slashes */
-#ifdef __riscos
-            tempstr = strchr(backstr, ':');
-#else
-            tempstr = strchr(backstr, '/');
-#endif
-            if (!tempstr)
-            {
-                if (backstr != s)
-                    *(backstr - 1) = 0;
-                return backstr;
-            }
-        }
-        backstr = tempstr + 1;
-    }
-}
-
-/* Compare two filenames ***************************************************/
-
-int filecmp(char *filename, char *templaten)
-{
-    char filename1[50], template1[50]; /* filename */
-    char *filename2, *template2;       /* extension */
-    int count;
-
-    strcpy(filename1, filename);
-    strcpy(template1, templaten);
-
-    filename2 = strchr(filename1, EXTSEP[0]);
-    if (!filename2)
-        filename2 = ""; /* no extension */
-    else
-    {
-        *filename2 = 0; /* end of main filename */
-        filename2++;    /* set to start of extension */
-    }
-
-    template2 = strchr(template1, EXTSEP[0]);
-    if (!template2)
-        template2 = "";
-    else
-    {
-        *template2 = 0;
-        template2++;
-    }
-
-    for (count = 0; count < 8; count++) /* compare the filenames */
-    {
-        if (filename1[count] == '\0' && template1[count] != '\0')
-            return 0;
-        if (template1[count] == '?')
-            continue;
-        if (template1[count] == '*')
-            break;
-        if (template1[count] != filename1[count])
-            return 0;
-        if (template1[count] == '\0')
-            break; /* end of string */
-    }
-
-    for (count = 0; count < 3; count++) /* compare the extensions */
-    {
-        if (filename2[count] == '\0' && template2[count] != '\0')
-            return 0;
-        if (template2[count] == '?')
-            continue;
-        if (template2[count] == '*')
-            break;
-        if (template2[count] != filename2[count])
-            return 0;
-        if (template2[count] == '\0')
-            break; /* end of string */
-    }
-
-    return 1;
-}
-
-/* Removes command line globbing ******************************************/
-
-void *__crt0_glob_function()
-{
-    return 0;
 }
 
 /************************** Misc. functions ********************************/

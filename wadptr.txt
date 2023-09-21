@@ -21,7 +21,6 @@
                     [2-2] Compressing a WAD
                     [2-3] Uncompressing a WAD
                     [2-4] Listing a WAD
-                    [2-5] Using wildcards
               [3] Remaining stuff
                     [3-1] Version History
                     [3-2] Bugs/suggestions/comments
@@ -271,26 +270,6 @@ WAD directory, and shows the following information:
         * Name         : The name of the entry.
         * Shared       : The name of another entry that this
                          entry shares its lump with.
-
-[2-5] Using wildcards
----------------------
-This latest version of WADPTR includes support for wildcards! This
-means that, if you want to compress a large number of .WAD files,
-you can do it easily without having to type in hundreds of command
-lines. So, you can type in, for example:
-
-        WADPTR *.wad -c (Compress every WAD in a directory)
-        WADPTR deca*.wad -c (Compress every file with a .wad
-                               extension beginning "deca".)
-
-You can also use the '?' question mark wildcard sign, eg.
-
-        WADPTR -c sf??b1.wad   (Every WAD beginning sf and ending b1).
-        WADPTR -c abc?12?3.wad
-
-Using wildcards, it is possible to compress every WAD in your doom2
-directory quickly and easily (though it is not recommended you compress
-your IWAD).
 
 [3] Remaining Stuff
 ===================

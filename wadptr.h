@@ -56,7 +56,6 @@
 
 extern int g_argc; /* global cmd-line list */
 extern char **g_argv;
-extern char wadname[256];
 extern char filespec[256]; /* -tweak file name */
 extern int allowpack;      /* level packing on */
 extern int allowsquash;    /* picture squashing on */
@@ -78,8 +77,6 @@ void list_entries();
 
 char *find_filename(char *s);
 int filecmp(char *filename, char *templaten);
-void *__crt0_glob_function(); /* needed to disable globbing(expansion of */
-                              /* wildcards on the command line) */
 int iwad_warning();
 
 int findperc(int before, int after);
