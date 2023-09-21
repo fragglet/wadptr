@@ -1,7 +1,4 @@
 /**************************************************************************
- *                  The WADPTR project : LUMPS.C                          *
- *                      Header file for LUMPS.C                           *
- *                                                                        *
  *            Functions for compressing individual lumps                  *
  *                                                                        *
  * P_* : Sidedef packing extension routines. Combines sidedefs which are  *

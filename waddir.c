@@ -12,7 +12,6 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the          *
  * GNU General Public License for more details.                           *
  *                                                                        *
- *                          The WADPTR project                            *
  *                                                                        *
  * WAD loading and reading routines: by me, me, me!                       *
  *                                                                        *

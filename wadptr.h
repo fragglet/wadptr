@@ -12,10 +12,6 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the          *
  * GNU General Public License for more details.                           *
  *                                                                        *
- *                          The WADPTR project                            *
- *                                                                        *
- *                     Header file for the project                        *
- *                                                                        *
  **************************************************************************/
 
 #include <dirent.h>
