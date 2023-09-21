@@ -22,8 +22,12 @@
  *                                                                        *
  **************************************************************************/
 
-#include "errors.h"
+#include <signal.h>
+#include <stdarg.h>
+#include <stdio.h>
 #include <stdlib.h>
+
+#include "errors.h"
 
 /* Display an error (Last remnant of the DMWAD heritage) ******************/
 

@@ -22,8 +22,6 @@
  *                                                                        *
  **************************************************************************/
 
-/************************ INCLUDES ****************************************/
-
 #include "waddir.h"
 #include "wadptr.h"
 
@@ -35,14 +33,10 @@ static int ReadWadDirectory(FILE *fp);
 static int ReadWadEntry(FILE *fp, entry_t *entry);
 static int WriteWadEntry(FILE *fp, entry_t *entry);
 
-/************************ Globals ******************************************/
-
 FILE *wadfp;
 long numentries, diroffset;
 entry_t wadentry[MAXENTRIES];
 wadtype wad;
-
-/* Read the WAD ************************************************************/
 
 static int ReadWadHeader(FILE *fp)
 {

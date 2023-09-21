@@ -28,14 +28,10 @@
  *                                                                        *
  **************************************************************************/
 
-/******************************* INCLUDES **********************************/
-
 #include <string.h>
 
 #include "lumps.h"
 #include "wadptr.h"
-
-/****************************** PROTOTYPES ********************************/
 
 static void P_FindInfo();
 static void P_DoPack();
@@ -47,8 +43,6 @@ static int S_FindColumnSize(unsigned char *col1);
 
 static linedef_t *ReadLinedefs(int lumpnum, FILE *fp);
 static sidedef_t *ReadSidedefs(int lumpnum, FILE *fp);
-
-/******************************* GLOBALS **********************************/
 
 static int p_levelnum;   /* entry number (index in WAD directory) */
 static int p_sidedefnum; /* sidedef wad entry number */

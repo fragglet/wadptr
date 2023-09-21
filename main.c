@@ -26,8 +26,6 @@
  *                                                                        *
  **************************************************************************/
 
-/******************************* INCLUDES **********************************/
-
 #include <stdbool.h>
 
 #include "wadptr.h"
@@ -41,8 +39,6 @@ static void ListEntries();
 static bool OpenWad();
 static void ParseCommandLine();
 static void Uncompress();
-
-/******************************* GLOBALS ***********************************/
 
 static int g_argc; /* global cmd-line list */
 static char **g_argv;

@@ -22,8 +22,6 @@
  *                                                                        *
  **************************************************************************/
 
-/***************************** INCLUDES ************************************/
-
 #include <dirent.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -35,15 +33,7 @@
 #include "waddir.h"
 #include "wadmerge.h"
 
-/****************************** DEFINES ************************************/
-
-/** MAIN.C **/
-
 #define VERSION "2.4"
-
-/****************************** GLOBALS ************************************/
-
-/** MAIN.C **/
 
 extern int allowpack;   /* level packing on */
 extern int allowsquash; /* picture squashing on */

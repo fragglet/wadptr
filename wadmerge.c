@@ -26,11 +26,7 @@
 #include "wadmerge.h"
 #include "wadptr.h"
 
-/***************************** Globals ************************************/
-
 static short sameas[4000];
-
-/* Suggest ****************************************************************/
 
 static int Suggest()
 {

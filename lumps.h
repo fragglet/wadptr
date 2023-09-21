@@ -15,8 +15,6 @@
 #ifndef __LUMPS_H_INCLUDED__
 #define __LUMPS_H_INCLUDED__
 
-/****************************** Includes **********************************/
-
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -24,12 +22,8 @@
 #include "errors.h"
 #include "waddir.h"
 
-/****************************** Globals ***********************************/
-
 extern char *p_linedefres; /* the new linedef resource */
 extern char *p_sidedefres; /* the new sidedef resource */
-
-/***************************** Prototypes *********************************/
 
 void P_Pack(char *levelname);
 void P_Unpack(char *resname);
@@ -39,8 +33,6 @@ char *S_Squash(char *s);
 char *S_Unsquash(char *s);
 bool S_IsSquashed(char *s);
 bool S_IsGraphic(char *s);
-
-/******************************* Structs **********************************/
 
 typedef struct {
     short xoffset;

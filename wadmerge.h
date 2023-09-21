@@ -26,19 +26,7 @@
 #ifndef __WADMERGE_H_INCLUDED__
 #define __WADMERGE_H_INCLUDED__
 
-/***************************** Includes ***********************************/
-
-#include <stdio.h>
-#include <stdlib.h>
-
-#include "errors.h"
-#include "waddir.h"
-
-/****************************** Defines ***********************************/
-
 #define MAXLINKS 50000
-
-/***************************** Prototypes *********************************/
 
 void Rebuild(char *newname);
 

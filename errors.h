@@ -24,14 +24,6 @@
 #ifndef __ERRORS_H_INCLUDED__
 #define __ERRORS_H_INCLUDED__
 
-/****************************** Includes **********************************/
-
-#include <signal.h>
-#include <stdarg.h>
-#include <stdio.h>
-
-/***************************** Prototypes *********************************/
-
 void ErrorExit(char *s, ...);
 
 #endif

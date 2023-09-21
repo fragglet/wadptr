@@ -8,21 +8,15 @@
 #ifndef __WADDIR_H_INCLUDED__
 #define __WADDIR_H_INCLUDED__
 
-/*************************** Includes *************************************/
-
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 #include "errors.h"
 
-/*************************** Defines **************************************/
-
 #define MAXENTRIES 5000
 
 typedef enum { IWAD, PWAD, NONWAD } wadtype;
-
-/*************************** Structs *************************************/
 
 typedef struct {
     long offset;
@@ -36,8 +30,6 @@ typedef struct {
 #define ENTRY_NAME 8
 #define ENTRY_SIZE 16
 
-/*************************** Prototypes ***********************************/
-
 bool ReadWad();
 void WriteWad();
 char *ConvertString8(entry_t entry);
@@ -50,10 +42,6 @@ int WriteWadDirectory(FILE *fp);
 bool IsLevel(int entry);
 bool IsLevelEntry(char *s);
 int FindLevelSize(char *s);
-
-/*************************** Globals *************************************/
-
-/** WADDIR.C **/
 
 extern FILE *wadfp;
 extern char picentry[8];
