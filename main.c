@@ -19,6 +19,7 @@
  * - Packs the sidedefs in levels (see lumps.c)
  */
 
+#include <ctype.h>
 #include <stdbool.h>
 
 #include "wadptr.h"
@@ -570,17 +571,17 @@ static int FindPerc(int before, int after)
 static bool IwadWarning()
 {
     char tempchar;
-    printf("Are you sure you want to change the main IWAD?");
+    printf("%s is an IWAD file; are you sure you want to change it? ", wadname);
     fflush(stdout);
     while (1)
     {
-        tempchar = fgetc(stdin);
-        if ((tempchar == 'Y') || (tempchar == 'y'))
+        tempchar = tolower(fgetc(stdin));
+        if (tempchar == 'y')
         {
             printf("\n");
             return true;
         }
-        if ((tempchar == 'N') || (tempchar == 'n'))
+        if (tempchar == 'n')
         {
             printf("\n");
             return false;
