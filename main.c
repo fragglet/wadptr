@@ -40,9 +40,9 @@ static int filelist_index;
 static char *wadname;
 static char outputwad[256] = "";
 static enum { HELP, COMPRESS, UNCOMPRESS, LIST } action;
-int allowpack = 1;   /* level packing on */
-int allowsquash = 1; /* picture squashing on */
-int allowmerge = 1;  /* lump merging on */
+bool allowpack = true;   /* level packing on */
+bool allowsquash = true; /* picture squashing on */
+bool allowmerge = true;  /* lump merging on */
 
 const char *pwad_name = "PWAD";
 const char *iwad_name = "IWAD";
@@ -98,11 +98,11 @@ static void ParseCommandLine(void)
 
         /* specific disabling */
         if (!strcmp(g_argv[count], "-nomerge"))
-            allowmerge = 0;
+            allowmerge = false;
         if (!strcmp(g_argv[count], "-nosquash"))
-            allowsquash = 0;
+            allowsquash = false;
         if (!strcmp(g_argv[count], "-nopack"))
-            allowpack = 0;
+            allowpack = false;
 
         if (g_argv[count][0] != '-')
         {
@@ -128,7 +128,7 @@ static void ParseCommandLine(void)
             ErrorExit("No input WAD file specified.\n");
     }
 
-    if (action == UNCOMPRESS && allowmerge == 0)
+    if (action == UNCOMPRESS && !allowmerge)
         ErrorExit("Sorry, uncompressing will undo any lump merging on WADs.\n"
                   "The -nomerge command is not available with the "
                   "-u(Uncompress) option.\n");

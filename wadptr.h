@@ -16,6 +16,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
 
 #include "errors.h"
@@ -25,9 +26,9 @@
 
 #define VERSION "2.4"
 
-extern int allowpack;   /* level packing on */
-extern int allowsquash; /* picture squashing on */
-extern int allowmerge;  /* lump merging on */
+extern bool allowpack;   /* level packing on */
+extern bool allowsquash; /* picture squashing on */
+extern bool allowmerge;  /* lump merging on */
 
 extern const char *pwad_name;
 extern const char *iwad_name;
