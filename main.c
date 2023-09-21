@@ -24,15 +24,15 @@
 
 #include "wadptr.h"
 
-static void Compress();
-static void DoAction();
+static void Compress(void);
+static void DoAction(void);
 static int FindPerc(int before, int after);
-static void Help();
-static bool IwadWarning();
-static void ListEntries();
-static bool OpenWad();
-static void ParseCommandLine();
-static void Uncompress();
+static void Help(void);
+static bool IwadWarning(void);
+static void ListEntries(void);
+static bool OpenWad(char *filename);
+static void ParseCommandLine(void);
+static void Uncompress(void);
 
 static int g_argc; /* global cmd-line list */
 static char **g_argv;
@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-static void ParseCommandLine()
+static void ParseCommandLine(void)
 {
     int count;
 
@@ -148,7 +148,7 @@ static bool OpenWad(char *filename)
 
 /* Does an action based on command line */
 
-static void DoAction()
+static void DoAction(void)
 {
     switch (action)
     {
@@ -170,7 +170,7 @@ static void DoAction()
     }
 }
 
-static void Help()
+static void Help(void)
 {
     printf("\n"
            "WADPTR - WAD Compressor version " VERSION "\n"
@@ -192,7 +192,7 @@ static void Help()
 
 /* Compress a WAD */
 
-static void Compress()
+static void Compress(void)
 {
     int count, findshrink;
     long wadsize; /* wad size(to find % smaller) */
@@ -348,7 +348,7 @@ static void Compress()
 
 /* Uncompress a WAD */
 /* TODO: This can probably be merged with Compress() above. */
-static void Uncompress()
+static void Uncompress(void)
 {
     char tempstr[50];
     FILE *fstream;
@@ -461,7 +461,7 @@ static void Uncompress()
 
 /* List WAD entries */
 
-static void ListEntries()
+static void ListEntries(void)
 {
     int count, count2;
     char resname[10];
@@ -552,7 +552,7 @@ static int FindPerc(int before, int after)
     return (int) (100 * perc);
 }
 
-static bool IwadWarning()
+static bool IwadWarning(void)
 {
     char tempchar;
     printf("%s is an IWAD file; are you sure you want to change it? ", wadname);

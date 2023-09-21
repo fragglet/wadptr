@@ -21,7 +21,7 @@
 
 static short sameas[4000];
 
-static int Suggest()
+static int Suggest(void)
 {
     int count, count2, linkcnt = 0;
     short *links; /* possible links */

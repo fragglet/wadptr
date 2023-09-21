@@ -80,7 +80,7 @@ static int ReadWadDirectory(FILE *fp)
     return 0;
 }
 
-bool ReadWad()
+bool ReadWad(void)
 {
     if ((wad = ReadWadHeader(wadfp)) == NONWAD)
         return true;
@@ -138,7 +138,7 @@ int WriteWadDirectory(FILE *fp)
     return 0;
 }
 
-void WriteWad()
+void WriteWad(void)
 {
     WriteWadHeader(wadfp);
 

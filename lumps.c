@@ -26,10 +26,10 @@
 #include "lumps.h"
 #include "wadptr.h"
 
-static void P_FindInfo();
-static void P_DoPack();
+static void P_FindInfo(void);
+static void P_DoPack(sidedef_t *sidedefs);
 static void P_BuildLinedefs(linedef_t *linedefs);
-static void P_Rebuild();
+static void P_Rebuild(void);
 
 static int S_FindRedundantColumns(unsigned char *s);
 static int S_FindColumnSize(unsigned char *col1);
@@ -173,7 +173,7 @@ bool P_IsPacked(char *s)
 
 /* Find neccesary stuff before processing */
 
-static void P_FindInfo()
+static void P_FindInfo(void)
 {
     int count, n;
 
@@ -291,7 +291,7 @@ static void P_BuildLinedefs(linedef_t *linedefs)
 
 /* Rebuild the sidedefs */
 
-static void P_Rebuild()
+static void P_Rebuild(void)
 {
     sidedef_t *sidedefs;
     linedef_t *linedefs;

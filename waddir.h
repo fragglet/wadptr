@@ -27,8 +27,8 @@ typedef struct {
 #define ENTRY_NAME 8
 #define ENTRY_SIZE 16
 
-bool ReadWad();
-void WriteWad();
+bool ReadWad(void);
+void WriteWad(void);
 char *ConvertString8(entry_t entry);
 int EntryExists(char *entrytofind);
 void *CacheLump(int entrynum);
