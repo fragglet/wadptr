@@ -40,18 +40,11 @@ typedef struct {
 int ReadWad();
 void WriteWad();
 char *ConvertString8(entry_t entry);
-entry_t FindInfo(char *entrytofind);
-void AddEntry(entry_t entry);
 int EntryExists(char *entrytofind);
 void *CacheLump(int entrynum);
-void CopyWad(char *newfile);
 
-int ReadWadHeader(FILE *fp);
 int WriteWadHeader(FILE *fp);
-int ReadWadDirectory(FILE *fp);
-int ReadWadEntry(FILE *fp, entry_t *entry);
 int WriteWadDirectory(FILE *fp);
-int WriteWadEntry(FILE *fp, entry_t *entry);
 
 int IsLevel(int entry);
 int IsLevelEntry(char *s);

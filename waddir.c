@@ -29,6 +29,14 @@
 
 enum { false, true };
 
+static entry_t FindInfo(char *entrytofind);
+static void AddEntry(entry_t entry);
+static void CopyWad(char *newfile);
+static int ReadWadHeader(FILE *fp);
+static int ReadWadDirectory(FILE *fp);
+static int ReadWadEntry(FILE *fp, entry_t *entry);
+static int WriteWadEntry(FILE *fp, entry_t *entry);
+
 /************************ Globals ******************************************/
 
 FILE *wadfp;
@@ -38,7 +46,7 @@ wadtype wad;
 
 /* Read the WAD ************************************************************/
 
-int ReadWadHeader(FILE *fp)
+static int ReadWadHeader(FILE *fp)
 {
     unsigned char buff[5];
     int wadType;
@@ -65,7 +73,7 @@ int ReadWadHeader(FILE *fp)
     return wadType;
 }
 
-int ReadWadEntry(FILE *fp, entry_t *entry)
+static int ReadWadEntry(FILE *fp, entry_t *entry)
 {
     unsigned char buff[ENTRY_SIZE];
 
@@ -78,7 +86,7 @@ int ReadWadEntry(FILE *fp, entry_t *entry)
     return 0;
 }
 
-int ReadWadDirectory(FILE *fp)
+static int ReadWadDirectory(FILE *fp)
 {
     long i;
 
@@ -127,7 +135,7 @@ int WriteWadHeader(FILE *fp)
     return 0;
 }
 
-int WriteWadEntry(FILE *fp, entry_t *entry)
+static int WriteWadEntry(FILE *fp, entry_t *entry)
 {
     unsigned char buff[ENTRY_SIZE];
 
@@ -191,7 +199,7 @@ int EntryExists(char *entrytofind)
 
 /* Finds an entry and returns information about it *************************/
 
-entry_t FindInfo(char *entrytofind)
+static entry_t FindInfo(char *entrytofind)
 {
     int count;
     static entry_t entry;
@@ -208,7 +216,7 @@ entry_t FindInfo(char *entrytofind)
 
 /* Adds an entry to the WAD ************************************************/
 
-void AddEntry(entry_t entry)
+static void AddEntry(entry_t entry)
 {
     char buffer[10];
 
@@ -240,7 +248,7 @@ void *CacheLump(int entrynum)
 
 /* Copy a WAD ( make a backup ) *******************************************/
 
-void CopyWad(char *newfile)
+static void CopyWad(char *newfile)
 {
     FILE *newwad;
     char a;

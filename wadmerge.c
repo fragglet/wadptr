@@ -26,17 +26,13 @@
 #include "wadmerge.h"
 #include "wadptr.h"
 
-/***************************** Prototypes *********************************/
-
-int Suggest();
-
 /***************************** Globals ************************************/
 
 short sameas[4000];
 
 /* Suggest ****************************************************************/
 
-int Suggest()
+static int Suggest()
 {
     int count, count2, linkcnt = 0;
     short *links; /* possible links */

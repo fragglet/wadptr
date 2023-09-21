@@ -83,9 +83,7 @@ typedef struct {
 #define LDEF_SDEF2 12
 #define LDEF_SIZE  14
 
-linedef_t *ReadLinedefs(int lumpnum, FILE *fp);
 int WriteLinedefs(linedef_t *lines, int bytes, FILE *fp);
-sidedef_t *ReadSidedefs(int lumpnum, FILE *fp);
 int WriteSidedefs(sidedef_t *sides, int bytes, FILE *fp);
 
 #endif

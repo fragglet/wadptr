@@ -39,13 +39,16 @@ enum { false, true };
 
 /****************************** PROTOTYPES ********************************/
 
-void P_FindInfo();
-void P_DoPack();
-void P_BuildLinedefs(linedef_t *linedefs);
-void P_Rebuild();
+static void P_FindInfo();
+static void P_DoPack();
+static void P_BuildLinedefs(linedef_t *linedefs);
+static void P_Rebuild();
 
-int S_FindRedundantColumns(unsigned char *s);
-int S_FindColumnSize(unsigned char *col1);
+static int S_FindRedundantColumns(unsigned char *s);
+static int S_FindColumnSize(unsigned char *col1);
+
+static linedef_t *ReadLinedefs(int lumpnum, FILE *fp);
+static sidedef_t *ReadSidedefs(int lumpnum, FILE *fp);
 
 /******************************* GLOBALS **********************************/
 
@@ -184,7 +187,7 @@ int P_IsPacked(char *s)
 
 /* Find neccesary stuff before processing *********************************/
 
-void P_FindInfo()
+static void P_FindInfo()
 {
     int count, n;
 
@@ -228,7 +231,7 @@ void P_FindInfo()
 
 /* Actually pack the sidedefs *******************************************/
 
-void P_DoPack(sidedef_t *sidedefs)
+static void P_DoPack(sidedef_t *sidedefs)
 {
     int count, count2;
 
@@ -280,7 +283,7 @@ void P_DoPack(sidedef_t *sidedefs)
 
 /* Update the linedefs and save sidedefs *********************************/
 
-void P_BuildLinedefs(linedef_t *linedefs)
+static void P_BuildLinedefs(linedef_t *linedefs)
 {
     int count;
 
@@ -302,7 +305,7 @@ void P_BuildLinedefs(linedef_t *linedefs)
 
 /* Rebuild the sidedefs ***************************************************/
 
-void P_Rebuild()
+static void P_Rebuild()
 {
     sidedef_t *sidedefs;
     linedef_t *linedefs;
@@ -490,7 +493,7 @@ char *S_Unsquash(char *s)
 
 /* Find the redundant columns **********************************************/
 
-int S_FindRedundantColumns(unsigned char *x)
+static int S_FindRedundantColumns(unsigned char *x)
 {
     int count, count2;
     int num_killed = 0;
@@ -556,7 +559,7 @@ int S_FindRedundantColumns(unsigned char *x)
 
 /* Find the size of a column ***********************************************/
 
-int S_FindColumnSize(unsigned char *col1)
+static int S_FindColumnSize(unsigned char *col1)
 {
     int count = 0;
 
@@ -686,7 +689,7 @@ int S_IsGraphic(char *s)
 static const int convbuffsize = 0x8000;
 static unsigned char convbuffer[0x8000];
 
-linedef_t *ReadLinedefs(int lumpnum, FILE *fp)
+static linedef_t *ReadLinedefs(int lumpnum, FILE *fp)
 {
     linedef_t *lines;
     int i, numlines, validbytes;
@@ -755,7 +758,7 @@ int WriteLinedefs(linedef_t *lines, int bytes, FILE *fp)
     return 0;
 }
 
-sidedef_t *ReadSidedefs(int lumpnum, FILE *fp)
+static sidedef_t *ReadSidedefs(int lumpnum, FILE *fp)
 {
     sidedef_t *sides;
     int i, numsides, validbytes;

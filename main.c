@@ -30,6 +30,16 @@
 
 #include "wadptr.h"
 
+static void Compress();
+static void DoAction();
+static int FindPerc(int before, int after);
+static void Help();
+static int IwadWarning();
+static void ListEntries();
+static int OpenWad();
+static int ParseCommandLine();
+static void Uncompress();
+
 /******************************* GLOBALS ***********************************/
 
 int g_argc; /* global cmd-line list */
@@ -87,7 +97,7 @@ int main(int argc, char *argv[])
 
 /* Parse cmd-line options **************************************************/
 
-int ParseCommandLine()
+static int ParseCommandLine()
 {
     int count;
 
@@ -153,7 +163,7 @@ int ParseCommandLine()
 
 /* Open the original WAD ***************************************************/
 
-int OpenWad(char *filename)
+static int OpenWad(char *filename)
 {
     int a;
 
@@ -181,7 +191,7 @@ int OpenWad(char *filename)
 
 /* Does an action based on command line ************************************/
 
-void DoAction()
+static void DoAction()
 {
     switch (action)
     {
@@ -207,7 +217,7 @@ void DoAction()
 
 /* Display Help ************************************************************/
 
-void Help()
+static void Help()
 {
     printf("\n"
            "Usage:  WADPTR inputwad [outputwad] options\n"
@@ -225,7 +235,7 @@ void Help()
 
 /* Compress a WAD **********************************************************/
 
-void Compress()
+static void Compress()
 {
     int count, findshrink;
     long wadsize; /* wad size(to find % smaller) */
@@ -384,7 +394,7 @@ void Compress()
 
 /* Uncompress a WAD ********************************************************/
 
-void Uncompress()
+static void Uncompress()
 {
     char tempstr[50];
     FILE *fstream;
@@ -494,7 +504,7 @@ void Uncompress()
 
 /* List WAD entries ********************************************************/
 
-void ListEntries()
+static void ListEntries()
 {
     int count, count2;
     int ypos;
@@ -583,7 +593,7 @@ void ListEntries()
 
 /* Find how much smaller something is: returns a percentage ****************/
 
-int FindPerc(int before, int after)
+static int FindPerc(int before, int after)
 {
     double perc;
 
@@ -594,7 +604,7 @@ int FindPerc(int before, int after)
 
 /* Warning not to change IWAD **********************************************/
 
-int IwadWarning()
+static int IwadWarning()
 {
     char tempchar;
     printf("Are you sure you want to change the main IWAD?");

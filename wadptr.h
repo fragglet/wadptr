@@ -57,24 +57,6 @@ extern int allowpack;      /* level packing on */
 extern int allowsquash;    /* picture squashing on */
 extern int allowmerge;     /* lump merging on */
 
-/******************************* PROTOTYPES ********************************/
-
-/** MAIN.C **/
-
-int ParseCommandLine();
-int OpenWad();
-void DoAction();
-void eachwad(char *filespec);
-
-void Help();
-void Compress();
-void Uncompress();
-void ListEntries();
-
-int IwadWarning();
-
-int FindPerc(int before, int after);
-
 extern const char *pwad_name;
 extern const char *iwad_name;
 
