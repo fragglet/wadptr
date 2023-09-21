@@ -40,6 +40,6 @@
 
 /***************************** Prototypes *********************************/
 
-void rebuild(char *newname);
+void Rebuild(char *newname);
 
 #endif

@@ -30,14 +30,14 @@ extern char *p_sidedefres; /* the new sidedef resource */
 
 /***************************** Prototypes *********************************/
 
-void p_pack(char *levelname);
-void p_unpack(char *resname);
-int p_ispacked(char *s);
+void P_Pack(char *levelname);
+void P_Unpack(char *resname);
+int P_IsPacked(char *s);
 
-char *s_squash(char *s);
-char *s_unsquash(char *s);
-int s_is_squashed(char *s);
-int s_isgraphic(char *s);
+char *S_Squash(char *s);
+char *S_Unsquash(char *s);
+int S_IsSquashed(char *s);
+int S_IsGraphic(char *s);
 
 /******************************* Structs **********************************/
 
@@ -83,9 +83,9 @@ typedef struct {
 #define LDEF_SDEF2 12
 #define LDEF_SIZE  14
 
-linedef_t *readlinedefs(int lumpnum, FILE *fp);
-int writelinedefs(linedef_t *lines, int bytes, FILE *fp);
-sidedef_t *readsidedefs(int lumpnum, FILE *fp);
-int writesidedefs(sidedef_t *sides, int bytes, FILE *fp);
+linedef_t *ReadLinedefs(int lumpnum, FILE *fp);
+int WriteLinedefs(linedef_t *lines, int bytes, FILE *fp);
+sidedef_t *ReadSidedefs(int lumpnum, FILE *fp);
+int WriteSidedefs(sidedef_t *sides, int bytes, FILE *fp);
 
 #endif

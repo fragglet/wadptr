@@ -37,27 +37,25 @@ typedef struct {
 
 /*************************** Prototypes ***********************************/
 
-int readwad();
-void writewad();
-char *convert_string8(entry_t entry);
-entry_t findinfo(char *entrytofind);
-void addentry(entry_t entry);
-int entry_exist(char *entrytofind);
-void *cachelump(int entrynum);
-void copywad(char *newfile);
+int ReadWad();
+void WriteWad();
+char *ConvertString8(entry_t entry);
+entry_t FindInfo(char *entrytofind);
+void AddEntry(entry_t entry);
+int EntryExists(char *entrytofind);
+void *CacheLump(int entrynum);
+void CopyWad(char *newfile);
 
-int readwadheader(FILE *fp);
-int writewadheader(FILE *fp);
-int readwaddir(FILE *fp);
-int readwadentry(FILE *fp, entry_t *entry);
-int writewaddir(FILE *fp);
-int writewadentry(FILE *fp, entry_t *entry);
+int ReadWadHeader(FILE *fp);
+int WriteWadHeader(FILE *fp);
+int ReadWadDirectory(FILE *fp);
+int ReadWadEntry(FILE *fp, entry_t *entry);
+int WriteWadDirectory(FILE *fp);
+int WriteWadEntry(FILE *fp, entry_t *entry);
 
-int islevel(int entry);
-int isnum(char n);
-int islevelname(char *s);
-int islevelentry(char *s);
-int findlevelsize(char *s);
+int IsLevel(int entry);
+int IsLevelEntry(char *s);
+int FindLevelSize(char *s);
 
 /*************************** Globals *************************************/
 

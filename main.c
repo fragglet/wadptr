@@ -37,7 +37,7 @@ char **g_argv;
 int filelist_index;
 static char *wadname;
 static char outputwad[256] = "";
-int action;          /* list, compress, uncompress */
+int action;          /* list, Compress, Uncompress */
 int allowpack = 1;   /* level packing on */
 int allowsquash = 1; /* picture squashing on */
 int allowmerge = 1;  /* lump merging on */
@@ -63,19 +63,19 @@ int main(int argc, char *argv[])
            "http://www.soulsphere.org/projects/wadptr/\n");
 
     /* set error signals */
-    signal(SIGINT, sig_func);
-    signal(SIGSEGV, sig_func);
-    signal(SIGFPE, sig_func);
+    signal(SIGINT, SignalFunction);
+    signal(SIGSEGV, SignalFunction);
+    signal(SIGFPE, SignalFunction);
 
-    parsecmdline(); /* Check cmd-lines */
+    ParseCommandLine(); /* Check cmd-lines */
 
     for (index = filelist_index; index < g_argc; ++index)
     {
         wadname = g_argv[index];
-        if (!(openwad(wadname)))
+        if (!(OpenWad(wadname)))
         {
-            /* no problem with wad.. do whatever (compress, uncompress etc) */
-            doaction();
+            /* no problem with wad.. do whatever (Compress, Uncompress etc) */
+            DoAction();
         }
         fclose(wadfp);
     }
@@ -87,27 +87,27 @@ int main(int argc, char *argv[])
 
 /* Parse cmd-line options **************************************************/
 
-int parsecmdline()
+int ParseCommandLine()
 {
     int count;
 
-    action = HELP; /* default to help if not told what to do */
+    action = HELP; /* default to Help if not told what to do */
 
     count = 1;
     filelist_index = -1;
     while (count < g_argc)
     {
-        if ((!strcmp(g_argv[count], "-help")) || (!strcmp(g_argv[count], "-h")))
+        if ((!strcmp(g_argv[count], "-Help")) || (!strcmp(g_argv[count], "-h")))
             action = HELP;
 
         if ((!strcmp(g_argv[count], "-list")) || (!strcmp(g_argv[count], "-l")))
             action = LIST;
 
-        if ((!strcmp(g_argv[count], "-compress")) ||
+        if ((!strcmp(g_argv[count], "-Compress")) ||
             (!strcmp(g_argv[count], "-c")))
             action = COMPRESS;
 
-        if ((!strcmp(g_argv[count], "-uncompress")) ||
+        if ((!strcmp(g_argv[count], "-Uncompress")) ||
             (!strcmp(g_argv[count], "-u")))
             action = UNCOMPRESS;
 
@@ -136,24 +136,24 @@ int parsecmdline()
     {
         if (action == HELP)
         {
-            doaction();
+            DoAction();
             exit(0);
         }
         else
-            errorexit("No input WAD file specified.\n");
+            ErrorExit("No input WAD file specified.\n");
     }
 
     if (action == UNCOMPRESS && allowmerge == 0)
-        errorexit("Sorry, uncompressing will undo any lump merging on WADs.\n"
+        ErrorExit("Sorry, uncompressing will undo any lump merging on WADs.\n"
                   "The -nomerge command is not available with the "
-                  "-u(uncompress) option.\n");
+                  "-u(Uncompress) option.\n");
 
     return 0;
 }
 
 /* Open the original WAD ***************************************************/
 
-int openwad(char *filename)
+int OpenWad(char *filename)
 {
     int a;
 
@@ -171,7 +171,7 @@ int openwad(char *filename)
     }
 
     printf("\nSearching WAD: %s\n", filename);
-    a = readwad();
+    a = ReadWad();
     if (a)
         return 1;
 
@@ -181,33 +181,33 @@ int openwad(char *filename)
 
 /* Does an action based on command line ************************************/
 
-void doaction()
+void DoAction()
 {
     switch (action)
     {
     case HELP:
-        help();
+        Help();
         break;
 
     case LIST:
-        list_entries();
+        ListEntries();
         break;
 
     case UNCOMPRESS:
-        uncompress();
+        Uncompress();
         break;
 
     case COMPRESS:
-        compress();
+        Compress();
         break;
     }
 }
 
 /************************ Command line functions ***************************/
 
-/* Display help ************************************************************/
+/* Display Help ************************************************************/
 
-void help()
+void Help()
 {
     printf("\n"
            "Usage:  WADPTR inputwad [outputwad] options\n"
@@ -225,7 +225,7 @@ void help()
 
 /* Compress a WAD **********************************************************/
 
-void compress()
+void Compress()
 {
     int count, findshrink;
     long wadsize; /* wad size(to find % smaller) */
@@ -234,24 +234,24 @@ void compress()
     char *temp, resname[10], a[50];
 
     if (wad == IWAD)
-        if (!iwad_warning())
+        if (!IwadWarning())
             return;
 
     wadsize = diroffset + (ENTRY_SIZE * numentries);
 
     fstream = fopen(tempwad_name, "wb+");
     if (!fstream)
-        errorexit("compress: Couldn't write a temporary file\n");
+        ErrorExit("Compress: Couldn't write a temporary file\n");
 
     memset(a, 0, 12);
     fwrite(a, 12, 1, fstream); /* temp header. */
 
     for (count = 0; count < numentries; count++)
     {
-        strcpy(resname, convert_string8(wadentry[count]));
+        strcpy(resname, ConvertString8(wadentry[count]));
         written = 0;
         /* hide individual level entries */
-        if (!islevelentry(resname))
+        if (!IsLevelEntry(resname))
         {
             printf("Adding: %s       ", resname);
             fflush(stdout);
@@ -264,16 +264,16 @@ void compress()
 
         if (allowpack)
         {
-            if (islevel(count))
+            if (IsLevel(count))
             {
                 printf("\tPacking ");
                 fflush(stdout);
-                findshrink = findlevelsize(resname);
+                findshrink = FindLevelSize(resname);
 
                 /* pack the level */
-                p_pack(resname);
+                P_Pack(resname);
 
-                findshrink = findperc(findshrink, findlevelsize(resname));
+                findshrink = FindPerc(findshrink, FindLevelSize(resname));
                 printf("(%i%%), done.\n", findshrink);
 
                 written = 2; /* silently write this lump (if any) */
@@ -282,7 +282,7 @@ void compress()
             {
                 /* write the pre-packed sidedef entry */
                 wadentry[count].offset = ftell(fstream);
-                writesidedefs((sidedef_t *) p_sidedefres,
+                WriteSidedefs((sidedef_t *) p_sidedefres,
                               wadentry[count].length, fstream);
                 free(p_sidedefres);
                 written = 1;
@@ -291,7 +291,7 @@ void compress()
             {
                 /* write the pre-packed linedef entry */
                 wadentry[count].offset = ftell(fstream);
-                writelinedefs((linedef_t *) p_linedefres,
+                WriteLinedefs((linedef_t *) p_linedefres,
                               wadentry[count].length, fstream);
                 free(p_linedefres);
                 written = 1;
@@ -300,18 +300,18 @@ void compress()
 
         if (allowsquash)
         {
-            if (s_isgraphic(resname))
+            if (S_IsGraphic(resname))
             {
                 printf("\tSquashing ");
                 fflush(stdout);
                 findshrink = wadentry[count].length;
 
-                temp = s_squash(resname);
+                temp = S_Squash(resname);
                 wadentry[count].offset = ftell(fstream); /*update dir */
                 fwrite(temp, wadentry[count].length, 1, fstream);
 
                 free(temp);
-                findshrink = findperc(findshrink, wadentry[count].length);
+                findshrink = FindPerc(findshrink, wadentry[count].length);
                 printf("(%i%%), done.\n", findshrink);
                 written = 1;
             }
@@ -324,7 +324,7 @@ void compress()
                 printf("\tStoring ");
                 fflush(stdout);
             }
-            temp = cachelump(count);
+            temp = CacheLump(count);
             wadentry[count].offset = ftell(fstream); /*update dir */
             fwrite(temp, wadentry[count].length, 1, fstream);
             free(temp);
@@ -335,8 +335,8 @@ void compress()
 
     /* write new directory */
     diroffset = ftell(fstream);
-    writewaddir(fstream);
-    writewadheader(fstream);
+    WriteWadDirectory(fstream);
+    WriteWadHeader(fstream);
 
     fclose(fstream);
     fclose(wadfp);
@@ -349,14 +349,14 @@ void compress()
 
         if (outputwad[0] == 0)
         {
-            /* remove identical lumps: rebuild them back to
+            /* remove identical lumps: Rebuild them back to
                the original filename */
             remove(wadname);
-            rebuild(wadname);
+            Rebuild(wadname);
         }
         else
         {
-            rebuild(outputwad);
+            Rebuild(outputwad);
         }
         printf("done.\n");
         fclose(wadfp);
@@ -377,25 +377,25 @@ void compress()
 
     wadfp = fopen(wadname, "rb+"); /* so there is something to close */
 
-    findshrink = findperc(wadsize, diroffset + (numentries * ENTRY_SIZE));
+    findshrink = FindPerc(wadsize, diroffset + (numentries * ENTRY_SIZE));
 
     printf("*** %s is %i%% smaller ***\n", wadname, findshrink);
 }
 
 /* Uncompress a WAD ********************************************************/
 
-void uncompress()
+void Uncompress()
 {
     char tempstr[50];
     FILE *fstream;
     char *tempres;
     char resname[10];
-    int written; /* see compress() */
+    int written; /* see Compress() */
     long fileloc;
     int count;
 
     if (wad == IWAD)
-        if (!iwad_warning())
+        if (!IwadWarning())
             return;
 
     fstream = fopen(tempwad_name, "wb+");
@@ -404,11 +404,11 @@ void uncompress()
 
     for (count = 0; count < numentries; count++)
     {
-        strcpy(resname, convert_string8(wadentry[count]));
+        strcpy(resname, ConvertString8(wadentry[count]));
 
         written = 0;
 
-        if (islevelentry(resname))
+        if (IsLevelEntry(resname))
             written = 2; /* silently write (level entry) */
         else
         {
@@ -418,18 +418,18 @@ void uncompress()
 
         if (allowpack)
         {
-            if (islevel(count))
+            if (IsLevel(count))
             {
                 printf("\tUnpacking");
                 fflush(stdout);
-                p_unpack(resname);
+                P_Unpack(resname);
                 printf(", done.\n");
                 written = 2; /* silently write this lump */
             }
             if (!strcmp(resname, "SIDEDEFS"))
             {
                 wadentry[count].offset = ftell(fstream);
-                writesidedefs((sidedef_t *) p_sidedefres,
+                WriteSidedefs((sidedef_t *) p_sidedefres,
                               wadentry[count].length, fstream);
                 free(p_sidedefres);
                 written = 1;
@@ -437,18 +437,18 @@ void uncompress()
             if (!strcmp(resname, "LINEDEFS"))
             {
                 wadentry[count].offset = ftell(fstream);
-                writelinedefs((linedef_t *) p_linedefres,
+                WriteLinedefs((linedef_t *) p_linedefres,
                               wadentry[count].length, fstream);
                 free(p_linedefres);
                 written = 1;
             }
         }
         if (allowsquash)
-            if (s_isgraphic(resname))
+            if (S_IsGraphic(resname))
             {
                 printf("\tUnsquashing");
                 fflush(stdout);
-                tempres = s_unsquash(resname);
+                tempres = S_Unsquash(resname);
                 wadentry[count].offset = ftell(fstream);
                 fwrite(tempres, wadentry[count].length, 1, fstream);
                 free(tempres);
@@ -462,7 +462,7 @@ void uncompress()
                 printf("\tStoring %s", resname);
                 fflush(stdout);
             }
-            tempres = cachelump(count);
+            tempres = CacheLump(count);
             fileloc = ftell(fstream);
             fwrite(tempres, wadentry[count].length, 1, fstream);
             free(tempres);
@@ -473,8 +473,8 @@ void uncompress()
     }
     /* update the directory location */
     diroffset = ftell(fstream);
-    writewaddir(fstream);
-    writewadheader(fstream);
+    WriteWadDirectory(fstream);
+    WriteWadHeader(fstream);
 
     fclose(fstream);
     fclose(wadfp);
@@ -494,7 +494,7 @@ void uncompress()
 
 /* List WAD entries ********************************************************/
 
-void list_entries()
+void ListEntries()
 {
     int count, count2;
     int ypos;
@@ -505,8 +505,8 @@ void list_entries()
 
     for (count = 0; count < numentries; count++)
     {
-        strcpy(resname, convert_string8(wadentry[count]));
-        if (islevelentry(resname))
+        strcpy(resname, ConvertString8(wadentry[count]));
+        if (IsLevelEntry(resname))
             continue;
         ypos = wherey();
 
@@ -514,10 +514,10 @@ void list_entries()
         printf(" %i  \t", count + 1);
 
         /* size */
-        if (islevel(count))
+        if (IsLevel(count))
         {
             /* the whole level not just the id lump */
-            printf("%i\t", findlevelsize(resname));
+            printf("%i\t", FindLevelSize(resname));
         }
         else
         {
@@ -529,20 +529,20 @@ void list_entries()
         printf("0x%08lx     \t", wadentry[count].offset);
 
         /* compression method */
-        if (islevel(count))
+        if (IsLevel(count))
         {
             /* this is a level */
-            if (p_ispacked(resname))
+            if (P_IsPacked(resname))
                 printf("Packed      ");
             else
                 printf("Unpacked    ");
         }
         else
         {
-            if (s_isgraphic(resname))
+            if (S_IsGraphic(resname))
             {
                 /* this is a graphic */
-                if (s_is_squashed(resname))
+                if (S_IsSquashed(resname))
                     printf("Squashed    ");
                 else
                     printf("Unsquashed  ");
@@ -569,7 +569,7 @@ void list_entries()
             if ((wadentry[count2].offset == wadentry[count].offset) &&
                 (wadentry[count2].length == wadentry[count].length))
             {
-                printf("%s\n", convert_string8(wadentry[count2]));
+                printf("%s\n", ConvertString8(wadentry[count2]));
                 break;
             }
         }
@@ -583,7 +583,7 @@ void list_entries()
 
 /* Find how much smaller something is: returns a percentage ****************/
 
-int findperc(int before, int after)
+int FindPerc(int before, int after)
 {
     double perc;
 
@@ -594,7 +594,7 @@ int findperc(int before, int after)
 
 /* Warning not to change IWAD **********************************************/
 
-int iwad_warning()
+int IwadWarning()
 {
     char tempchar;
     printf("Are you sure you want to change the main IWAD?");

@@ -61,21 +61,19 @@ extern int allowmerge;     /* lump merging on */
 
 /** MAIN.C **/
 
-int parsecmdline();
-int openwad();
-void doaction();
+int ParseCommandLine();
+int OpenWad();
+void DoAction();
 void eachwad(char *filespec);
 
-void help();
-void compress();
-void uncompress();
-void list_entries();
+void Help();
+void Compress();
+void Uncompress();
+void ListEntries();
 
-char *find_filename(char *s);
-int filecmp(char *filename, char *templaten);
-int iwad_warning();
+int IwadWarning();
 
-int findperc(int before, int after);
+int FindPerc(int before, int after);
 
 extern const char *pwad_name;
 extern const char *iwad_name;

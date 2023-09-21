@@ -28,7 +28,7 @@
 
 /***************************** Prototypes *********************************/
 
-int suggest();
+int Suggest();
 
 /***************************** Globals ************************************/
 
@@ -36,7 +36,7 @@ short sameas[4000];
 
 /* Suggest ****************************************************************/
 
-int suggest()
+int Suggest()
 {
     int count, count2, linkcnt = 0;
     short *links; /* possible links */
@@ -46,7 +46,7 @@ int suggest()
     int maxlinks = MAXLINKS;
 
     if ((links = (short *) malloc(2 * maxlinks * sizeof(short))) == NULL)
-        errorexit("suggest: couldn't alloc memory for links!\n");
+        ErrorExit("Suggest: couldn't alloc memory for links!\n");
 
     px = wherex();
     py = wherey(); /* for % count */
@@ -66,8 +66,8 @@ int suggest()
                     maxlinks += MAXLINKS;
                     if ((links = (short *) realloc(
                              links, 2 * maxlinks * sizeof(short))) == NULL)
-                        errorexit(
-                            "suggest: couldn't realloc memory for links!\n");
+                        ErrorExit(
+                            "Suggest: couldn't realloc memory for links!\n");
                 }
                 links[2 * linkcnt] = count;
                 links[2 * linkcnt + 1] = count2;
@@ -87,8 +87,8 @@ int suggest()
             continue;
         }
 
-        check1 = cachelump(links[2 * count]);
-        check2 = cachelump(links[2 * count + 1]);
+        check1 = CacheLump(links[2 * count]);
+        check2 = CacheLump(links[2 * count + 1]);
 
         if (!memcmp(check1, check2, wadentry[links[2 * count]].length))
         {
@@ -117,7 +117,7 @@ int suggest()
 
 /* Rebuild the WAD, making it smaller in the process ***********************/
 
-void rebuild(char *newname)
+void Rebuild(char *newname)
 {
     int count;
     char *tempchar;
@@ -125,13 +125,13 @@ void rebuild(char *newname)
     long along = 0, filepos;
     int nextperc = 50, px, py;
 
-    /* first run suggest mode to find how to make it smaller */
-    suggest();
+    /* first run Suggest mode to find how to make it smaller */
+    Suggest();
 
     newwad = fopen(newname, "wb+"); /* open the new wad */
 
     if (!newwad)
-        errorexit("rebuild: Couldn't open to %s\n", newname);
+        ErrorExit("Rebuild: Couldn't open to %s\n", newname);
 
     fwrite(iwad_name, 1, 4, newwad);
     fwrite(&along, 4, 1, newwad);
@@ -150,7 +150,7 @@ void rebuild(char *newname)
         else
         {
             filepos = ftell(newwad);
-            tempchar = cachelump(count);
+            tempchar = CacheLump(count);
             fwrite(tempchar, 1, wadentry[count].length, newwad);
             free(tempchar);
             wadentry[count].offset = filepos;
@@ -166,8 +166,8 @@ void rebuild(char *newname)
     }
     /* write the wad directory */
     diroffset = ftell(newwad);
-    writewaddir(newwad);
-    writewadheader(newwad);
+    WriteWadDirectory(newwad);
+    WriteWadHeader(newwad);
     fclose(newwad);
 
     gotoxy(px, py);

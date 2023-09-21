@@ -38,7 +38,7 @@ wadtype wad;
 
 /* Read the WAD ************************************************************/
 
-int readwadheader(FILE *fp)
+int ReadWadHeader(FILE *fp)
 {
     unsigned char buff[5];
     int wadType;
@@ -65,7 +65,7 @@ int readwadheader(FILE *fp)
     return wadType;
 }
 
-int readwadentry(FILE *fp, entry_t *entry)
+int ReadWadEntry(FILE *fp, entry_t *entry)
 {
     unsigned char buff[ENTRY_SIZE];
 
@@ -78,21 +78,21 @@ int readwadentry(FILE *fp, entry_t *entry)
     return 0;
 }
 
-int readwaddir(FILE *fp)
+int ReadWadDirectory(FILE *fp)
 {
     long i;
 
     for (i = 0; i < numentries; i++)
     {
-        if (readwadentry(fp, wadentry + i) != 0)
+        if (ReadWadEntry(fp, wadentry + i) != 0)
             return -1;
     }
     return 0;
 }
 
-int readwad()
+int ReadWad()
 {
-    if ((wad = readwadheader(wadfp)) == NONWAD)
+    if ((wad = ReadWadHeader(wadfp)) == NONWAD)
         return true;
 
     fseek(wadfp, diroffset, SEEK_SET);
@@ -102,14 +102,14 @@ int readwad()
         printf("Cannot handle > %i entry wads!\n", MAXENTRIES);
         return true;
     }
-    readwaddir(wadfp);
+    ReadWadDirectory(wadfp);
 
     return false;
 }
 
 /* Write the WAD header and directory *************************************/
 
-int writewadheader(FILE *fp)
+int WriteWadHeader(FILE *fp)
 {
     unsigned char buff[5];
 
@@ -127,7 +127,7 @@ int writewadheader(FILE *fp)
     return 0;
 }
 
-int writewadentry(FILE *fp, entry_t *entry)
+int WriteWadEntry(FILE *fp, entry_t *entry)
 {
     unsigned char buff[ENTRY_SIZE];
 
@@ -138,30 +138,30 @@ int writewadentry(FILE *fp, entry_t *entry)
     return (fwrite(buff, 1, ENTRY_SIZE, fp) == ENTRY_SIZE) ? 0 : -1;
 }
 
-int writewaddir(FILE *fp)
+int WriteWadDirectory(FILE *fp)
 {
     long i;
 
     for (i = 0; i < numentries; i++)
     {
-        if (writewadentry(fp, wadentry + i) != 0)
+        if (WriteWadEntry(fp, wadentry + i) != 0)
             return -1;
     }
     return 0;
 }
 
-void writewad()
+void WriteWad()
 {
-    writewadheader(wadfp);
+    WriteWadHeader(wadfp);
 
     fseek(wadfp, diroffset, SEEK_SET);
 
-    writewaddir(wadfp);
+    WriteWadDirectory(wadfp);
 }
 
 /* Takes a string8 in an entry type and returns a valid string *************/
 
-char *convert_string8(entry_t entry)
+char *ConvertString8(entry_t entry)
 {
     static char temp[100][10];
     static int tempnum = 1;
@@ -178,7 +178,7 @@ char *convert_string8(entry_t entry)
 
 /* Finds if an entry exists ************************************************/
 
-int entry_exist(char *entrytofind)
+int EntryExists(char *entrytofind)
 {
     int count;
     for (count = 0; count < numentries; count++)
@@ -191,7 +191,7 @@ int entry_exist(char *entrytofind)
 
 /* Finds an entry and returns information about it *************************/
 
-entry_t findinfo(char *entrytofind)
+entry_t FindInfo(char *entrytofind)
 {
     int count;
     static entry_t entry;
@@ -208,28 +208,28 @@ entry_t findinfo(char *entrytofind)
 
 /* Adds an entry to the WAD ************************************************/
 
-void addentry(entry_t entry)
+void AddEntry(entry_t entry)
 {
     char buffer[10];
 
-    strcpy(buffer, convert_string8(entry));
-    if (entry_exist(buffer) != -1)
+    strcpy(buffer, ConvertString8(entry));
+    if (EntryExists(buffer) != -1)
         printf("\tWarning! Resource %s already exists!\n",
-               convert_string8(entry));
+               ConvertString8(entry));
     memcpy(&wadentry[numentries], &entry, sizeof(entry_t));
     numentries++;
-    writewad();
+    WriteWad();
 }
 
 /* Load a lump to memory **************************************************/
 
-void *cachelump(int entrynum)
+void *CacheLump(int entrynum)
 {
     char *working;
 
     working = malloc(wadentry[entrynum].length);
     if (!working)
-        errorexit("cachelump: Couldn't malloc %i bytes\n",
+        ErrorExit("CacheLump: Couldn't malloc %i bytes\n",
                   wadentry[entrynum].length);
 
     fseek(wadfp, wadentry[entrynum].offset, SEEK_SET);
@@ -240,14 +240,14 @@ void *cachelump(int entrynum)
 
 /* Copy a WAD ( make a backup ) *******************************************/
 
-void copywad(char *newfile)
+void CopyWad(char *newfile)
 {
     FILE *newwad;
     char a;
 
     newwad = fopen(newfile, "wb");
     if (!newwad)
-        errorexit("copywad: Couldn't copy a wad (filename:%s)\n", newfile);
+        ErrorExit("CopyWad: Couldn't copy a wad (filename:%s)\n", newfile);
 
     rewind(wadfp);
     while (!feof(wadfp))
@@ -260,7 +260,7 @@ void copywad(char *newfile)
 
 /* Various WAD-related is??? functions ************************************/
 
-int islevel(int entry)
+int IsLevel(int entry)
 {
     if (entry >= numentries)
         return false;
@@ -270,7 +270,7 @@ int islevel(int entry)
     return !strncmp(wadentry[entry + 1].name, "THINGS", 8);
 }
 
-int islevelentry(char *s)
+int IsLevelEntry(char *s)
 {
     if (!strcmp(s, "LINEDEFS"))
         return true;
@@ -300,11 +300,11 @@ int islevelentry(char *s)
 
 /* Find the total size of a level ******************************************/
 
-int findlevelsize(char *s)
+int FindLevelSize(char *s)
 {
     int entrynum, count, sizecount = 0;
 
-    entrynum = entry_exist(s);
+    entrynum = EntryExists(s);
 
     for (count = entrynum + 1; count < entrynum + 11; count++)
         sizecount += wadentry[count].length;

@@ -39,15 +39,13 @@ enum { false, true };
 
 /****************************** PROTOTYPES ********************************/
 
-void p_findinfo();
-void p_dopack();
-void p_update();
-void p_buildlinedefs(linedef_t *linedefs);
-void p_rebuild();
+void P_FindInfo();
+void P_DoPack();
+void P_BuildLinedefs(linedef_t *linedefs);
+void P_Rebuild();
 
-int s_findgraf(unsigned char *s);
-int s_find_colsize(unsigned char *col1);
-int s_comp_columns(unsigned char *col1, unsigned char *col2);
+int S_FindRedundantColumns(unsigned char *s);
+int S_FindColumnSize(unsigned char *col1);
 
 /******************************* GLOBALS **********************************/
 
@@ -75,30 +73,30 @@ long s_colsize[400];      /* the length(in bytes) of each column */
 
 /* Pack a level ***********************************************************/
 
-/* Call p_pack() with the level name eg. p_pack("MAP01");. p_pack will then */
+/* Call P_Pack() with the level name eg. p_pack("MAP01");. p_pack will then */
 /* pack that level. The new sidedef and linedef lumps are pointed to by */
 /* p_sidedefres and p_linedefres. These must be free()d by other functions */
-/* when they are no longer needed, as p_pack does not do this. */
+/* when they are no longer needed, as P_Pack does not do this. */
 
-void p_pack(char *levelname)
+void P_Pack(char *levelname)
 {
     sidedef_t *sidedefs;
     linedef_t *linedefs;
 
     strcpy(p_working, levelname);
 
-    p_findinfo();
+    P_FindInfo();
 
-    p_rebuild(); /* remove unused sidedefs */
+    P_Rebuild(); /* remove unused sidedefs */
 
     sidedefs = p_newsidedef;
     linedefs = p_newlinedef;
 
-    p_findinfo(); /* find what's needed */
+    P_FindInfo(); /* find what's needed */
 
-    p_dopack(sidedefs); /* pack the sidedefs in memory */
+    P_DoPack(sidedefs); /* pack the sidedefs in memory */
 
-    p_buildlinedefs(linedefs); /* update linedefs + save to *??res */
+    P_BuildLinedefs(linedefs); /* update linedefs + save to *??res */
 
     /* saving of the wad directory is left to external sources */
 
@@ -114,12 +112,12 @@ void p_pack(char *levelname)
 /* Same thing, in reverse. Saves the new sidedef and linedef lumps to */
 /* p_sidedefres and p_linedefres. */
 
-void p_unpack(char *resname)
+void P_Unpack(char *resname)
 {
     strcpy(p_working, resname);
 
-    p_findinfo();
-    p_rebuild();
+    P_FindInfo();
+    P_Rebuild();
 
     p_linedefres = (char *) p_newlinedef;
     p_sidedefres = (char *) p_newsidedef;
@@ -127,22 +125,22 @@ void p_unpack(char *resname)
 
 /* Find if a level is packed **********************************************/
 
-int p_ispacked(char *s)
+int P_IsPacked(char *s)
 {
     linedef_t *linedefs;
     int count;
 
     strcpy(p_working, s);
 
-    p_findinfo();
+    P_FindInfo();
 
-    linedefs = readlinedefs(p_linedefnum, wadfp);
+    linedefs = ReadLinedefs(p_linedefnum, wadfp);
 
     /* 10 extra sidedefs for safety */
     p_movedto = malloc(sizeof(int) * (p_num_sidedefs + 10));
 
     if (!p_movedto)
-        errorexit("p_ispacked: couldn't malloc p_movedto\n");
+        ErrorExit("P_IsPacked: couldn't malloc p_movedto\n");
 
     /* uses p_movedto to find if same sidedef has already been used
        on an earlier linedef checked */
@@ -186,7 +184,7 @@ int p_ispacked(char *s)
 
 /* Find neccesary stuff before processing *********************************/
 
-void p_findinfo()
+void P_FindInfo()
 {
     int count, n;
 
@@ -200,15 +198,15 @@ void p_findinfo()
         }
     }
     if (count == numentries)
-        errorexit("p_findinfo: Couldn't find level: %s\n", p_working);
+        ErrorExit("P_FindInfo: Couldn't find level: %s\n", p_working);
 
     n = 0;
 
     /* now find the sidedefs */
     for (count = p_levelnum + 1; count < numentries; count++)
     {
-        if (!islevelentry(convert_string8(wadentry[count])))
-            errorexit("p_findinfo: Can't find sidedef/linedef entries!\n");
+        if (!IsLevelEntry(ConvertString8(wadentry[count])))
+            ErrorExit("P_FindInfo: Can't find sidedef/linedef entries!\n");
 
         if (!strncmp(wadentry[count].name, "SIDEDEFS", 8))
         {
@@ -230,14 +228,14 @@ void p_findinfo()
 
 /* Actually pack the sidedefs *******************************************/
 
-void p_dopack(sidedef_t *sidedefs)
+void P_DoPack(sidedef_t *sidedefs)
 {
     int count, count2;
 
     p_newsidedef = malloc(wadentry[p_sidedefnum].length * 10);
     if (!p_newsidedef)
     {
-        errorexit("p_dopack: could not alloc memory for new sidedefs\n");
+        ErrorExit("P_DoPack: could not alloc memory for new sidedefs\n");
     }
 
     p_movedto = malloc(sizeof(int) * (p_num_sidedefs + 10));
@@ -282,7 +280,7 @@ void p_dopack(sidedef_t *sidedefs)
 
 /* Update the linedefs and save sidedefs *********************************/
 
-void p_buildlinedefs(linedef_t *linedefs)
+void P_BuildLinedefs(linedef_t *linedefs)
 {
     int count;
 
@@ -304,19 +302,19 @@ void p_buildlinedefs(linedef_t *linedefs)
 
 /* Rebuild the sidedefs ***************************************************/
 
-void p_rebuild()
+void P_Rebuild()
 {
     sidedef_t *sidedefs;
     linedef_t *linedefs;
     int count;
 
-    sidedefs = readsidedefs(p_sidedefnum, wadfp);
-    linedefs = readlinedefs(p_linedefnum, wadfp);
+    sidedefs = ReadSidedefs(p_sidedefnum, wadfp);
+    linedefs = ReadLinedefs(p_linedefnum, wadfp);
 
     p_newsidedef = malloc(wadentry[p_sidedefnum].length * 10);
 
     if (!p_newsidedef)
-        errorexit("p_rebuild: could not alloc memory for new sidedefs\n");
+        ErrorExit("P_Rebuild: could not alloc memory for new sidedefs\n");
 
     p_newnum = 0;
 
@@ -347,7 +345,7 @@ void p_rebuild()
 }
 
 /*
- *  compress by matching entire columns if defined (old approach), or by
+ *  Compress by matching entire columns if defined (old approach), or by
  *  matching postfixes as well if undefined (new approach, experimental)
  */
 /*#define ENTIRE_COLUMNS*/
@@ -356,26 +354,26 @@ void p_rebuild()
 
 /* Squash a graphic lump **************************************************/
 
-/* Squashes a graphic. Call with the lump name - eg. s_squash("TITLEPIC"); */
+/* Squashes a graphic. Call with the lump name - eg. S_Squash("TITLEPIC"); */
 /* returns a pointer to the new(compressed) lump. This must be free()d when */
-/* it is no longer needed, as s_squash() does not do this itself. */
+/* it is no longer needed, as S_Squash() does not do this itself. */
 
-char *s_squash(char *s)
+char *S_Squash(char *s)
 {
     unsigned char *working, *newres;
     int entrynum, count;
     unsigned char *newptr;
     long lastpt;
 
-    if (!s_isgraphic(s))
+    if (!S_IsGraphic(s))
         return NULL;
-    entrynum = entry_exist(s);
-    working = cachelump(entrynum);
+    entrynum = EntryExists(s);
+    working = CacheLump(entrynum);
     if ((long) working == -1)
-        errorexit("squash: Couldn't find %s\n", s);
+        ErrorExit("squash: Couldn't find %s\n", s);
 
     /* find posts to be killed; if none, return original lump */
-    if (!s_findgraf(working))
+    if (!S_FindRedundantColumns(working))
         return (char *) working;
 
     newres = malloc(100000);
@@ -408,7 +406,7 @@ char *s_squash(char *s)
             /* identical column already in: use that one */
             memcpy(newptr + 4 * count, newptr + 4 * s_equalcolumn[count], 4);
 #else
-            /* postfix compression, see s_findgraf() */
+            /* postfix compression, see S_FindRedundantColumns() */
             long identOff;
 
             identOff = READ_LONG(newptr + 4 * s_equalcolumn[count]);
@@ -434,9 +432,9 @@ char *s_squash(char *s)
 
 /* Unsquash a picture ******************************************************/
 
-/* Exactly the same format as s_squash(). See there for more details. */
+/* Exactly the same format as S_Squash(). See there for more details. */
 
-char *s_unsquash(char *s)
+char *S_Unsquash(char *s)
 {
     unsigned char *working, *newres;
     int entrynum, count;
@@ -444,12 +442,12 @@ char *s_unsquash(char *s)
     long lastpt;
     unsigned char *newptr;
 
-    if (!s_isgraphic(s))
+    if (!S_IsGraphic(s))
         return NULL;
-    entrynum = entry_exist(s);
-    working = cachelump(entrynum);
+    entrynum = EntryExists(s);
+    working = CacheLump(entrynum);
     if ((long) working == -1)
-        errorexit("unsquash: Couldn't find %s\n", s);
+        ErrorExit("unsquash: Couldn't find %s\n", s);
 
     s_width = READ_SHORT(working);
     s_height = READ_SHORT(working + 2);
@@ -460,7 +458,7 @@ char *s_unsquash(char *s)
     /* find column lengths */
     for (count = 0; count < s_width; count++)
         s_colsize[count] =
-            s_find_colsize(working + READ_LONG(s_columns + 4 * count));
+            S_FindColumnSize(working + READ_LONG(s_columns + 4 * count));
 
     newres = malloc(100000);
 
@@ -492,7 +490,7 @@ char *s_unsquash(char *s)
 
 /* Find the redundant columns **********************************************/
 
-int s_findgraf(unsigned char *x)
+int S_FindRedundantColumns(unsigned char *x)
 {
     int count, count2;
     int num_killed = 0;
@@ -513,7 +511,7 @@ int s_findgraf(unsigned char *x)
 
         /* find the column size */
         tmpcol = READ_LONG(s_columns + 4 * count);
-        s_colsize[count] = s_find_colsize((unsigned char *) x + tmpcol);
+        s_colsize[count] = S_FindColumnSize((unsigned char *) x + tmpcol);
 
         /* check all previous columns */
         for (count2 = 0; count2 < count; count2++)
@@ -558,7 +556,7 @@ int s_findgraf(unsigned char *x)
 
 /* Find the size of a column ***********************************************/
 
-int s_find_colsize(unsigned char *col1)
+int S_FindColumnSize(unsigned char *col1)
 {
     int count = 0;
 
@@ -576,16 +574,16 @@ int s_find_colsize(unsigned char *col1)
 
 /* Find if a graphic is squashed *******************************************/
 
-int s_is_squashed(char *s)
+int S_IsSquashed(char *s)
 {
     int entrynum;
     char *pic;
     int count, count2;
 
-    entrynum = entry_exist(s);
+    entrynum = EntryExists(s);
     if (entrynum == -1)
-        errorexit("is_squashed: %s does not exist!\n", s);
-    pic = cachelump(entrynum); /* cache the lump */
+        ErrorExit("is_squashed: %s does not exist!\n", s);
+    pic = CacheLump(entrynum); /* cache the lump */
 
     s_width = READ_SHORT(pic);
     s_height = READ_SHORT(pic + 2);
@@ -618,7 +616,7 @@ int s_is_squashed(char *s)
 
 /* Is this a graphic ? *****************************************************/
 
-int s_isgraphic(char *s)
+int S_IsGraphic(char *s)
 {
     unsigned char *graphic;
     int entrynum, count;
@@ -627,7 +625,7 @@ int s_isgraphic(char *s)
 
     if (!strcmp(s, "ENDOOM"))
         return false;
-    if (islevelentry(s))
+    if (IsLevelEntry(s))
         return false;
     if (s[0] == 'D' && ((s[1] == '_') || (s[1] == 'S')))
     {
@@ -635,15 +633,15 @@ int s_isgraphic(char *s)
         return false;
     }
 
-    entrynum = entry_exist(s);
+    entrynum = EntryExists(s);
     if (entrynum == -1)
-        errorexit("isgraphic: %s does not exist!\n", s);
+        ErrorExit("isgraphic: %s does not exist!\n", s);
     if (wadentry[entrynum].length <= 0)
     {
         /* don't read data from 0 size lumps */
         return false;
     }
-    graphic = cachelump(entrynum);
+    graphic = CacheLump(entrynum);
 
     width = READ_SHORT(graphic);
     height = READ_SHORT(graphic + 2);
@@ -688,7 +686,7 @@ int s_isgraphic(char *s)
 static const int convbuffsize = 0x8000;
 static unsigned char convbuffer[0x8000];
 
-linedef_t *readlinedefs(int lumpnum, FILE *fp)
+linedef_t *ReadLinedefs(int lumpnum, FILE *fp)
 {
     linedef_t *lines;
     int i, numlines, validbytes;
@@ -727,7 +725,7 @@ linedef_t *readlinedefs(int lumpnum, FILE *fp)
     return lines;
 }
 
-int writelinedefs(linedef_t *lines, int bytes, FILE *fp)
+int WriteLinedefs(linedef_t *lines, int bytes, FILE *fp)
 {
     int i;
     unsigned char *cptr;
@@ -757,7 +755,7 @@ int writelinedefs(linedef_t *lines, int bytes, FILE *fp)
     return 0;
 }
 
-sidedef_t *readsidedefs(int lumpnum, FILE *fp)
+sidedef_t *ReadSidedefs(int lumpnum, FILE *fp)
 {
     sidedef_t *sides;
     int i, numsides, validbytes;
@@ -797,7 +795,7 @@ sidedef_t *readsidedefs(int lumpnum, FILE *fp)
     return sides;
 }
 
-int writesidedefs(sidedef_t *sides, int bytes, FILE *fp)
+int WriteSidedefs(sidedef_t *sides, int bytes, FILE *fp)
 {
     int i;
     unsigned char *cptr;

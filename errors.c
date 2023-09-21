@@ -27,7 +27,7 @@
 
 /* Display an error (Last remnant of the DMWAD heritage) ******************/
 
-void errorexit(char *s, ...)
+void ErrorExit(char *s, ...)
 {
     va_list args;
     va_start(args, s);
@@ -39,18 +39,18 @@ void errorexit(char *s, ...)
 
 /* Signal handling stuff **************************************************/
 
-void sig_func(int signalnum)
+void SignalFunction(int signalnum)
 {
     printf("\n\n");
     switch (signalnum)
     {
     default:
-        errorexit("Bizarre signal error?\n");
+        ErrorExit("Bizarre signal error?\n");
     case SIGINT:
-        errorexit("User Interrupted\n");
+        ErrorExit("User Interrupted\n");
     case SIGFPE:
-        errorexit("Floating point exception\n");
+        ErrorExit("Floating point exception\n");
     case SIGSEGV:
-        errorexit("Segment violation error(memory fault)\n");
+        ErrorExit("Segment violation error(memory fault)\n");
     }
 }

@@ -32,7 +32,7 @@
 
 /***************************** Prototypes *********************************/
 
-void errorexit(char *s, ...);
-void sig_func(int signalnum);
+void ErrorExit(char *s, ...);
+void SignalFunction(int signalnum);
 
 #endif
