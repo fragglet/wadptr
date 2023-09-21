@@ -55,7 +55,7 @@ static int p_sidedefnum; /* sidedef wad entry number */
 static int p_linedefnum; /* linedef wad entry number */
 static int p_num_linedefs = 0,
            p_num_sidedefs = 0; /* number of sd/lds do not get confused */
-static char p_working[50];     /* the name of the level resource eg. "MAP01" */
+static const char *p_working;     /* the name of the level resource eg. "MAP01" */
 
 static sidedef_t *p_newsidedef; /* the new sidedefs */
 static linedef_t *p_newlinedef; /* the new linedefs */
@@ -84,7 +84,7 @@ void P_Pack(char *levelname)
     sidedef_t *sidedefs;
     linedef_t *linedefs;
 
-    strcpy(p_working, levelname);
+    p_working = levelname;
 
     P_FindInfo();
 
@@ -115,7 +115,7 @@ void P_Pack(char *levelname)
 
 void P_Unpack(char *resname)
 {
-    strcpy(p_working, resname);
+    p_working = resname;
 
     P_FindInfo();
     P_Rebuild();
@@ -131,7 +131,7 @@ bool P_IsPacked(char *s)
     linedef_t *linedefs;
     int count;
 
-    strcpy(p_working, s);
+    p_working = s;
 
     P_FindInfo();
 
