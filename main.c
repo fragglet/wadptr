@@ -66,12 +66,6 @@ int main(int argc, char *argv[])
     g_argc = argc; /* Set global cmd-line list */
     g_argv = argv;
 
-    printf("\n" /* Display startup message */
-           "WADPTR - WAD Compressor  Version " VERSION "\n"
-           "Copyright (c)1997-2011 Simon Howard.\n"
-           "Enhancements/Portability by Andreas Dehmel\n"
-           "http://www.soulsphere.org/projects/wadptr/\n");
-
     /* set error signals */
     signal(SIGINT, SignalFunction);
     signal(SIGSEGV, SignalFunction);
@@ -219,6 +213,12 @@ static void DoAction()
 
 static void Help()
 {
+    printf("\n"
+           "WADPTR - WAD Compressor  Version " VERSION "\n"
+           "Copyright (c)1997-2011 Simon Howard.\n"
+           "Enhancements/Portability by Andreas Dehmel\n"
+           "http://www.soulsphere.org/projects/wadptr/\n");
+
     printf("\n"
            "Usage:  WADPTR inputwad [outputwad] options\n"
            "\n"
