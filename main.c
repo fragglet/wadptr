@@ -197,7 +197,7 @@ static void Compress(void)
     int count, findshrink;
     long wadsize; /* wad size(to find % smaller) */
     FILE *fstream;
-    int written = 0; /* if 0:write 1:been written 2:write silently */
+    bool written, write_silent;
     char *temp, resname[10], a[50];
 
     if (wad == IWAD && !IwadWarning())
@@ -217,18 +217,19 @@ static void Compress(void)
     for (count = 0; count < numentries; count++)
     {
         strcpy(resname, ConvertString8(wadentry[count]));
-        written = 0;
         /* hide individual level entries */
         if (!IsLevelEntry(resname))
         {
             printf("Adding: %s       ", resname);
             fflush(stdout);
+            write_silent = false;
         }
         else
         {
-            /* silently write entry: level entry */
-            written = 2;
+            /* we only print the level header */
+            write_silent = true;
         }
+        written = false;
 
         if (allowpack)
         {
@@ -244,25 +245,25 @@ static void Compress(void)
                 findshrink = FindPerc(findshrink, FindLevelSize(resname));
                 printf(" (%i%%), done.\n", findshrink);
 
-                written = 2; /* silently write this lump (if any) */
+                write_silent = true;
             }
-            if (!strcmp(resname, "SIDEDEFS"))
+            else if (!strcmp(resname, "SIDEDEFS"))
             {
                 /* write the pre-packed sidedef entry */
                 wadentry[count].offset = ftell(fstream);
                 WriteSidedefs((sidedef_t *) p_sidedefres,
                               wadentry[count].length, fstream);
                 free(p_sidedefres);
-                written = 1;
+                written = true;
             }
-            if (!strcmp(resname, "LINEDEFS"))
+            else if (!strcmp(resname, "LINEDEFS"))
             {
                 /* write the pre-packed linedef entry */
                 wadentry[count].offset = ftell(fstream);
                 WriteLinedefs((linedef_t *) p_linedefres,
                               wadentry[count].length, fstream);
                 free(p_linedefres);
-                written = 1;
+                written = true;
             }
         }
 
@@ -279,22 +280,22 @@ static void Compress(void)
             free(temp);
             findshrink = FindPerc(findshrink, wadentry[count].length);
             printf("(%i%%), done.\n", findshrink);
-            written = 1;
+            written = true;
         }
 
-        if (written == 0)
+        if (!written && !write_silent)
         {
             printf("\tStoring ");
             fflush(stdout);
         }
-        if ((written == 0) || (written == 2))
+        if (!written)
         {
             temp = CacheLump(count);
             wadentry[count].offset = ftell(fstream); /*update dir */
             fwrite(temp, wadentry[count].length, 1, fstream);
             free(temp);
         }
-        if (written == 0) /* always 0% */
+        if (!written && !write_silent)
         {
             printf("(0%%), done.\n");
         }
@@ -354,7 +355,7 @@ static void Uncompress(void)
     FILE *fstream;
     char *tempres;
     char resname[10];
-    int written; /* see Compress() */
+    bool written, write_silent;
     long fileloc;
     int count;
 
@@ -371,14 +372,17 @@ static void Uncompress(void)
     {
         strcpy(resname, ConvertString8(wadentry[count]));
 
-        written = 0;
+        written = false;
 
         if (IsLevelEntry(resname))
-            written = 2; /* silently write (level entry) */
+        {
+            write_silent = true;
+        }
         else
         {
             printf("Adding: %s       ", resname);
             fflush(stdout);
+            write_silent = false;
         }
 
         if (allowpack)
@@ -389,7 +393,7 @@ static void Uncompress(void)
                 fflush(stdout);
                 P_Unpack(resname);
                 printf(", done.\n");
-                written = 2; /* silently write this lump */
+                write_silent = true;
             }
             if (!strcmp(resname, "SIDEDEFS"))
             {
@@ -397,7 +401,7 @@ static void Uncompress(void)
                 WriteSidedefs((sidedef_t *) p_sidedefres,
                               wadentry[count].length, fstream);
                 free(p_sidedefres);
-                written = 1;
+                written = true;
             }
             if (!strcmp(resname, "LINEDEFS"))
             {
@@ -405,7 +409,7 @@ static void Uncompress(void)
                 WriteLinedefs((linedef_t *) p_linedefres,
                               wadentry[count].length, fstream);
                 free(p_linedefres);
-                written = 1;
+                written = true;
             }
         }
         if (allowsquash && S_IsGraphic(resname))
@@ -417,15 +421,15 @@ static void Uncompress(void)
             fwrite(tempres, wadentry[count].length, 1, fstream);
             free(tempres);
             printf(", done\n");
-            written = 1;
+            written = true;
         }
 
-        if (written == 0)
+        if (!written && !write_silent)
         {
             printf("\tStoring %s", resname);
             fflush(stdout);
         }
-        if ((written == 0) || (written == 2))
+        if (!written)
         {
             tempres = CacheLump(count);
             fileloc = ftell(fstream);
@@ -433,7 +437,7 @@ static void Uncompress(void)
             free(tempres);
             wadentry[count].offset = fileloc;
         }
-        if (written == 0)
+        if (!written && !write_silent)
         {
             printf(", done.\n");
         }
