@@ -28,11 +28,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
-#ifdef __riscos
-#include <ROlib.h>
-#else
 #include <dirent.h>
-#endif
 
 #include "errors.h"
 #include "lumps.h"
@@ -93,15 +89,9 @@ int gotoxy(int x, int y);
 #define EXTSEP "."
 #define CURDIR "."
 #else
-#ifdef __riscos
-#define DIRSEP "."
-#define EXTSEP "/"
-#define CURDIR "@"
-#else
 #define DIRSEP "\\"
 #define EXTSEP "."
 #define CURDIR "."
-#endif
 #endif
 
 #define READ_SHORT(p) (short) ((p)[0] | ((p)[1] << 8))

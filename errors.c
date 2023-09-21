@@ -24,9 +24,6 @@
 
 #include "errors.h"
 #include <stdlib.h>
-#ifdef __riscos
-#include "ROlib.h"
-#endif
 
 /* Display an error (Last remnant of the DMWAD heritage) ******************/
 
