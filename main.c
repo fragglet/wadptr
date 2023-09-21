@@ -573,3 +573,15 @@ static bool IwadWarning(void)
     }
 }
 
+void *CheckedRealloc(void *old, size_t nbytes)
+{
+    void *result = realloc(old, nbytes);
+
+    if (result == NULL && nbytes > 0)
+    {
+        ErrorExit("Failed to allocate %ld bytes\n", nbytes);
+    }
+
+    return result;
+}
+

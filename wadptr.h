@@ -50,3 +50,10 @@ extern const char *iwad_name;
 #define WRITE_LONG(p, l)                            \
     (p)[0] = (l) &0xff, (p)[1] = ((l) >> 8) & 0xff, \
     (p)[2] = ((l) >> 16) & 0xff, (p)[3] = ((l) >> 24) & 0xff
+
+#define REALLOC_ARRAY(type, old, count) \
+    (type *) CheckedRealloc(old, sizeof(type) * (count))
+#define ALLOC_ARRAY(type, count) \
+    REALLOC_ARRAY(type, 0, count)
+
+extern void *CheckedRealloc(void *old, size_t nbytes);

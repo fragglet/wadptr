@@ -126,10 +126,7 @@ bool P_IsPacked(char *s)
     linedefs = ReadLinedefs(p_linedefnum, wadfp);
 
     /* 10 extra sidedefs for safety */
-    p_movedto = malloc(sizeof(int) * (p_num_sidedefs + 10));
-
-    if (!p_movedto)
-        ErrorExit("P_IsPacked: couldn't malloc p_movedto\n");
+    p_movedto = ALLOC_ARRAY(int, p_num_sidedefs + 10);
 
     /* uses p_movedto to find if same sidedef has already been used
        on an earlier linedef checked */
@@ -227,7 +224,7 @@ static void P_DoPack(sidedef_t *sidedefs)
         ErrorExit("P_DoPack: could not alloc memory for new sidedefs\n");
     }
 
-    p_movedto = malloc(sizeof(int) * (p_num_sidedefs + 10));
+    p_movedto = ALLOC_ARRAY(int, p_num_sidedefs + 10);
 
     p_newnum = 0;
     for (count = 0; count < p_num_sidedefs; count++)
@@ -362,7 +359,8 @@ char *S_Squash(char *s)
     if (!S_FindRedundantColumns(working))
         return (char *) working;
 
-    newres = malloc(100000);
+    /* TODO: Fix static limit. */
+    newres = ALLOC_ARRAY(unsigned char, 100000);
 
     /* find various info: size,offset etc. */
     WRITE_SHORT(newres, s_width);
@@ -446,7 +444,8 @@ char *S_Unsquash(char *s)
         s_colsize[count] =
             S_FindColumnSize(working + READ_LONG(s_columns + 4 * count));
 
-    newres = malloc(100000);
+    /* TODO: Fix static limit. */
+    newres = ALLOC_ARRAY(unsigned char, 100000);
 
     /* find various info: size,offset etc. */
     WRITE_SHORT(newres, s_width);
@@ -677,11 +676,7 @@ static linedef_t *ReadLinedefs(int lumpnum, FILE *fp)
     unsigned char *cptr;
 
     numlines = wadentry[lumpnum].length / LDEF_SIZE;
-    if ((lines = (linedef_t *) malloc(numlines * sizeof(linedef_t))) == NULL)
-    {
-        fprintf(stderr, "Unable to claim memory for linedefs\n");
-        exit(-1);
-    }
+    lines = ALLOC_ARRAY(linedef_t, numlines);
     fseek(fp, wadentry[lumpnum].offset, SEEK_SET);
     validbytes = 0;
     cptr = convbuffer;
@@ -746,11 +741,7 @@ static sidedef_t *ReadSidedefs(int lumpnum, FILE *fp)
     unsigned char *cptr;
 
     numsides = wadentry[lumpnum].length / SDEF_SIZE;
-    if ((sides = (sidedef_t *) malloc(numsides * sizeof(sidedef_t))) == NULL)
-    {
-        fprintf(stderr, "Unable to claim memory for sidedefs\n");
-        exit(-1);
-    }
+    sides = ALLOC_ARRAY(sidedef_t, numsides);
     fseek(fp, wadentry[lumpnum].offset, SEEK_SET);
     validbytes = 0;
     cptr = convbuffer;

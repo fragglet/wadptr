@@ -29,8 +29,7 @@ static int Suggest(void)
     int perctime = 20;
     int maxlinks = MAXLINKS;
 
-    if ((links = (short *) malloc(2 * maxlinks * sizeof(short))) == NULL)
-        ErrorExit("Suggest: couldn't alloc memory for links!\n");
+    links = ALLOC_ARRAY(short, 2 * maxlinks);
 
     /* find similar entries */
     for (count = 0; count < numentries; count++)
@@ -45,10 +44,7 @@ static int Suggest(void)
                 if (linkcnt >= maxlinks)
                 {
                     maxlinks += MAXLINKS;
-                    if ((links = (short *) realloc(
-                             links, 2 * maxlinks * sizeof(short))) == NULL)
-                        ErrorExit(
-                            "Suggest: couldn't realloc memory for links!\n");
+                    links = REALLOC_ARRAY(short, links, 2 * maxlinks);
                 }
                 links[2 * linkcnt] = count;
                 links[2 * linkcnt + 1] = count2;

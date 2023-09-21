@@ -179,12 +179,7 @@ int EntryExists(char *entrytofind)
 
 void *CacheLump(int entrynum)
 {
-    char *working;
-
-    working = malloc(wadentry[entrynum].length);
-    if (!working)
-        ErrorExit("CacheLump: Couldn't malloc %i bytes\n",
-                  wadentry[entrynum].length);
+    char *working = ALLOC_ARRAY(char, wadentry[entrynum].length);
 
     fseek(wadfp, wadentry[entrynum].offset, SEEK_SET);
     fread(working, wadentry[entrynum].length, 1, wadfp);
