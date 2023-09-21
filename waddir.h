@@ -12,6 +12,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 #include "errors.h"
 
@@ -37,7 +38,7 @@ typedef struct {
 
 /*************************** Prototypes ***********************************/
 
-int ReadWad();
+bool ReadWad();
 void WriteWad();
 char *ConvertString8(entry_t entry);
 int EntryExists(char *entrytofind);
@@ -46,8 +47,8 @@ void *CacheLump(int entrynum);
 int WriteWadHeader(FILE *fp);
 int WriteWadDirectory(FILE *fp);
 
-int IsLevel(int entry);
-int IsLevelEntry(char *s);
+bool IsLevel(int entry);
+bool IsLevelEntry(char *s);
 int FindLevelSize(char *s);
 
 /*************************** Globals *************************************/

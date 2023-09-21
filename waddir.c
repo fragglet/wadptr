@@ -27,8 +27,6 @@
 #include "waddir.h"
 #include "wadptr.h"
 
-enum { false, true };
-
 static entry_t FindInfo(char *entrytofind);
 static void AddEntry(entry_t entry);
 static void CopyWad(char *newfile);
@@ -98,7 +96,7 @@ static int ReadWadDirectory(FILE *fp)
     return 0;
 }
 
-int ReadWad()
+bool ReadWad()
 {
     if ((wad = ReadWadHeader(wadfp)) == NONWAD)
         return true;
@@ -268,7 +266,7 @@ static void CopyWad(char *newfile)
 
 /* Various WAD-related is??? functions ************************************/
 
-int IsLevel(int entry)
+bool IsLevel(int entry)
 {
     if (entry >= numentries)
         return false;
@@ -278,7 +276,7 @@ int IsLevel(int entry)
     return !strncmp(wadentry[entry + 1].name, "THINGS", 8);
 }
 
-int IsLevelEntry(char *s)
+bool IsLevelEntry(char *s)
 {
     if (!strcmp(s, "LINEDEFS"))
         return true;

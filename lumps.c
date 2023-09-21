@@ -35,8 +35,6 @@
 #include "lumps.h"
 #include "wadptr.h"
 
-enum { false, true };
-
 /****************************** PROTOTYPES ********************************/
 
 static void P_FindInfo();
@@ -128,7 +126,7 @@ void P_Unpack(char *resname)
 
 /* Find if a level is packed **********************************************/
 
-int P_IsPacked(char *s)
+bool P_IsPacked(char *s)
 {
     linedef_t *linedefs;
     int count;
@@ -577,7 +575,7 @@ static int S_FindColumnSize(unsigned char *col1)
 
 /* Find if a graphic is squashed *******************************************/
 
-int S_IsSquashed(char *s)
+bool S_IsSquashed(char *s)
 {
     int entrynum;
     char *pic;
@@ -619,7 +617,7 @@ int S_IsSquashed(char *s)
 
 /* Is this a graphic ? *****************************************************/
 
-int S_IsGraphic(char *s)
+bool S_IsGraphic(char *s)
 {
     unsigned char *graphic;
     int entrynum, count;

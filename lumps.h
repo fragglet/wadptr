@@ -19,6 +19,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 #include "errors.h"
 #include "waddir.h"
@@ -32,12 +33,12 @@ extern char *p_sidedefres; /* the new sidedef resource */
 
 void P_Pack(char *levelname);
 void P_Unpack(char *resname);
-int P_IsPacked(char *s);
+bool P_IsPacked(char *s);
 
 char *S_Squash(char *s);
 char *S_Unsquash(char *s);
-int S_IsSquashed(char *s);
-int S_IsGraphic(char *s);
+bool S_IsSquashed(char *s);
+bool S_IsGraphic(char *s);
 
 /******************************* Structs **********************************/
 
