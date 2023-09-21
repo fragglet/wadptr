@@ -25,9 +25,6 @@
 #include "waddir.h"
 #include "wadptr.h"
 
-static entry_t FindInfo(char *entrytofind);
-static void AddEntry(entry_t entry);
-static void CopyWad(char *newfile);
 static int ReadWadHeader(FILE *fp);
 static int ReadWadDirectory(FILE *fp);
 static int ReadWadEntry(FILE *fp, entry_t *entry);
@@ -189,38 +186,6 @@ int EntryExists(char *entrytofind)
     return -1;
 }
 
-/* Finds an entry and returns information about it *************************/
-
-static entry_t FindInfo(char *entrytofind)
-{
-    int count;
-    static entry_t entry;
-    /*char buffer[10];*/
-
-    for (count = 0; count < numentries; count++)
-    {
-        if (!strncmp(wadentry[count].name, entrytofind, 8))
-            return wadentry[count];
-    }
-    memset(&entry, 0, sizeof(entry_t));
-    return entry;
-}
-
-/* Adds an entry to the WAD ************************************************/
-
-static void AddEntry(entry_t entry)
-{
-    char buffer[10];
-
-    strcpy(buffer, ConvertString8(entry));
-    if (EntryExists(buffer) != -1)
-        printf("\tWarning! Resource %s already exists!\n",
-               ConvertString8(entry));
-    memcpy(&wadentry[numentries], &entry, sizeof(entry_t));
-    numentries++;
-    WriteWad();
-}
-
 /* Load a lump to memory **************************************************/
 
 void *CacheLump(int entrynum)
@@ -236,26 +201,6 @@ void *CacheLump(int entrynum)
     fread(working, wadentry[entrynum].length, 1, wadfp);
 
     return working;
-}
-
-/* Copy a WAD ( make a backup ) *******************************************/
-
-static void CopyWad(char *newfile)
-{
-    FILE *newwad;
-    char a;
-
-    newwad = fopen(newfile, "wb");
-    if (!newwad)
-        ErrorExit("CopyWad: Couldn't copy a wad (filename:%s)\n", newfile);
-
-    rewind(wadfp);
-    while (!feof(wadfp))
-    {
-        fread(&a, 1, 1, wadfp);
-        fwrite(&a, 1, 1, newwad);
-    }
-    fclose(newwad);
 }
 
 /* Various WAD-related is??? functions ************************************/
