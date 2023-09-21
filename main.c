@@ -28,16 +28,18 @@
 
 /******************************* INCLUDES **********************************/
 
+#include <stdbool.h>
+
 #include "wadptr.h"
 
 static void Compress();
 static void DoAction();
 static int FindPerc(int before, int after);
 static void Help();
-static int IwadWarning();
+static bool IwadWarning();
 static void ListEntries();
-static int OpenWad();
-static int ParseCommandLine();
+static bool OpenWad();
+static void ParseCommandLine();
 static void Uncompress();
 
 /******************************* GLOBALS ***********************************/
@@ -86,7 +88,7 @@ int main(int argc, char *argv[])
 
 /* Parse cmd-line options **************************************************/
 
-static int ParseCommandLine()
+static void ParseCommandLine()
 {
     int count;
 
@@ -146,13 +148,11 @@ static int ParseCommandLine()
         ErrorExit("Sorry, uncompressing will undo any lump merging on WADs.\n"
                   "The -nomerge command is not available with the "
                   "-u(Uncompress) option.\n");
-
-    return 0;
 }
 
 /* Open the original WAD ***************************************************/
 
-static int OpenWad(char *filename)
+static bool OpenWad(char *filename)
 {
     int a;
 
@@ -160,14 +160,10 @@ static int OpenWad(char *filename)
     if (!wadfp)
     {
         printf("%s does not exist\n", wadname);
-        return 1;
+        return true;
     }
 
-    a = ReadWad();
-    if (a)
-        return 1;
-
-    return 0;
+    return ReadWad();
 }
 
 /* Does an action based on command line ************************************/
@@ -589,7 +585,7 @@ static int FindPerc(int before, int after)
 
 /* Warning not to change IWAD **********************************************/
 
-static int IwadWarning()
+static bool IwadWarning()
 {
     char tempchar;
     printf("Are you sure you want to change the main IWAD?");
@@ -600,12 +596,12 @@ static int IwadWarning()
         if ((tempchar == 'Y') || (tempchar == 'y'))
         {
             printf("\n");
-            return 1;
+            return true;
         }
         if ((tempchar == 'N') || (tempchar == 'n'))
         {
             printf("\n");
-            return 0;
+            return false;
         }
     }
 }
