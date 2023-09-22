@@ -53,6 +53,8 @@ char *p_linedefres = 0; /* the new linedef resource */
 char *p_sidedefres = 0; /* the new sidedef resource */
 
 /* Graphic squashing globals */
+static bool s_unsquash_mode = false; /* True when we are inside a
+                                        S_Unsquash() call. */
 static int s_equalcolumn[400];  /* 1 for each column: another column which is */
                                 /* identical or -1 if there isn't one */
 static short s_height, s_width; /* picture width, height etc. */
@@ -356,7 +358,7 @@ char *S_Squash(char *s)
         ErrorExit("squash: Couldn't find %s\n", s);
 
     /* find posts to be killed; if none, return original lump */
-    if (!S_FindRedundantColumns(working))
+    if (S_FindRedundantColumns(working) == 0 && !s_unsquash_mode)
         return (char *) working;
 
     /* TODO: Fix static limit. */
@@ -400,7 +402,7 @@ char *S_Squash(char *s)
         }
     }
 
-    if (lastpt > wadentry[entrynum].length)
+    if (!s_unsquash_mode && lastpt > wadentry[entrynum].length)
     {
         /* the new resource was bigger than the old one! */
         free(newres);
@@ -414,63 +416,18 @@ char *S_Squash(char *s)
     }
 }
 
-/* Unsquash a picture */
-
-/* Exactly the same format as S_Squash(). See there for more details. */
-
+/* Unsquash a picture. Unsquashing rebuilds the image, just like when we
+ * do the squashing, except that we set a special flag that skips
+ * searching for identical columns. */
 char *S_Unsquash(char *s)
 {
-    unsigned char *working, *newres;
-    int entrynum, count;
-    /*int in_post, n, n2, count2;*/
-    long lastpt;
-    unsigned char *newptr;
+    char *result;
 
-    if (!S_IsGraphic(s))
-        return NULL;
-    entrynum = EntryExists(s);
-    working = CacheLump(entrynum);
-    if ((long) working == -1)
-        ErrorExit("unsquash: Couldn't find %s\n", s);
+    s_unsquash_mode = true;
+    result = S_Squash(s);
+    s_unsquash_mode = false;
 
-    s_width = READ_SHORT(working);
-    s_height = READ_SHORT(working + 2);
-    s_loffset = READ_SHORT(working + 4);
-    s_toffset = READ_SHORT(working + 6);
-    s_columns = (unsigned char *) (working + 8);
-
-    /* find column lengths */
-    for (count = 0; count < s_width; count++)
-        s_colsize[count] =
-            S_FindColumnSize(working + READ_LONG(s_columns + 4 * count));
-
-    /* TODO: Fix static limit. */
-    newres = ALLOC_ARRAY(unsigned char, 100000);
-
-    /* find various info: size,offset etc. */
-    WRITE_SHORT(newres, s_width);
-    WRITE_SHORT(newres + 2, s_height);
-    WRITE_SHORT(newres + 4, s_loffset);
-    WRITE_SHORT(newres + 6, s_toffset);
-
-    /* the new column pointers for the new lump */
-    newptr = (unsigned char *) (newres + 8);
-
-    /* last point in the lump- point to start of column data */
-    lastpt = 8 + (s_width * 4);
-
-    for (count = 0; count < s_width; count++)
-    {
-        WRITE_LONG(newptr + 4 * count,
-                   lastpt); /* point this column to lastpt */
-        memcpy(newres + lastpt, working + READ_LONG(s_columns + 4 * count),
-               s_colsize[count]);
-        lastpt += s_colsize[count];
-    }
-
-    wadentry[entrynum].length = lastpt;
-    free(working);
-    return (char *) newres;
+    return result;
 }
 
 /* Find the redundant columns */
@@ -497,6 +454,13 @@ static int S_FindRedundantColumns(unsigned char *x)
         /* find the column size */
         tmpcol = READ_LONG(s_columns + 4 * count);
         s_colsize[count] = S_FindColumnSize((unsigned char *) x + tmpcol);
+
+        /* Unsquash mode is identical to squash mode but we just don't
+           look for any identical columns. */
+        if (s_unsquash_mode)
+        {
+            continue;
+        }
 
         /* check all previous columns */
         for (count2 = 0; count2 < count; count2++)
