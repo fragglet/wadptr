@@ -170,7 +170,7 @@ bool P_IsPacked(char *s)
     return false; /* cant be packed: none of the sidedefs are shared */
 }
 
-/* Find neccesary stuff before processing */
+/* Find necessary stuff before processing */
 
 static void P_FindInfo(void)
 {
@@ -244,8 +244,8 @@ static void P_DoPack(sidedef_t *sidedefs)
         {
             if (!memcmp(&p_newsidedef[count2], &sidedefs[count],
                         sizeof(sidedef_t)))
-            { /* they are identical: this one
-                 can be removed */
+            {
+                /* they are identical: this one can be removed */
                 p_movedto[count] = count2;
                 break;
             }
@@ -259,8 +259,7 @@ static void P_DoPack(sidedef_t *sidedefs)
             p_newnum++;
         }
     }
-    /* all done! */
-    free(sidedefs); /* fly free, little sidedefs!! */
+    free(sidedefs);
 }
 
 /* Update the linedefs and save sidedefs */
