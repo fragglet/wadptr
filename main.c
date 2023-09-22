@@ -52,6 +52,7 @@ static const char *tempwad_name = "~wptmp" EXTSEP "wad";
 int main(int argc, char *argv[])
 {
     int index;
+    bool success = true;
 
     g_argc = argc; /* Set global cmd-line list */
     g_argv = argv;
@@ -61,15 +62,19 @@ int main(int argc, char *argv[])
     for (index = filelist_index; index < g_argc; ++index)
     {
         wadname = g_argv[index];
-        if (!(OpenWad(wadname)))
+        if (!OpenWad(wadname))
         {
             /* no problem with wad.. do whatever (Compress, Uncompress etc) */
             DoAction();
+            fclose(wadfp);
         }
-        fclose(wadfp);
+        else
+        {
+            success = false;
+        }
     }
 
-    return 0;
+    return !success;
 }
 
 static void ParseCommandLine(void)
