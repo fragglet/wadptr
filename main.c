@@ -431,7 +431,7 @@ static void Uncompress(void)
 
         if (!written && !write_silent)
         {
-            printf("\tStoring %s", resname);
+            printf("\tStoring");
             fflush(stdout);
         }
         if (!written)
