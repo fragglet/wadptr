@@ -29,7 +29,6 @@ typedef struct {
 
 bool ReadWad(void);
 void WriteWad(void);
-char *ConvertString8(entry_t entry);
 int EntryExists(char *entrytofind);
 void *CacheLump(int entrynum);
 

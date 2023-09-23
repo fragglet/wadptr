@@ -147,23 +147,6 @@ void WriteWad(void)
     WriteWadDirectory(wadfp);
 }
 
-/* Takes a string8 in an entry type and returns a valid string */
-
-char *ConvertString8(entry_t entry)
-{
-    static char temp[100][10];
-    static int tempnum = 1;
-
-    tempnum++;
-    if (tempnum == 100)
-        tempnum = 1;
-
-    memset(temp[tempnum], 0, 9);
-    memcpy(temp[tempnum], entry.name, 8);
-
-    return temp[tempnum];
-}
-
 int EntryExists(char *entrytofind)
 {
     int count;
@@ -201,28 +184,28 @@ bool IsLevel(int entry)
 
 bool IsLevelEntry(char *s)
 {
-    if (!strcmp(s, "LINEDEFS"))
+    if (!strncmp(s, "LINEDEFS", 8))
         return true;
-    if (!strcmp(s, "SIDEDEFS"))
+    if (!strncmp(s, "SIDEDEFS", 8))
         return true;
-    if (!strcmp(s, "SECTORS"))
+    if (!strncmp(s, "SECTORS", 8))
         return true;
-    if (!strcmp(s, "VERTEXES"))
+    if (!strncmp(s, "VERTEXES", 8))
         return true;
-    if (!strcmp(s, "REJECT"))
+    if (!strncmp(s, "REJECT", 8))
         return true;
-    if (!strcmp(s, "BLOCKMAP"))
+    if (!strncmp(s, "BLOCKMAP", 8))
         return true;
-    if (!strcmp(s, "NODES"))
+    if (!strncmp(s, "NODES", 8))
         return true;
-    if (!strcmp(s, "THINGS"))
+    if (!strncmp(s, "THINGS", 8))
         return true;
-    if (!strcmp(s, "SEGS"))
+    if (!strncmp(s, "SEGS", 8))
         return true;
-    if (!strcmp(s, "SSECTORS"))
+    if (!strncmp(s, "SSECTORS", 8))
         return true;
 
-    if (!strcmp(s, "BEHAVIOR"))
+    if (!strncmp(s, "BEHAVIOR", 8))
         return true; /* hexen "behavior" lump */
     return false;
 }

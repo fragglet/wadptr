@@ -186,15 +186,17 @@ static void P_FindInfo(void)
         }
     }
     if (count == numentries)
-        ErrorExit("P_FindInfo: Couldn't find level: %s\n", p_working);
+        ErrorExit("P_FindInfo: Couldn't find level: %.8s\n", p_working);
 
     n = 0;
 
     /* now find the sidedefs */
     for (count = p_levelnum + 1; count < numentries; count++)
     {
-        if (!IsLevelEntry(ConvertString8(wadentry[count])))
+        if (!IsLevelEntry(wadentry[count].name))
+        {
             ErrorExit("P_FindInfo: Can't find sidedef/linedef entries!\n");
+        }
 
         if (!strncmp(wadentry[count].name, "SIDEDEFS", 8))
         {
@@ -354,7 +356,7 @@ char *S_Squash(char *s)
     entrynum = EntryExists(s);
     working = CacheLump(entrynum);
     if ((long) working == -1)
-        ErrorExit("squash: Couldn't find %s\n", s);
+        ErrorExit("squash: Couldn't find %.8s\n", s);
 
     /* find posts to be killed; if none, return original lump */
     if (S_FindRedundantColumns(working) == 0 && !s_unsquash_mode)
@@ -530,7 +532,7 @@ bool S_IsSquashed(char *s)
 
     entrynum = EntryExists(s);
     if (entrynum == -1)
-        ErrorExit("is_squashed: %s does not exist!\n", s);
+        ErrorExit("is_squashed: %.8s does not exist!\n", s);
     pic = CacheLump(entrynum); /* cache the lump */
 
     s_width = READ_SHORT(pic);
@@ -571,7 +573,7 @@ bool S_IsGraphic(char *s)
     short width, height;
     unsigned char *columns;
 
-    if (!strcmp(s, "ENDOOM"))
+    if (!strncmp(s, "ENDOOM", 8))
         return false;
     if (IsLevelEntry(s))
         return false;
@@ -583,7 +585,7 @@ bool S_IsGraphic(char *s)
 
     entrynum = EntryExists(s);
     if (entrynum == -1)
-        ErrorExit("isgraphic: %s does not exist!\n", s);
+        ErrorExit("isgraphic: %.8s does not exist!\n", s);
     if (wadentry[entrynum].length <= 0)
     {
         /* don't read data from 0 size lumps */

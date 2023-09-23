@@ -203,7 +203,7 @@ static void Compress(void)
     long wadsize; /* wad size(to find % smaller) */
     FILE *fstream;
     bool written, write_silent;
-    char *temp, resname[10], a[50];
+    char *temp, a[50];
 
     if (wad == IWAD && !IwadWarning())
     {
@@ -221,11 +221,10 @@ static void Compress(void)
 
     for (count = 0; count < numentries; count++)
     {
-        strcpy(resname, ConvertString8(wadentry[count]));
         /* hide individual level entries */
-        if (!IsLevelEntry(resname))
+        if (!IsLevelEntry(wadentry[count].name))
         {
-            printf("Adding: %s       ", resname);
+            printf("Adding: %.8s       ", wadentry[count].name);
             fflush(stdout);
             write_silent = false;
         }
@@ -242,17 +241,18 @@ static void Compress(void)
             {
                 printf("\tPacking");
                 fflush(stdout);
-                findshrink = FindLevelSize(resname);
+                findshrink = FindLevelSize(wadentry[count].name);
 
                 /* pack the level */
-                P_Pack(resname);
+                P_Pack(wadentry[count].name);
 
-                findshrink = FindPerc(findshrink, FindLevelSize(resname));
+                findshrink = FindPerc(findshrink,
+                                      FindLevelSize(wadentry[count].name));
                 printf(" (%i%%), done.\n", findshrink);
 
                 write_silent = true;
             }
-            else if (!strcmp(resname, "SIDEDEFS"))
+            else if (!strncmp(wadentry[count].name, "SIDEDEFS", 8))
             {
                 /* write the pre-packed sidedef entry */
                 wadentry[count].offset = ftell(fstream);
@@ -261,7 +261,7 @@ static void Compress(void)
                 free(p_sidedefres);
                 written = true;
             }
-            else if (!strcmp(resname, "LINEDEFS"))
+            else if (!strncmp(wadentry[count].name, "LINEDEFS", 8))
             {
                 /* write the pre-packed linedef entry */
                 wadentry[count].offset = ftell(fstream);
@@ -272,13 +272,13 @@ static void Compress(void)
             }
         }
 
-        if (allowsquash && S_IsGraphic(resname))
+        if (allowsquash && S_IsGraphic(wadentry[count].name))
         {
             printf("\tSquashing ");
             fflush(stdout);
             findshrink = wadentry[count].length;
 
-            temp = S_Squash(resname);
+            temp = S_Squash(wadentry[count].name);
             wadentry[count].offset = ftell(fstream); /*update dir */
             fwrite(temp, wadentry[count].length, 1, fstream);
 
@@ -359,7 +359,6 @@ static void Uncompress(void)
     char tempstr[50];
     FILE *fstream;
     char *tempres;
-    char resname[10];
     bool written, write_silent;
     long fileloc;
     int count;
@@ -375,17 +374,15 @@ static void Uncompress(void)
 
     for (count = 0; count < numentries; count++)
     {
-        strcpy(resname, ConvertString8(wadentry[count]));
-
         written = false;
 
-        if (IsLevelEntry(resname))
+        if (IsLevelEntry(wadentry[count].name))
         {
             write_silent = true;
         }
         else
         {
-            printf("Adding: %s       ", resname);
+            printf("Adding: %.8s       ", wadentry[count].name);
             fflush(stdout);
             write_silent = false;
         }
@@ -396,11 +393,11 @@ static void Uncompress(void)
             {
                 printf("\tUnpacking");
                 fflush(stdout);
-                P_Unpack(resname);
+                P_Unpack(wadentry[count].name);
                 printf(", done.\n");
                 write_silent = true;
             }
-            if (!strcmp(resname, "SIDEDEFS"))
+            if (!strncmp(wadentry[count].name, "SIDEDEFS", 8))
             {
                 wadentry[count].offset = ftell(fstream);
                 WriteSidedefs((sidedef_t *) p_sidedefres,
@@ -408,7 +405,7 @@ static void Uncompress(void)
                 free(p_sidedefres);
                 written = true;
             }
-            if (!strcmp(resname, "LINEDEFS"))
+            if (!strncmp(wadentry[count].name, "LINEDEFS", 8))
             {
                 wadentry[count].offset = ftell(fstream);
                 WriteLinedefs((linedef_t *) p_linedefres,
@@ -417,11 +414,11 @@ static void Uncompress(void)
                 written = true;
             }
         }
-        if (allowsquash && S_IsGraphic(resname))
+        if (allowsquash && S_IsGraphic(wadentry[count].name))
         {
             printf("\tUnsquashing");
             fflush(stdout);
-            tempres = S_Unsquash(resname);
+            tempres = S_Unsquash(wadentry[count].name);
             wadentry[count].offset = ftell(fstream);
             fwrite(tempres, wadentry[count].length, 1, fstream);
             free(tempres);
@@ -473,15 +470,13 @@ static void Uncompress(void)
 static void ListEntries(void)
 {
     int count, count2;
-    char resname[10];
 
     printf(" Number Length  Offset          Method      Name        Shared\n"
            " ------ ------  ------          ------      ----        ------\n");
 
     for (count = 0; count < numentries; count++)
     {
-        strcpy(resname, ConvertString8(wadentry[count]));
-        if (IsLevelEntry(resname))
+        if (IsLevelEntry(wadentry[count].name))
             continue;
 
         /* wad entry number */
@@ -491,7 +486,7 @@ static void ListEntries(void)
         if (IsLevel(count))
         {
             /* the whole level not just the id lump */
-            printf("%i\t", FindLevelSize(resname));
+            printf("%i\t", FindLevelSize(wadentry[count].name));
         }
         else
         {
@@ -506,15 +501,15 @@ static void ListEntries(void)
         if (IsLevel(count))
         {
             /* this is a level */
-            if (P_IsPacked(resname))
+            if (P_IsPacked(wadentry[count].name))
                 printf("Packed      ");
             else
                 printf("Unpacked    ");
         }
-        else if (S_IsGraphic(resname))
+        else if (S_IsGraphic(wadentry[count].name))
         {
             /* this is a graphic */
-            if (S_IsSquashed(resname))
+            if (S_IsSquashed(wadentry[count].name))
                 printf("Squashed    ");
             else
                 printf("Unsquashed  ");
@@ -526,7 +521,7 @@ static void ListEntries(void)
         }
 
         /* resource name */
-        printf("%s%s\t", resname, (strlen(resname) < 4) ? "\t" : "");
+        printf("%-8.8s\t", wadentry[count].name);
 
         /* shared resource */
         if (wadentry[count].length == 0)
@@ -540,7 +535,7 @@ static void ListEntries(void)
             if ((wadentry[count2].offset == wadentry[count].offset) &&
                 (wadentry[count2].length == wadentry[count].length))
             {
-                printf("%s\n", ConvertString8(wadentry[count2]));
+                printf("%.8s\n", wadentry[count2].name);
                 break;
             }
         }
@@ -593,4 +588,3 @@ void *CheckedRealloc(void *old, size_t nbytes)
 
     return result;
 }
-
