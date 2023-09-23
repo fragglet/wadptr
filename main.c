@@ -87,17 +87,17 @@ static void ParseCommandLine(void)
     filelist_index = -1;
     while (count < g_argc)
     {
-        if ((!strcmp(g_argv[count], "-Help")) || (!strcmp(g_argv[count], "-h")))
+        if ((!strcmp(g_argv[count], "-help")) || (!strcmp(g_argv[count], "-h")))
             action = HELP;
 
         if ((!strcmp(g_argv[count], "-list")) || (!strcmp(g_argv[count], "-l")))
             action = LIST;
 
-        if ((!strcmp(g_argv[count], "-Compress")) ||
+        if ((!strcmp(g_argv[count], "-compress")) ||
             (!strcmp(g_argv[count], "-c")))
             action = COMPRESS;
 
-        if ((!strcmp(g_argv[count], "-Uncompress")) ||
+        if ((!strcmp(g_argv[count], "-uncompress")) ||
             (!strcmp(g_argv[count], "-u")))
             action = UNCOMPRESS;
 
