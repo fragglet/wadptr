@@ -330,12 +330,6 @@ static void P_Rebuild(void)
     p_newlinedef = linedefs;
 }
 
-/*
- *  Compress by matching entire columns if defined (old approach), or by
- *  matching postfixes as well if undefined (new approach, experimental)
- */
-/*#define ENTIRE_COLUMNS*/
-
 /* Graphic squashing routines */
 
 /* Squash a graphic lump */
@@ -389,17 +383,12 @@ char *S_Squash(char *s)
         }
         else
         {
-#ifdef ENTIRE_COLUMNS
-            /* identical column already in: use that one */
-            memcpy(newptr + 4 * count, newptr + 4 * s_equalcolumn[count], 4);
-#else
             /* postfix compression, see S_FindRedundantColumns() */
             long identOff;
 
             identOff = READ_LONG(newptr + 4 * s_equalcolumn[count]);
             identOff += s_colsize[s_equalcolumn[count]] - s_colsize[count];
             WRITE_LONG(newptr + 4 * count, identOff);
-#endif
         }
     }
 
@@ -466,21 +455,6 @@ static int S_FindRedundantColumns(unsigned char *x)
         /* check all previous columns */
         for (count2 = 0; count2 < count; count2++)
         {
-#ifdef ENTIRE_COLUMNS
-            if (s_colsize[count] != s_colsize[count2])
-            {
-                /* columns are different sizes: must be different */
-                continue;
-            }
-            if (!memcmp(x + tmpcol, x + READ_LONG(s_columns + 4 * count2),
-                        s_colsize[count]))
-            {
-                /* columns are identical */
-                s_equalcolumn[count] = count2;
-                num_killed++; /* increase deathcount */
-                break;        /* found one, exit the loop */
-            };
-#else
             /* compression is also possible if col is a postfix of col2 */
             if (s_colsize[count] > s_colsize[count2])
             {
@@ -497,7 +471,6 @@ static int S_FindRedundantColumns(unsigned char *x)
                 num_killed++;
                 break;
             }
-#endif
         }
     }
     /* tell squash how many can be 'got rid of' */
