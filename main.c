@@ -471,8 +471,8 @@ static void ListEntries(void)
 {
     int count, count2;
 
-    printf(" Number Length  Offset          Method      Name        Shared\n"
-           " ------ ------  ------          ------      ----        ------\n");
+    printf(" Number  Length  Offset      Method      Name        Shared\n"
+           " ------  ------  ------      ------      ----        ------\n");
 
     for (count = 0; count < numentries; count++)
     {
@@ -480,22 +480,22 @@ static void ListEntries(void)
             continue;
 
         /* wad entry number */
-        printf(" %i  \t", count + 1);
+        printf("%7d", count + 1);
 
         /* size */
         if (IsLevel(count))
         {
             /* the whole level not just the id lump */
-            printf("%i\t", FindLevelSize(wadentry[count].name));
+            printf(" %7d", FindLevelSize(wadentry[count].name));
         }
         else
         {
-            /*not a level, doesn't matter */
-            printf("%ld\t", wadentry[count].length);
+            /* not a level, doesn't matter */
+            printf(" %7ld", wadentry[count].length);
         }
 
         /* file offset */
-        printf("0x%08lx     \t", wadentry[count].offset);
+        printf("  0x%08lx  ", wadentry[count].offset);
 
         /* compression method */
         if (IsLevel(count))
@@ -521,7 +521,7 @@ static void ListEntries(void)
         }
 
         /* resource name */
-        printf("%-8.8s\t", wadentry[count].name);
+        printf("%-8.8s    ", wadentry[count].name);
 
         /* shared resource */
         if (wadentry[count].length == 0)
