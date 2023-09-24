@@ -38,7 +38,7 @@ static int g_argc; /* global cmd-line list */
 static char **g_argv;
 static int filelist_index;
 static char *wadname;
-static char outputwad[256] = "";
+static const char *outputwad = NULL;
 static enum { HELP, COMPRESS, UNCOMPRESS, LIST } action;
 bool allowpack = true;   /* level packing on */
 bool allowsquash = true; /* picture squashing on */
@@ -117,7 +117,9 @@ static void ParseCommandLine(void)
 
         if ((!strcmp(g_argv[count], "-output")) ||
             (!strcmp(g_argv[count], "-o")))
-            strcpy(outputwad, g_argv[++count]);
+        {
+            outputwad = g_argv[++count];
+        }
 
         count++;
     }
@@ -320,7 +322,7 @@ static void Compress(void)
         printf("\nMerging identical lumps...");
         fflush(stdout);
 
-        if (outputwad[0] == 0)
+        if (outputwad == NULL)
         {
             /* remove identical lumps: Rebuild them back to
                the original filename */
@@ -335,7 +337,7 @@ static void Compress(void)
         fclose(wadfp);
         remove(tempwad_name);
     }
-    else if (outputwad[0] == 0)
+    else if (outputwad == NULL)
     {
         remove(wadname);
         rename(tempwad_name, wadname);
@@ -452,7 +454,7 @@ static void Uncompress(void)
     fclose(fstream);
     fclose(wadfp);
 
-    if (outputwad[0] == 0)
+    if (outputwad == NULL)
     {
         /* replace the original wad with the new one */
         remove(wadname);
