@@ -21,6 +21,6 @@
 
 #define MAXLINKS 50000
 
-void Rebuild(char *newname);
+void Rebuild(const char *newname);
 
 #endif

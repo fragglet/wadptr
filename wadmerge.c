@@ -92,7 +92,7 @@ static int Suggest(void)
 
 /* Rebuild the WAD, making it smaller in the process */
 
-void Rebuild(char *newname)
+void Rebuild(const char *newname)
 {
     int count;
     char *tempchar;
