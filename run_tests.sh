@@ -24,6 +24,13 @@ test_wad_file() {
             "not smaller than original size: $orig_size"
         exit 1
     fi
+
+    if ! ./wadptr -u $fn >$wd/output.txt 2>&1; then
+        cat $wd/output.txt
+    fi
+    local decompr_size=$(file_size "$fn")
+    # TODO: Do something to check the uncompressed file vs. original
+    #echo "$fn $orig_size $new_size $decompr_size"
 }
 
 all_success=true
