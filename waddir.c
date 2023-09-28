@@ -128,12 +128,12 @@ int WriteWadHeader(FILE *fp)
 
 static int WriteWadEntry(FILE *fp, entry_t *entry)
 {
-    unsigned char buff[ENTRY_SIZE];
+    char buff[ENTRY_SIZE + 1];
 
     WRITE_LONG(buff + ENTRY_OFF, entry->offset);
     WRITE_LONG(buff + ENTRY_LEN, entry->length);
     memset(buff + ENTRY_NAME, 0, 8);
-    strncpy((char *) buff + ENTRY_NAME, entry->name, 8);
+    strncpy(buff + ENTRY_NAME, entry->name, 8);
     return (fwrite(buff, 1, ENTRY_SIZE, fp) == ENTRY_SIZE) ? 0 : -1;
 }
 
