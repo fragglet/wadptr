@@ -25,20 +25,18 @@
 
 #include "wadptr.h"
 
-static void Compress(void);
-static void DoAction(void);
+static bool Compress(const char *filename);
+static bool Uncompress(const char *filename);
+static bool ListEntries(const char *filename);
+static bool DoAction(const char *filename);
 static int FindPerc(int before, int after);
 static void Help(void);
-static bool IwadWarning(void);
-static void ListEntries(void);
-static bool OpenWad(char *filename);
+static bool IwadWarning(const char *);
 static void ParseCommandLine(void);
-static void Uncompress(void);
 
 static int g_argc; /* global cmd-line list */
 static char **g_argv;
 static int filelist_index;
-static char *wadname;
 static const char *outputwad = NULL;
 static enum { HELP, COMPRESS, UNCOMPRESS, LIST } action;
 bool allowpack = true;   /* level packing on */
@@ -79,14 +77,7 @@ int main(int argc, char *argv[])
 
     for (index = filelist_index; index < g_argc; ++index)
     {
-        wadname = g_argv[index];
-        if (!OpenWad(wadname))
-        {
-            /* no problem with wad.. do whatever (Compress, Uncompress etc) */
-            DoAction();
-            fclose(wadfp);
-        }
-        else
+        if (!DoAction(g_argv[index]))
         {
             success = false;
         }
@@ -106,7 +97,10 @@ static void ParseCommandLine(void)
     while (count < g_argc)
     {
         if ((!strcmp(g_argv[count], "-help")) || (!strcmp(g_argv[count], "-h")))
+        {
             action = HELP;
+            break;
+        }
 
         if ((!strcmp(g_argv[count], "-list")) || (!strcmp(g_argv[count], "-l")))
             action = LIST;
@@ -142,15 +136,15 @@ static void ParseCommandLine(void)
         count++;
     }
 
+    if (action == HELP)
+    {
+        Help();
+        exit(0);
+    }
+
     if (filelist_index < 0)
     {
-        if (action == HELP)
-        {
-            DoAction();
-            exit(0);
-        }
-        else
-            ErrorExit("No input WAD file specified.\n");
+        ErrorExit("No input WAD(s) file specified.\n");
     }
 
     if (action == UNCOMPRESS && !allowmerge)
@@ -159,39 +153,20 @@ static void ParseCommandLine(void)
                   "-u(Uncompress) option.\n");
 }
 
-static bool OpenWad(char *filename)
-{
-    wadfp = fopen(filename, "rb+");
-    if (!wadfp)
-    {
-        printf("%s does not exist\n", wadname);
-        return true;
-    }
-
-    return ReadWad();
-}
-
 /* Does an action based on command line */
 
-static void DoAction(void)
+static bool DoAction(const char *wadname)
 {
     switch (action)
     {
-    case HELP:
-        Help();
-        break;
-
     case LIST:
-        ListEntries();
-        break;
-
+        return ListEntries(wadname);
     case UNCOMPRESS:
-        Uncompress();
-        break;
-
+        return Uncompress(wadname);
     case COMPRESS:
-        Compress();
-        break;
+        return Compress(wadname);
+    default:
+        return false;
     }
 }
 
@@ -217,7 +192,7 @@ static void Help(void)
 
 /* Compress a WAD */
 
-static void Compress(void)
+static bool Compress(const char *wadname)
 {
     int count, findshrink;
     long wadsize; /* wad size(to find % smaller) */
@@ -225,9 +200,19 @@ static void Compress(void)
     bool written, write_silent;
     char *temp, a[50];
 
-    if (wad == IWAD && !IwadWarning())
+    wadfp = fopen(wadname, "rb");
+    if (wadfp == NULL)
     {
-        return;
+        perror("fopen");
+        return false;
+    }
+    if (ReadWad())
+    {
+        return false;
+    }
+    if (wad == IWAD && !IwadWarning(wadname))
+    {
+        return false;
     }
 
     wadsize = diroffset + (ENTRY_SIZE * numentries);
@@ -368,13 +353,15 @@ static void Compress(void)
     wadfp = fopen(wadname, "rb+"); /* so there is something to close */
 
     findshrink = FindPerc(wadsize, diroffset + (numentries * ENTRY_SIZE));
-
     printf("*** %s is %i%% smaller ***\n", wadname, findshrink);
+    wadfp = NULL;
+
+    return true;
 }
 
 /* Uncompress a WAD */
 /* TODO: This can probably be merged with Compress() above. */
-static void Uncompress(void)
+static bool Uncompress(const char *wadname)
 {
     char tempstr[50];
     FILE *fstream;
@@ -383,9 +370,19 @@ static void Uncompress(void)
     long fileloc;
     int count;
 
-    if (wad == IWAD && !IwadWarning())
+    wadfp = fopen(wadname, "rb");
+    if (wadfp == NULL)
     {
-        return;
+        perror("fopen");
+        return false;
+    }
+    if (ReadWad())
+    {
+        return false;
+    }
+    if (wad == IWAD && !IwadWarning(wadname))
+    {
+        return false;
     }
 
     fstream = fopen(tempwad_name, "wb+");
@@ -482,14 +479,28 @@ static void Uncompress(void)
     {
         rename(tempwad_name, outputwad);
     }
-    wadfp = fopen(wadname, "rb+");
+
+    wadfp = NULL;
+
+    return true;
 }
 
 /* List WAD entries */
 
-static void ListEntries(void)
+static bool ListEntries(const char *wadname)
 {
     int count, count2;
+
+    wadfp = fopen(wadname, "rb");
+    if (wadfp == NULL)
+    {
+        perror("fopen");
+        return false;
+    }
+    if (ReadWad())
+    {
+        return false;
+    }
 
     printf(" Number  Length  Offset      Method      Name        Shared\n"
            " ------  ------  ------      ------      ----        ------\n");
@@ -563,6 +574,8 @@ static void ListEntries(void)
         if (count2 == count)
             printf("No\n");
     }
+
+    return true;
 }
 
 /* Find how much smaller something is: returns a percentage */
@@ -576,7 +589,7 @@ static int FindPerc(int before, int after)
     return (int) (100 * perc);
 }
 
-static bool IwadWarning(void)
+static bool IwadWarning(const char *wadname)
 {
     char tempchar;
     printf("%s is an IWAD file; are you sure you want to change it? ", wadname);
