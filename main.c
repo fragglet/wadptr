@@ -146,6 +146,10 @@ static void ParseCommandLine(void)
     {
         ErrorExit("No input WAD(s) file specified.\n");
     }
+    else if (outputwad != NULL && g_argc - filelist_index != 1)
+    {
+        ErrorExit("Only one input file can be specified when using -output.\n");
+    }
 
     if (action == UNCOMPRESS && !allowmerge)
         ErrorExit("Sorry, uncompressing will undo any lump merging on WADs.\n"
