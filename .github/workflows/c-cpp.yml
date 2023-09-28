@@ -17,3 +17,26 @@ jobs:
       run: make
     - name: run tests
       run: ./run_tests.sh
+
+  windows_crossbuild:
+    strategy:
+      matrix:
+        host: [x86_64-w64-mingw32]
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Find Git version
+      id: version
+      run: |
+        export VERSION=$(git rev-parse --short HEAD)
+        echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+    - name: Install dependencies
+      run: |
+        sudo apt update
+        sudo apt -q install mingw-w64 pandoc
+    - name: make
+      run: make -j8
+
+    # TODO: Package and upload build artifact
