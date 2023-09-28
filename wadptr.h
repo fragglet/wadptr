@@ -56,4 +56,5 @@ extern const char *iwad_name;
 #define ALLOC_ARRAY(type, count) \
     REALLOC_ARRAY(type, 0, count)
 
+extern void PrintProgress(int numerator, int denominator);
 extern void *CheckedRealloc(void *old, size_t nbytes);

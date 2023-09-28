@@ -21,6 +21,7 @@
 
 #include <ctype.h>
 #include <stdbool.h>
+#include <time.h>
 
 #include "wadptr.h"
 
@@ -48,6 +49,23 @@ const char *pwad_name = "PWAD";
 const char *iwad_name = "IWAD";
 
 static const char *tempwad_name = "~wptmp" EXTSEP "wad";
+
+void PrintProgress(int numerator, int denominator)
+{
+    static clock_t last_progress_time = 0;
+    static int last_numerator = 0;
+    clock_t now = clock();
+
+    if (numerator < last_numerator
+     || now - last_progress_time >= (CLOCKS_PER_SEC / 20))
+    {
+        printf("%4d%%\b\b\b\b\b", (int) (100 * numerator) / denominator);
+        fflush(stdout);
+        last_progress_time = now;
+    }
+
+    last_numerator = numerator;
+}
 
 int main(int argc, char *argv[])
 {

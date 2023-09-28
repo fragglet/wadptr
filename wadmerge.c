@@ -26,7 +26,6 @@ static int Suggest(void)
     int count, count2, linkcnt = 0;
     short *links; /* possible links */
     char *check1, *check2;
-    int perctime = 20;
     int maxlinks = MAXLINKS;
 
     links = ALLOC_ARRAY(short, 2 * maxlinks);
@@ -76,12 +75,9 @@ static int Suggest(void)
         free(check1); /* free back both lumps */
         free(check2);
 
-        perctime--; /* % count */
-        if (!perctime)
+        if ((count % 100) == 0)
         {
-            printf("%4d%%\b\b\b\b\b", (50 * count) / linkcnt);
-            fflush(stdout);
-            perctime = 200;
+            PrintProgress(count, linkcnt);
         }
     }
 
@@ -98,7 +94,6 @@ void Rebuild(const char *newname)
     char *tempchar;
     FILE *newwad;
     long along = 0, filepos;
-    int nextperc = 50;
 
     /* first run Suggest mode to find how to make it smaller */
     Suggest();
@@ -126,13 +121,6 @@ void Rebuild(const char *newname)
             fwrite(tempchar, 1, wadentry[count].length, newwad);
             free(tempchar);
             wadentry[count].offset = filepos;
-        }
-        nextperc--; /* % count */
-        if (!nextperc)
-        {
-            printf("%4d%%\b\b\b\b\b", (int) (50 + (count * 50) / numentries));
-            fflush(stdout);
-            nextperc = 50;
         }
     }
     /* write the wad directory */
