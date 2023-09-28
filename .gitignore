@@ -1,2 +1,4 @@
 wadptr
 *.o
+dist
+wadptr.exe

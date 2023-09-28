@@ -32,5 +32,14 @@ clean:
 	$(DELETE) $(EXECUTABLE)
 	$(DELETE) *.o
 
-.PHONY: install clean
+windist: $(EXECUTABLE)
+	rm -rf dist
+	mkdir dist
+	cp wadptr.exe wadptr.txt dist/
+	cp COPYING.md dist/COPYING.txt
+	unix2dos -f dist/COPYING.txt dist/wadptr.txt
+	rm -f wadptr-$(VERSION).zip
+	zip -X -j -r wadptr-$(VERSION).zip dist
+
+.PHONY: install clean dist
 

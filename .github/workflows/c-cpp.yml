@@ -31,12 +31,18 @@ jobs:
       id: version
       run: |
         export VERSION=$(git rev-parse --short HEAD)
-        echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+        echo "VERSION=$VERSION-win64" >> $GITHUB_OUTPUT
     - name: Install dependencies
       run: |
         sudo apt update
         sudo apt -q install mingw-w64 pandoc
     - name: make
       run: make -j8
-
-    # TODO: Package and upload build artifact
+    - name: make package
+      run: |
+        make windist VERSION=${{steps.version.outputs.VERSION}}
+    - name: Upload build
+      uses: actions/upload-artifact@v1
+      with:
+        path: "dist"
+        name: wadptr-${{steps.version.outputs.VERSION}}
