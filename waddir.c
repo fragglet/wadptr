@@ -103,14 +103,21 @@ bool ReadWad(void)
 
 int WriteWadHeader(FILE *fp)
 {
-    unsigned char buff[5];
+    char buff[5];
 
     rewind(fp);
-    strcpy((char *) buff, "SFSF");
     if (wad == PWAD)
-        strcpy((char *) buff, pwad_name);
-    if (wad == IWAD)
-        strcpy((char *) buff, iwad_name);
+    {
+        strncpy(buff, pwad_name, 4);
+    }
+    else if (wad == IWAD)
+    {
+        strncpy(buff, iwad_name, 4);
+    }
+    else
+    {
+        ErrorExit("Trying to write a WAD of type %d?\n", wad);
+    }
     fwrite(buff, 1, 4, fp);
     WRITE_LONG(buff, numentries);
     fwrite(buff, 1, 4, fp);
