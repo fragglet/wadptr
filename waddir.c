@@ -38,15 +38,19 @@ static int ReadWadHeader(FILE *fp)
     fread(buff, 4, 1, fp);
     numentries = 0;
     diroffset = 0;
-    wadType = NONWAD;
+
     if (strcmp((char *) buff, pwad_name) == 0)
-        wadType = PWAD;
-    if (strcmp((char *) buff, iwad_name) == 0)
-        wadType = IWAD;
-    if (wadType == NONWAD)
     {
-        printf("File not IWAD or PWAD!\n");
-        return wadType;
+        wadType = PWAD;
+    }
+    else if (strcmp((char *) buff, iwad_name) == 0)
+    {
+        wadType = IWAD;
+    }
+    else
+    {
+        fprintf(stderr, "File is not an IWAD or a PWAD!\n");
+        return NONWAD;
     }
     fread(buff, 4, 1, fp);
     numentries = READ_LONG(buff);
@@ -89,7 +93,7 @@ bool ReadWad(void)
 
     if (numentries > MAXENTRIES)
     {
-        printf("Cannot handle > %i entry wads!\n", MAXENTRIES);
+        fprintf(stderr, "Cannot handle > %i entry wads!\n", MAXENTRIES);
         return true;
     }
     ReadWadDirectory(wadfp);
