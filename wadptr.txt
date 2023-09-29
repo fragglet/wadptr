@@ -339,4 +339,3 @@ also report bugs:
   lead me to incorporate it into WADPTR.
 * Id for Doom
 * Matt Fell, Doom Specs
-* The error 'beep' sound is from DEU :)
