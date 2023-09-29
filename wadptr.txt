@@ -26,16 +26,14 @@
                     [3-2] Bugs/suggestions/comments
                     [3-3] Thanks to..
 
-
-
 [1] About wadptr
 ================
 
 [1-1] What is wadptr ?
 ----------------------
-wadptr is a program designed to compress your WAD files. This can be a
-great help for you, as modem speeds mean that transferring a smaller
-file takes less time than transferring a larger file.
+wadptr is a program that can make your WAD files smaller by taking
+advantage of particular details of the WAD file format to combine
+duplicate data.
 
 [1-2] How does it work ?
 ------------------------
