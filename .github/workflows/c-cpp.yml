@@ -8,7 +8,6 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
@@ -19,10 +18,6 @@ jobs:
       run: ./run_tests.sh
 
   windows_crossbuild:
-    strategy:
-      matrix:
-        host: [x86_64-w64-mingw32]
-
     runs-on: ubuntu-latest
 
     steps:
@@ -35,9 +30,9 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt update
-        sudo apt -q install mingw-w64 pandoc
+        sudo apt -q install mingw-w64 unix2dos zip
     - name: make
-      run: make -j8
+      run: make -j8 CC=x86_64-w64-mingw32-gcc
     - name: make package
       run: |
         make windist VERSION=${{steps.version.outputs.VERSION}}

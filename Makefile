@@ -32,7 +32,7 @@ clean:
 	$(DELETE) $(EXECUTABLE)
 	$(DELETE) *.o
 
-windist: $(EXECUTABLE)
+windist:
 	rm -rf dist
 	mkdir dist
 	cp wadptr.exe wadptr.txt dist/
