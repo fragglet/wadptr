@@ -18,11 +18,6 @@
 #include "waddir.h"
 #include "wadptr.h"
 
-static int ReadWadHeader(FILE *fp);
-static int ReadWadDirectory(FILE *fp);
-static int ReadWadEntry(FILE *fp, entry_t *entry);
-static int WriteWadEntry(FILE *fp, entry_t *entry);
-
 FILE *wadfp;
 long numentries, diroffset;
 entry_t *wadentry = NULL;
@@ -186,35 +181,48 @@ bool IsLevel(int entry)
         return false;
 
     /* 9/9/99: generalised support: if the next entry is a */
-    /* things resource then its a level */
+    /* things resource then it's a level */
     return !strncmp(wadentry[entry + 1].name, "THINGS", 8);
 }
 
+static const char *level_lump_names[] = {
+    "THINGS",   // Level things data
+    "LINEDEFS", // Level linedef data
+    "SIDEDEFS", // Level sidedef data
+    "VERTEXES", // Level vertex data
+    "SEGS",     // Level wall segments
+    "SSECTORS", // Level subsectors
+    "NODES",    // Level BSP nodes
+    "SECTORS",  // Level sector data
+    "REJECT",   // Level reject table
+    "BLOCKMAP", // Level blockmap data
+    "BEHAVIOR", // Hexen compiled scripts
+    "SCRIPTS",  // Hexen script source
+    "LEAFS",    // PSX/D64 node leaves
+    "LIGHTS",   // PSX/D64 colored lights
+    "MACROS",   // Doom 64 Macros
+    "GL_VERT",  // OpenGL extra vertices
+    "GL_SEGS",  // OpenGL line segments
+    "GL_SSECT", // OpenGL subsectors
+    "GL_NODES", // OpenGL BSP nodes
+    "GL_PVS",   // Potential Vis. Set
+    "TEXTMAP",  // UDMF level data
+    "DIALOGUE", // Strife conversations
+    "ZNODES",   // UDMF BSP data
+    "ENDMAP",   // UDMF end of level
+};
+
 bool IsLevelEntry(char *s)
 {
-    if (!strncmp(s, "LINEDEFS", 8))
-        return true;
-    if (!strncmp(s, "SIDEDEFS", 8))
-        return true;
-    if (!strncmp(s, "SECTORS", 8))
-        return true;
-    if (!strncmp(s, "VERTEXES", 8))
-        return true;
-    if (!strncmp(s, "REJECT", 8))
-        return true;
-    if (!strncmp(s, "BLOCKMAP", 8))
-        return true;
-    if (!strncmp(s, "NODES", 8))
-        return true;
-    if (!strncmp(s, "THINGS", 8))
-        return true;
-    if (!strncmp(s, "SEGS", 8))
-        return true;
-    if (!strncmp(s, "SSECTORS", 8))
-        return true;
+    int i;
 
-    if (!strncmp(s, "BEHAVIOR", 8))
-        return true; /* hexen "behavior" lump */
+    for (i = 0; i < sizeof(level_lump_names) / sizeof(*level_lump_names); i++)
+    {
+        if (!strncmp(s, level_lump_names[i], 8))
+        {
+            return true;
+        }
+    }
     return false;
 }
 
