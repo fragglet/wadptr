@@ -326,11 +326,10 @@ static void P_Rebuild(void)
 /* returns a pointer to the new(compressed) lump. This must be free()d when */
 /* it is no longer needed, as S_Squash() does not do this itself. */
 
-char *S_Squash(int entrynum)
+uint8_t *S_Squash(int entrynum)
 {
-    unsigned char *working, *newres;
+    uint8_t *working, *newres, *newptr;
     int count;
-    unsigned char *newptr;
     long lastpt;
 
     if (!S_IsGraphic(entrynum))
@@ -343,7 +342,7 @@ char *S_Squash(int entrynum)
 
     /* find posts to be killed; if none, return original lump */
     if (S_FindRedundantColumns(working) == 0 && !s_unsquash_mode)
-        return (char *) working;
+        return working;
 
     /* TODO: Fix static limit. */
     newres = ALLOC_ARRAY(unsigned char, 100000);
@@ -355,7 +354,7 @@ char *S_Squash(int entrynum)
     WRITE_SHORT(newres + 6, s_toffset);
 
     /* the new column pointers for the new lump */
-    newptr = (unsigned char *) (newres + 8);
+    newptr = newres + 8;
 
     lastpt = 8 + (s_width * 4); /* last point in the lump */
 
@@ -385,22 +384,22 @@ char *S_Squash(int entrynum)
     {
         /* the new resource was bigger than the old one! */
         free(newres);
-        return (char *) working;
+        return working;
     }
     else
     {
         wadentry[entrynum].length = lastpt;
         free(working);
-        return (char *) newres;
+        return newres;
     }
 }
 
 /* Unsquash a picture. Unsquashing rebuilds the image, just like when we
  * do the squashing, except that we set a special flag that skips
  * searching for identical columns. */
-char *S_Unsquash(int entrynum)
+uint8_t *S_Unsquash(int entrynum)
 {
-    char *result;
+    uint8_t *result;
 
     s_unsquash_mode = true;
     result = S_Squash(entrynum);

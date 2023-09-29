@@ -262,8 +262,8 @@ static bool Compress(const char *wadname)
     long wadsize; /* wad size(to find % smaller) */
     FILE *fstream;
     bool written, write_silent;
-    char *temp, a[50];
-    char *tempwad_name;
+    uint8_t *temp;
+    char *tempwad_name, a[50];
 
     wadfp = fopen(wadname, "rb");
     if (wadfp == NULL)
@@ -431,9 +431,9 @@ static bool Compress(const char *wadname)
 /* TODO: This can probably be merged with Compress() above. */
 static bool Uncompress(const char *wadname)
 {
-    char tempstr[50];
+    char tempstr[50], *tempwad_name;
     FILE *fstream;
-    char *tempres, *tempwad_name;
+    uint8_t *tempres;
     bool written, write_silent;
     long fileloc;
     int count;

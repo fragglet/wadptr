@@ -12,6 +12,7 @@
 #define __LUMPS_H_INCLUDED__
 
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -25,8 +26,8 @@ void P_Pack(char *levelname);
 void P_Unpack(char *resname);
 bool P_IsPacked(char *s);
 
-char *S_Squash(int entrynum);
-char *S_Unsquash(int entrynum);
+uint8_t *S_Squash(int entrynum);
+uint8_t *S_Unsquash(int entrynum);
 bool S_IsSquashed(int entrynum);
 bool S_IsGraphic(int entrynum);
 
