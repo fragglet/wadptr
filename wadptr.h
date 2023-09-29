@@ -14,9 +14,9 @@
 
 #include <dirent.h>
 #include <stdarg.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
 #include <string.h>
 
 #include "errors.h"
@@ -53,8 +53,7 @@ extern const char *iwad_name;
 
 #define REALLOC_ARRAY(type, old, count) \
     (type *) CheckedRealloc(old, sizeof(type) * (count))
-#define ALLOC_ARRAY(type, count) \
-    REALLOC_ARRAY(type, 0, count)
+#define ALLOC_ARRAY(type, count) REALLOC_ARRAY(type, 0, count)
 
 extern void PrintProgress(int numerator, int denominator);
 extern void *CheckedRealloc(void *old, size_t nbytes);

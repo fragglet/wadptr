@@ -114,8 +114,8 @@ void PrintProgress(int numerator, int denominator)
     static int last_numerator = 0;
     clock_t now = clock();
 
-    if (numerator < last_numerator
-     || now - last_progress_time >= (CLOCKS_PER_SEC / 20))
+    if (numerator < last_numerator ||
+        now - last_progress_time >= (CLOCKS_PER_SEC / 20))
     {
         printf("%4d%%\b\b\b\b\b", (int) (100 * numerator) / denominator);
         fflush(stdout);
@@ -236,22 +236,23 @@ static bool DoAction(const char *wadname)
 
 static void Help(void)
 {
-    printf("\n"
-           "WADPTR - WAD Compressor version " VERSION "\n"
-           "Copyright (c) 1997-2023 Simon Howard, Andreas Dehmel\n"
-           "<https://soulsphere.org/projects/wadptr/>\n"
-           "\n"
-           "Usage:  WADPTR <-c|-u|-l> [options] inputwad [inputwad inputwad...]\n"
-           "\n"
-           " -c        :   Compress WAD\n"
-           " -u        :   Uncompress WAD\n"
-           " -l        :   List WAD\n"
-           " -h        :   Help\n"
-           "\n"
-           " -o <file> :   Write output WAD to <file>\n"
-           " -nomerge  :   Disable lump merging\n"
-           " -nosquash :   Disable graphic squashing\n"
-           " -nopack   :   Disable sidedef packing\n");
+    printf(
+        "\n"
+        "WADPTR - WAD Compressor version " VERSION "\n"
+        "Copyright (c) 1997-2023 Simon Howard, Andreas Dehmel\n"
+        "<https://soulsphere.org/projects/wadptr/>\n"
+        "\n"
+        "Usage:  WADPTR <-c|-u|-l> [options] inputwad [inputwad inputwad...]\n"
+        "\n"
+        " -c        :   Compress WAD\n"
+        " -u        :   Uncompress WAD\n"
+        " -l        :   List WAD\n"
+        " -h        :   Help\n"
+        "\n"
+        " -o <file> :   Write output WAD to <file>\n"
+        " -nomerge  :   Disable lump merging\n"
+        " -nosquash :   Disable graphic squashing\n"
+        " -nopack   :   Disable sidedef packing\n");
 }
 
 /* Compress a WAD */
@@ -282,8 +283,8 @@ static bool Compress(const char *wadname)
 
     wadsize = diroffset + (ENTRY_SIZE * numentries);
 
-    fstream = OpenTempFile(outputwad != NULL ? outputwad : wadname,
-                           &tempwad_name);
+    fstream =
+        OpenTempFile(outputwad != NULL ? outputwad : wadname, &tempwad_name);
 
     memset(a, 0, 12);
     fwrite(a, 12, 1, fstream); /* temp header. */
@@ -315,8 +316,8 @@ static bool Compress(const char *wadname)
                 /* pack the level */
                 P_Pack(wadentry[count].name);
 
-                findshrink = FindPerc(findshrink,
-                                      FindLevelSize(wadentry[count].name));
+                findshrink =
+                    FindPerc(findshrink, FindLevelSize(wadentry[count].name));
                 printf(" (%i%%), done.\n", findshrink);
 
                 write_silent = true;
