@@ -89,13 +89,13 @@ bool ReadWad(void)
 {
     if ((wad = ReadWadHeader(wadfp)) == NONWAD)
     {
-        return true;
+        return false;
     }
 
     fseek(wadfp, diroffset, SEEK_SET);
     ReadWadDirectory(wadfp);
 
-    return false;
+    return true;
 }
 
 int WriteWadHeader(FILE *fp)

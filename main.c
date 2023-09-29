@@ -272,7 +272,7 @@ static bool Compress(const char *wadname)
         perror("fopen");
         return false;
     }
-    if (ReadWad())
+    if (!ReadWad())
     {
         return false;
     }
@@ -445,7 +445,7 @@ static bool Uncompress(const char *wadname)
         perror("fopen");
         return false;
     }
-    if (ReadWad())
+    if (!ReadWad())
     {
         return false;
     }
@@ -567,7 +567,7 @@ static bool ListEntries(const char *wadname)
         perror("fopen");
         return false;
     }
-    if (ReadWad())
+    if (!ReadWad())
     {
         return false;
     }
