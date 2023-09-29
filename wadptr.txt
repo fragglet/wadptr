@@ -316,15 +316,14 @@ v1.1    -     Original release, only options are '-list',
 -------------------------------
 
 I can be e-mailed on the Internet at:
-        fraggle@gmail.com
-Also, check out my homepage at:
-        https://soulsphere.org/
-Updates and bug fixes of WADPTR will be placed here if
-neccesary.
+   fraggle@gmail.com
 
-The Commented C source code is available free from my site.
-It should be fairly easy to incorporate into other programs
-if neccesary.
+The wadptr website can be found here:
+  <https://soulsphere.org/projects/wadptr>
+
+You can find the latest version of the code on Github, where you can
+also report bugs:
+  <https://github.com/fragglet/wadptr>
 
 [3-3] Thanks to..
 -----------------
