@@ -32,8 +32,8 @@ static void P_DoPack(sidedef_t *sidedefs);
 static void P_BuildLinedefs(linedef_t *linedefs);
 static void P_Rebuild(void);
 
-static int S_FindRedundantColumns(unsigned char *s);
-static int S_FindColumnSize(unsigned char *col1);
+static int S_FindRedundantColumns(uint8_t *s);
+static int S_FindColumnSize(uint8_t *col1);
 
 static linedef_t *ReadLinedefs(int lumpnum, FILE *fp);
 static sidedef_t *ReadSidedefs(int lumpnum, FILE *fp);
@@ -50,8 +50,8 @@ static linedef_t *p_newlinedef; /* the new linedefs */
 static int *p_movedto;          /* keep track of where the sidedefs are now */
 static int p_newnum = 0;        /* the new number of sidedefs */
 
-char *p_linedefres = 0; /* the new linedef resource */
-char *p_sidedefres = 0; /* the new sidedef resource */
+uint8_t *p_linedefres = 0; /* the new linedef resource */
+uint8_t *p_sidedefres = 0; /* the new sidedef resource */
 
 /* Graphic squashing globals */
 static bool s_unsquash_mode = false; /* True when we are inside a
@@ -60,8 +60,8 @@ static int s_equalcolumn[400];  /* 1 for each column: another column which is */
                                 /* identical or -1 if there isn't one */
 static short s_height, s_width; /* picture width, height etc. */
 static short s_loffset, s_toffset;
-static unsigned char *s_columns; /* the location of each column in the lump */
-static long s_colsize[400];      /* the length(in bytes) of each column */
+static uint8_t *s_columns;  /* the location of each column in the lump */
+static long s_colsize[400]; /* the length(in bytes) of each column */
 
 /* Pack a level */
 
@@ -93,8 +93,8 @@ void P_Pack(char *levelname)
     /* saving of the wad directory is left to external sources */
 
     /* point p_linedefres and p_sidedefres at the new lumps */
-    p_linedefres = (char *) p_newlinedef;
-    p_sidedefres = (char *) p_newsidedef;
+    p_linedefres = (uint8_t *) p_newlinedef;
+    p_sidedefres = (uint8_t *) p_newsidedef;
 
     wadentry[p_sidedefnum].length = p_newnum * SDEF_SIZE;
 }
@@ -111,8 +111,8 @@ void P_Unpack(char *resname)
     P_FindInfo();
     P_Rebuild();
 
-    p_linedefres = (char *) p_newlinedef;
-    p_sidedefres = (char *) p_newsidedef;
+    p_linedefres = (uint8_t *) p_newlinedef;
+    p_sidedefres = (uint8_t *) p_newsidedef;
 }
 
 /* Find if a level is packed */
@@ -345,7 +345,7 @@ uint8_t *S_Squash(int entrynum)
         return working;
 
     /* TODO: Fix static limit. */
-    newres = ALLOC_ARRAY(unsigned char, 100000);
+    newres = ALLOC_ARRAY(uint8_t, 100000);
 
     /* find various info: size,offset etc. */
     WRITE_SHORT(newres, s_width);
@@ -410,7 +410,7 @@ uint8_t *S_Unsquash(int entrynum)
 
 /* Find the redundant columns */
 
-static int S_FindRedundantColumns(unsigned char *x)
+static int S_FindRedundantColumns(uint8_t *x)
 {
     int count, count2;
     int num_killed = 0;
@@ -420,7 +420,7 @@ static int S_FindRedundantColumns(unsigned char *x)
     s_loffset = READ_SHORT(x + 4);
     s_toffset = READ_SHORT(x + 6);
 
-    s_columns = (unsigned char *) (x + 8);
+    s_columns = x + 8;
 
     for (count = 0; count < s_width; count++)
     {
@@ -431,7 +431,7 @@ static int S_FindRedundantColumns(unsigned char *x)
 
         /* find the column size */
         tmpcol = READ_LONG(s_columns + 4 * count);
-        s_colsize[count] = S_FindColumnSize((unsigned char *) x + tmpcol);
+        s_colsize[count] = S_FindColumnSize(x + tmpcol);
 
         /* Unsquash mode is identical to squash mode but we just don't
            look for any identical columns. */
@@ -467,7 +467,7 @@ static int S_FindRedundantColumns(unsigned char *x)
 
 /* Find the size of a column */
 
-static int S_FindColumnSize(unsigned char *col1)
+static int S_FindColumnSize(uint8_t *col1)
 {
     int count = 0;
 
@@ -487,7 +487,7 @@ static int S_FindColumnSize(unsigned char *col1)
 
 bool S_IsSquashed(int entrynum)
 {
-    char *pic;
+    uint8_t *pic;
     int count, count2;
 
     pic = CacheLump(entrynum); /* cache the lump */
@@ -498,7 +498,7 @@ bool S_IsSquashed(int entrynum)
     s_toffset = READ_SHORT(pic + 6);
 
     /* find the column locations */
-    s_columns = (unsigned char *) (pic + 8);
+    s_columns = pic + 8;
 
     for (count = 0; count < s_width; count++)
     {
@@ -525,11 +525,10 @@ bool S_IsSquashed(int entrynum)
 
 bool S_IsGraphic(int entrynum)
 {
-    unsigned char *graphic;
+    uint8_t *graphic, *columns;
     char *s = wadentry[entrynum].name;
     int count;
     short width, height;
-    unsigned char *columns;
 
     if (!strncmp(s, "ENDOOM", 8))
         return false;
@@ -553,7 +552,7 @@ bool S_IsGraphic(int entrynum)
 
     width = READ_SHORT(graphic);
     height = READ_SHORT(graphic + 2);
-    columns = (unsigned char *) (graphic + 8);
+    columns = graphic + 8;
 
     if ((width > 320) || (height > 200) || (width == 0) || (height == 0) ||
         (width < 0) || (height < 0))
@@ -590,13 +589,13 @@ bool S_IsGraphic(int entrynum)
  */
 
 static const int convbuffsize = 0x8000;
-static unsigned char convbuffer[0x8000];
+static uint8_t convbuffer[0x8000];
 
 static linedef_t *ReadLinedefs(int lumpnum, FILE *fp)
 {
     linedef_t *lines;
     int i, numlines, validbytes;
-    unsigned char *cptr;
+    uint8_t *cptr;
 
     numlines = wadentry[lumpnum].length / LDEF_SIZE;
     lines = ALLOC_ARRAY(linedef_t, numlines);
@@ -630,7 +629,7 @@ static linedef_t *ReadLinedefs(int lumpnum, FILE *fp)
 int WriteLinedefs(linedef_t *lines, int bytes, FILE *fp)
 {
     int i;
-    unsigned char *cptr;
+    uint8_t *cptr;
 
     cptr = convbuffer;
     for (i = 0; bytes > 0; i++)
@@ -661,7 +660,7 @@ static sidedef_t *ReadSidedefs(int lumpnum, FILE *fp)
 {
     sidedef_t *sides;
     int i, numsides, validbytes;
-    unsigned char *cptr;
+    uint8_t *cptr;
 
     numsides = wadentry[lumpnum].length / SDEF_SIZE;
     sides = ALLOC_ARRAY(sidedef_t, numsides);
@@ -696,7 +695,7 @@ static sidedef_t *ReadSidedefs(int lumpnum, FILE *fp)
 int WriteSidedefs(sidedef_t *sides, int bytes, FILE *fp)
 {
     int i;
-    unsigned char *cptr;
+    uint8_t *cptr;
 
     cptr = convbuffer;
     for (i = 0; bytes > 0; i++)

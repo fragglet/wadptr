@@ -95,7 +95,7 @@ void Rebuild(FILE *newwad)
 {
     int count;
     int *sameas;
-    char *tempchar;
+    uint8_t *cached;
     long along = 0, filepos;
 
     /* first run Suggest mode to find how to make it smaller */
@@ -115,9 +115,9 @@ void Rebuild(FILE *newwad)
         else
         {
             filepos = ftell(newwad);
-            tempchar = CacheLump(count);
-            fwrite(tempchar, 1, wadentry[count].length, newwad);
-            free(tempchar);
+            cached = CacheLump(count);
+            fwrite(cached, 1, wadentry[count].length, newwad);
+            free(cached);
             wadentry[count].offset = filepos;
         }
     }

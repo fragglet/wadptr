@@ -19,8 +19,8 @@
 #include "errors.h"
 #include "waddir.h"
 
-extern char *p_linedefres; /* the new linedef resource */
-extern char *p_sidedefres; /* the new sidedef resource */
+extern uint8_t *p_linedefres; /* the new linedef resource */
+extern uint8_t *p_sidedefres; /* the new sidedef resource */
 
 void P_Pack(char *levelname);
 void P_Unpack(char *resname);
