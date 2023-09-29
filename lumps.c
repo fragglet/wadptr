@@ -21,6 +21,7 @@
  *       graphic lumps to make them smaller
  */
 
+#include <stdint.h>
 #include <string.h>
 
 #include "lumps.h"
@@ -119,6 +120,8 @@ void P_Unpack(char *resname)
 bool P_IsPacked(char *s)
 {
     linedef_t *linedefs;
+    uint8_t *sidedef_used;
+    bool packed = false;
     int count;
 
     p_working = s;
@@ -127,47 +130,36 @@ bool P_IsPacked(char *s)
 
     linedefs = ReadLinedefs(p_linedefnum, wadfp);
 
-    /* 10 extra sidedefs for safety */
-    p_movedto = ALLOC_ARRAY(int, p_num_sidedefs + 10);
-
-    /* uses p_movedto to find if same sidedef has already been used
-       on an earlier linedef checked */
-
+    sidedef_used = ALLOC_ARRAY(uint8_t, p_num_sidedefs);
     for (count = 0; count < p_num_sidedefs; count++)
-        p_movedto[count] = 0;
+        sidedef_used[count] = 0;
 
     for (count = 0; count < p_num_linedefs; count++) /* now check */
     {
         if (linedefs[count].sidedef1 != NO_SIDEDEF)
         {
-            if (p_movedto[linedefs[count].sidedef1])
+            if (sidedef_used[linedefs[count].sidedef1])
             {
                 /* side already used on a previous linedef */
-                free(linedefs);
-                free(p_movedto);
-                return true; /* must be packed */
+                packed = true;
+                break;
             }
-            else
-            {
-                /* mark it as used for later reference */
-                p_movedto[linedefs[count].sidedef1] = 1;
-            }
+            /* mark it as used for later reference */
+            sidedef_used[linedefs[count].sidedef1] = 1;
         }
         if (linedefs[count].sidedef2 != NO_SIDEDEF)
         {
-            if (p_movedto[linedefs[count].sidedef2])
+            if (sidedef_used[linedefs[count].sidedef2])
             {
-                free(linedefs);
-                free(p_movedto);
-                return true;
+                packed = true;
+                break;
             }
-            else
-                p_movedto[linedefs[count].sidedef2] = 1;
+            sidedef_used[linedefs[count].sidedef2] = 1;
         }
     }
     free(linedefs);
-    free(p_movedto);
-    return false; /* cant be packed: none of the sidedefs are shared */
+    free(sidedef_used);
+    return packed;
 }
 
 /* Find necessary stuff before processing */
@@ -228,7 +220,7 @@ static void P_DoPack(sidedef_t *sidedefs)
         ErrorExit("P_DoPack: could not alloc memory for new sidedefs");
     }
 
-    p_movedto = ALLOC_ARRAY(int, p_num_sidedefs + 10);
+    p_movedto = ALLOC_ARRAY(int, p_num_sidedefs);
 
     p_newnum = 0;
     for (count = 0; count < p_num_sidedefs; count++)
