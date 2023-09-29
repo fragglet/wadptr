@@ -209,16 +209,36 @@ static void P_FindInfo(void)
     p_num_sidedefs = wadentry[p_sidedefnum].length / SDEF_SIZE;
 }
 
+/* Append the given sidedef to the p_newsidedef array. */
+static int AppendNewSidedef(const sidedef_t *s)
+{
+    int result;
+
+    while (p_newsidedef_count >= p_newsidedef_size)
+    {
+        p_newsidedef_size *= 2;
+        p_newsidedef =
+            REALLOC_ARRAY(sidedef_t, p_newsidedef, p_newsidedef_size);
+    }
+
+    memcpy(&p_newsidedef[p_newsidedef_count], s, sizeof(sidedef_t));
+    result = p_newsidedef_count;
+    ++p_newsidedef_count;
+
+    return result;
+}
+
 /* Actually pack the sidedefs */
 
 static void P_DoPack(sidedef_t *sidedefs)
 {
     int count, count2;
 
-    p_newsidedef = ALLOC_ARRAY(sidedef_t, p_num_sidedefs);
+    p_newsidedef_size = p_num_sidedefs;
+    p_newsidedef = ALLOC_ARRAY(sidedef_t, p_newsidedef_size);
+    p_newsidedef_count = 0;
     p_newsidedef_index = ALLOC_ARRAY(int, p_num_sidedefs);
 
-    p_newsidedef_count = 0;
     for (count = 0; count < p_num_sidedefs; count++)
     {
         if ((count % 100) == 0)
@@ -226,13 +246,12 @@ static void P_DoPack(sidedef_t *sidedefs)
             /* time for a percent-done update */
             PrintProgress(count, p_num_sidedefs);
         }
-        for (count2 = 0; count2 < p_newsidedef_count;
-             count2++) /* check previous */
+        /* have we already added an identical sidedef? */
+        for (count2 = 0; count2 < p_newsidedef_count; count2++)
         {
             if (!memcmp(&p_newsidedef[count2], &sidedefs[count],
                         sizeof(sidedef_t)))
             {
-                /* they are identical: this one can be removed */
                 p_newsidedef_index[count] = count2;
                 break;
             }
@@ -240,10 +259,7 @@ static void P_DoPack(sidedef_t *sidedefs)
         /* a sidedef like this does not yet exist: add one */
         if (count2 >= p_newsidedef_count)
         {
-            memcpy(&p_newsidedef[p_newsidedef_count], &sidedefs[count],
-                   sizeof(sidedef_t));
-            p_newsidedef_index[count] = p_newsidedef_count;
-            p_newsidedef_count++;
+            p_newsidedef_index[count] = AppendNewSidedef(&sidedefs[count]);
         }
     }
     free(sidedefs);
@@ -271,24 +287,6 @@ static void P_BuildLinedefs(linedef_t *linedefs)
     p_newlinedef = linedefs;
 
     free(p_newsidedef_index);
-}
-
-static int AppendNewSidedef(const sidedef_t *s)
-{
-    int result;
-
-    while (p_newsidedef_count >= p_newsidedef_size)
-    {
-        p_newsidedef_size *= 2;
-        p_newsidedef =
-            REALLOC_ARRAY(sidedef_t, p_newsidedef, p_newsidedef_size);
-    }
-
-    memcpy(&p_newsidedef[p_newsidedef_count], s, sizeof(sidedef_t));
-    result = p_newsidedef_count;
-    ++p_newsidedef_count;
-
-    return result;
 }
 
 /* Rebuild the sidedefs */
