@@ -40,7 +40,6 @@ bool IsLevelEntry(char *s);
 int FindLevelSize(char *s);
 
 extern FILE *wadfp;
-extern char picentry[8];
 extern long numentries, diroffset;
 extern entry_t wadentry[MAXENTRIES];
 extern wadtype wad;
