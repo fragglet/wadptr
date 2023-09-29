@@ -30,7 +30,7 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt update
-        sudo apt -q install mingw-w64 unix2dos zip
+        sudo apt -q install mingw-w64 dos2unix zip
     - name: make
       run: make -j8 CC=x86_64-w64-mingw32-gcc
     - name: make package
