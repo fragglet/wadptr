@@ -137,7 +137,7 @@ every pixel wide the image is. For example:
 
         Column pointers                 Columns
 
-           1 ----------------------------> 1 
+           1 ----------------------------> 1
 
            2 ----------------------------> 2
 
@@ -213,11 +213,11 @@ The command line options are:
 
          -uncompress           Uncompress a WAD file, creating a
          -u                    new WAD file that is the same size
-                               (or very close) to the original.                                
+                               (or very close) to the original.
 
          -nomerge              Option not to merge identical lumps.
          -nosquash             Option not to squash graphic lumps.
-         -nopack               Option not to pack the sidedefs in levels. 
+         -nopack               Option not to pack the sidedefs in levels.
 
 [2-2] Compressing a WAD
 -----------------------
