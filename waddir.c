@@ -116,7 +116,7 @@ int WriteWadHeader(FILE *fp)
     }
     else
     {
-        ErrorExit("Trying to write a WAD of type %d?\n", wad);
+        ErrorExit("Trying to write a WAD of type %d?", wad);
     }
     fwrite(buff, 1, 4, fp);
     WRITE_LONG(buff, numentries);

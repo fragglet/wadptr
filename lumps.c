@@ -186,7 +186,7 @@ static void P_FindInfo(void)
         }
     }
     if (count == numentries)
-        ErrorExit("P_FindInfo: Couldn't find level: %.8s\n", p_working);
+        ErrorExit("P_FindInfo: Couldn't find level: %.8s", p_working);
 
     n = 0;
 
@@ -195,7 +195,7 @@ static void P_FindInfo(void)
     {
         if (!IsLevelEntry(wadentry[count].name))
         {
-            ErrorExit("P_FindInfo: Can't find sidedef/linedef entries!\n");
+            ErrorExit("P_FindInfo: Can't find sidedef/linedef entries!");
         }
 
         if (!strncmp(wadentry[count].name, "SIDEDEFS", 8))
@@ -225,7 +225,7 @@ static void P_DoPack(sidedef_t *sidedefs)
     p_newsidedef = malloc(wadentry[p_sidedefnum].length * 10);
     if (!p_newsidedef)
     {
-        ErrorExit("P_DoPack: could not alloc memory for new sidedefs\n");
+        ErrorExit("P_DoPack: could not alloc memory for new sidedefs");
     }
 
     p_movedto = ALLOC_ARRAY(int, p_num_sidedefs + 10);
@@ -296,7 +296,7 @@ static void P_Rebuild(void)
     p_newsidedef = malloc(wadentry[p_sidedefnum].length * 10);
 
     if (!p_newsidedef)
-        ErrorExit("P_Rebuild: could not alloc memory for new sidedefs\n");
+        ErrorExit("P_Rebuild: could not alloc memory for new sidedefs");
 
     p_newnum = 0;
 
@@ -346,7 +346,7 @@ char *S_Squash(char *s)
     entrynum = EntryExists(s);
     working = CacheLump(entrynum);
     if ((long) working == -1)
-        ErrorExit("squash: Couldn't find %.8s\n", s);
+        ErrorExit("squash: Couldn't find %.8s", s);
 
     /* find posts to be killed; if none, return original lump */
     if (S_FindRedundantColumns(working) == 0 && !s_unsquash_mode)
@@ -501,7 +501,7 @@ bool S_IsSquashed(char *s)
 
     entrynum = EntryExists(s);
     if (entrynum == -1)
-        ErrorExit("is_squashed: %.8s does not exist!\n", s);
+        ErrorExit("is_squashed: %.8s does not exist!", s);
     pic = CacheLump(entrynum); /* cache the lump */
 
     s_width = READ_SHORT(pic);
@@ -554,7 +554,7 @@ bool S_IsGraphic(char *s)
 
     entrynum = EntryExists(s);
     if (entrynum == -1)
-        ErrorExit("isgraphic: %.8s does not exist!\n", s);
+        ErrorExit("isgraphic: %.8s does not exist!", s);
     if (wadentry[entrynum].length <= 0)
     {
         /* don't read data from 0 size lumps */

@@ -99,11 +99,11 @@ static FILE *OpenTempFile(const char *file_in_same_dir, char **filename)
 
         if (errno != EEXIST)
         {
-            ErrorExit("Failed to open %s for writing.\n", *filename);
+            ErrorExit("Failed to open %s for writing.", *filename);
         }
     }
 
-    ErrorExit("Failed to open a temporary file in same directory as '%s'\n",
+    ErrorExit("Failed to open a temporary file in same directory as '%s'",
               file_in_same_dir);
     return NULL;
 }
@@ -204,17 +204,17 @@ static void ParseCommandLine(void)
 
     if (filelist_index < 0)
     {
-        ErrorExit("No input WAD(s) file specified.\n");
+        ErrorExit("No input WAD(s) file specified.");
     }
     else if (outputwad != NULL && g_argc - filelist_index != 1)
     {
-        ErrorExit("Only one input file can be specified when using -output.\n");
+        ErrorExit("Only one input file can be specified when using -output.");
     }
 
     if (action == UNCOMPRESS && !allowmerge)
         ErrorExit("Sorry, uncompressing will undo any lump merging on WADs.\n"
                   "The -nomerge command is not available with the "
-                  "-u(Uncompress) option.\n");
+                  "-u(Uncompress) option.");
 }
 
 /* Does an action based on command line */
@@ -685,7 +685,7 @@ void *CheckedRealloc(void *old, size_t nbytes)
 
     if (result == NULL && nbytes > 0)
     {
-        ErrorExit("Failed to allocate %ld bytes\n", nbytes);
+        ErrorExit("Failed to allocate %ld bytes", nbytes);
     }
 
     return result;
