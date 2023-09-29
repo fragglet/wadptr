@@ -402,6 +402,9 @@ static bool Compress(const char *wadname)
         tempwad_name = tempwad2_name;
     }
 
+    // We only overwrite the original input file once we have generated
+    // the new one as a temporary file, so that it takes place as a
+    // simple rename() call.
     if (outputwad == NULL)
     {
         remove(wadname);
@@ -409,6 +412,7 @@ static bool Compress(const char *wadname)
     }
     else
     {
+        remove(outputwad);
         rename(tempwad_name, outputwad);
     }
 
