@@ -11,8 +11,6 @@
 
 #include "errors.h"
 
-#define MAXENTRIES 5000
-
 typedef enum { IWAD, PWAD, NONWAD } wadtype;
 
 typedef struct {
@@ -41,7 +39,7 @@ int FindLevelSize(char *s);
 
 extern FILE *wadfp;
 extern long numentries, diroffset;
-extern entry_t wadentry[MAXENTRIES];
+extern entry_t *wadentry;
 extern wadtype wad;
 
 #endif

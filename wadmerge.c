@@ -24,7 +24,7 @@ static int *Suggest(void)
     int count, count2, linkcnt = 0;
     int *result;
     short *links; /* possible links */
-    char *check1, *check2;
+    uint8_t *check1, *check2;
     int maxlinks = MAXLINKS;
 
     links = ALLOC_ARRAY(short, 2 * maxlinks);

@@ -25,7 +25,7 @@ static int WriteWadEntry(FILE *fp, entry_t *entry);
 
 FILE *wadfp;
 long numentries, diroffset;
-entry_t wadentry[MAXENTRIES];
+entry_t *wadentry = NULL;
 wadtype wad;
 
 static int ReadWadHeader(FILE *fp)
@@ -76,6 +76,7 @@ static int ReadWadDirectory(FILE *fp)
 {
     long i;
 
+    wadentry = REALLOC_ARRAY(entry_t, wadentry, numentries);
     for (i = 0; i < numentries; i++)
     {
         if (ReadWadEntry(fp, wadentry + i) != 0)
@@ -87,15 +88,11 @@ static int ReadWadDirectory(FILE *fp)
 bool ReadWad(void)
 {
     if ((wad = ReadWadHeader(wadfp)) == NONWAD)
-        return true;
-
-    fseek(wadfp, diroffset, SEEK_SET);
-
-    if (numentries > MAXENTRIES)
     {
-        fprintf(stderr, "Cannot handle > %i entry wads!\n", MAXENTRIES);
         return true;
     }
+
+    fseek(wadfp, diroffset, SEEK_SET);
     ReadWadDirectory(wadfp);
 
     return false;
@@ -173,7 +170,7 @@ int EntryExists(char *entrytofind)
 
 void *CacheLump(int entrynum)
 {
-    char *working = ALLOC_ARRAY(char, wadentry[entrynum].length);
+    uint8_t *working = ALLOC_ARRAY(uint8_t, wadentry[entrynum].length);
 
     fseek(wadfp, wadentry[entrynum].offset, SEEK_SET);
     fread(working, wadentry[entrynum].length, 1, wadfp);
