@@ -282,7 +282,8 @@ static bool Compress(const char *wadname)
 
     wadsize = diroffset + (ENTRY_SIZE * numentries);
 
-    fstream = OpenTempFile(wadname, &tempwad_name);
+    fstream = OpenTempFile(outputwad != NULL ? outputwad : wadname,
+                           &tempwad_name);
 
     memset(a, 0, 12);
     fwrite(a, 12, 1, fstream); /* temp header. */
@@ -387,7 +388,8 @@ static bool Compress(const char *wadname)
         char *tempwad2_name;
 
         wadfp = fopen(tempwad_name, "rb+");
-        fstream = OpenTempFile(wadname, &tempwad2_name);
+        fstream = OpenTempFile(outputwad != NULL ? outputwad : wadname,
+                               &tempwad2_name);
 
         printf("\nMerging identical lumps...");
         fflush(stdout);
