@@ -19,11 +19,10 @@
 #include "wadmerge.h"
 #include "wadptr.h"
 
-static short sameas[4000];
-
-static int Suggest(void)
+static int *Suggest(void)
 {
     int count, count2, linkcnt = 0;
+    int *result;
     short *links; /* possible links */
     char *check1, *check2;
     int maxlinks = MAXLINKS;
@@ -53,11 +52,15 @@ static int Suggest(void)
     }
 
     /* now check 'em out + see if they really are the same */
-    memset(sameas, -1, 2 * 4000);
+    result = ALLOC_ARRAY(int, numentries);
+    for (count = 0; count < numentries; count++)
+    {
+        result[count] = -1;
+    }
 
     for (count = 0; count < linkcnt; count++)
     {
-        if (sameas[links[2 * count]] != -1)
+        if (result[links[2 * count]] != -1)
         {
             /* already done that one */
             continue;
@@ -69,7 +72,7 @@ static int Suggest(void)
         if (!memcmp(check1, check2, wadentry[links[2 * count]].length))
         {
             /* they are the same ! */
-            sameas[links[2 * count]] = links[2 * count + 1];
+            result[links[2 * count]] = links[2 * count + 1];
         }
 
         free(check1); /* free back both lumps */
@@ -83,7 +86,7 @@ static int Suggest(void)
 
     free(links);
 
-    return 0;
+    return result;
 }
 
 /* Rebuild the WAD, making it smaller in the process */
@@ -91,11 +94,12 @@ static int Suggest(void)
 void Rebuild(FILE *newwad)
 {
     int count;
+    int *sameas;
     char *tempchar;
     long along = 0, filepos;
 
     /* first run Suggest mode to find how to make it smaller */
-    Suggest();
+    sameas = Suggest();
 
     fwrite(iwad_name, 1, 4, newwad);
     fwrite(&along, 4, 1, newwad);
@@ -123,4 +127,5 @@ void Rebuild(FILE *newwad)
     WriteWadHeader(newwad);
 
     fflush(stdout); /* remove % count */
+    free(sameas);
 }
