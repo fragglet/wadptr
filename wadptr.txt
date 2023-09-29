@@ -193,6 +193,9 @@ The command line options are:
   -uncompress   Uncompress a WAD file, creating a new WAD file that is
   -u            the same size (or very close) to the original.
 
+  -quiet        Quiet mode; disable normal output when compressing or
+  -q            when decompressing WAD files.
+
   -nomerge      Disables merging identical lumps.
   -nosquash     Disables squashing graphic lumps.
   -nopack       Disables packing level sidedefs.

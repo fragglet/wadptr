@@ -26,6 +26,10 @@
 
 #include "wadptr.h"
 
+#define SPAMMY_PRINTF \
+    if (!quiet_mode)  \
+    printf
+
 static bool Compress(const char *filename);
 static bool Uncompress(const char *filename);
 static bool ListEntries(const char *filename);
@@ -43,6 +47,7 @@ static enum { HELP, COMPRESS, UNCOMPRESS, LIST } action;
 bool allowpack = true;   /* level packing on */
 bool allowsquash = true; /* picture squashing on */
 bool allowmerge = true;  /* lump merging on */
+static bool quiet_mode = false;
 
 const char *pwad_name = "PWAD";
 const char *iwad_name = "IWAD";
@@ -117,7 +122,7 @@ void PrintProgress(int numerator, int denominator)
     if (numerator < last_numerator ||
         now - last_progress_time >= (CLOCKS_PER_SEC / 20))
     {
-        printf("%4d%%\b\b\b\b\b", (int) (100 * numerator) / denominator);
+        SPAMMY_PRINTF("%4d%%\b\b\b\b\b", (int) (100 * numerator) / denominator);
         fflush(stdout);
         last_progress_time = now;
     }
@@ -172,6 +177,11 @@ static void ParseCommandLine(void)
         if ((!strcmp(g_argv[count], "-uncompress")) ||
             (!strcmp(g_argv[count], "-u")))
             action = UNCOMPRESS;
+
+        if (!strcmp(g_argv[count], "-quiet") || !strcmp(g_argv[count], "-q"))
+        {
+            quiet_mode = true;
+        }
 
         /* specific disabling */
         if (!strcmp(g_argv[count], "-nomerge"))
@@ -250,6 +260,7 @@ static void Help(void)
         " -h        :   Help\n"
         "\n"
         " -o <file> :   Write output WAD to <file>\n"
+        " -q        :   Quiet mode; suppress normal output\n"
         " -nomerge  :   Disable lump merging\n"
         " -nosquash :   Disable graphic squashing\n"
         " -nopack   :   Disable sidedef packing\n");
@@ -294,7 +305,7 @@ static bool Compress(const char *wadname)
         /* hide individual level entries */
         if (!IsLevelEntry(wadentry[count].name))
         {
-            printf("Adding: %.8s       ", wadentry[count].name);
+            SPAMMY_PRINTF("Adding: %.8s       ", wadentry[count].name);
             fflush(stdout);
             write_silent = false;
         }
@@ -309,7 +320,7 @@ static bool Compress(const char *wadname)
         {
             if (IsLevel(count))
             {
-                printf("\tPacking");
+                SPAMMY_PRINTF("\tPacking");
                 fflush(stdout);
                 findshrink = FindLevelSize(wadentry[count].name);
 
@@ -318,7 +329,7 @@ static bool Compress(const char *wadname)
 
                 findshrink =
                     FindPerc(findshrink, FindLevelSize(wadentry[count].name));
-                printf(" (%i%%), done.\n", findshrink);
+                SPAMMY_PRINTF(" (%i%%), done.\n", findshrink);
 
                 write_silent = true;
             }
@@ -344,7 +355,7 @@ static bool Compress(const char *wadname)
 
         if (allowsquash && S_IsGraphic(count))
         {
-            printf("\tSquashing ");
+            SPAMMY_PRINTF("\tSquashing ");
             fflush(stdout);
             findshrink = wadentry[count].length;
 
@@ -354,13 +365,13 @@ static bool Compress(const char *wadname)
 
             free(temp);
             findshrink = FindPerc(findshrink, wadentry[count].length);
-            printf("(%i%%), done.\n", findshrink);
+            SPAMMY_PRINTF("(%i%%), done.\n", findshrink);
             written = true;
         }
 
         if (!written && !write_silent)
         {
-            printf("\tStoring ");
+            SPAMMY_PRINTF("\tStoring ");
             fflush(stdout);
         }
         if (!written)
@@ -372,7 +383,7 @@ static bool Compress(const char *wadname)
         }
         if (!written && !write_silent)
         {
-            printf("(0%%), done.\n");
+            SPAMMY_PRINTF("(0%%), done.\n");
         }
     }
 
@@ -392,10 +403,10 @@ static bool Compress(const char *wadname)
         fstream = OpenTempFile(outputwad != NULL ? outputwad : wadname,
                                &tempwad2_name);
 
-        printf("\nMerging identical lumps...");
+        SPAMMY_PRINTF("\nMerging identical lumps...");
         fflush(stdout);
         Rebuild(fstream);
-        printf(" done.\n");
+        SPAMMY_PRINTF(" done.\n");
 
         fclose(fstream);
         fclose(wadfp);
@@ -422,7 +433,7 @@ static bool Compress(const char *wadname)
     free(tempwad_name);
 
     findshrink = FindPerc(wadsize, diroffset + (numentries * ENTRY_SIZE));
-    printf("*** %s is %i%% smaller ***\n", wadname, findshrink);
+    SPAMMY_PRINTF("*** %s is %i%% smaller ***\n", wadname, findshrink);
     wadfp = NULL;
 
     return true;
@@ -468,7 +479,7 @@ static bool Uncompress(const char *wadname)
         }
         else
         {
-            printf("Adding: %.8s       ", wadentry[count].name);
+            SPAMMY_PRINTF("Adding: %.8s       ", wadentry[count].name);
             fflush(stdout);
             write_silent = false;
         }
@@ -477,10 +488,10 @@ static bool Uncompress(const char *wadname)
         {
             if (IsLevel(count))
             {
-                printf("\tUnpacking");
+                SPAMMY_PRINTF("\tUnpacking");
                 fflush(stdout);
                 P_Unpack(wadentry[count].name);
-                printf(", done.\n");
+                SPAMMY_PRINTF(", done.\n");
                 write_silent = true;
             }
             if (!strncmp(wadentry[count].name, "SIDEDEFS", 8))
@@ -502,19 +513,19 @@ static bool Uncompress(const char *wadname)
         }
         if (allowsquash && S_IsGraphic(count))
         {
-            printf("\tUnsquashing");
+            SPAMMY_PRINTF("\tUnsquashing");
             fflush(stdout);
             tempres = S_Unsquash(count);
             wadentry[count].offset = ftell(fstream);
             fwrite(tempres, wadentry[count].length, 1, fstream);
             free(tempres);
-            printf(", done\n");
+            SPAMMY_PRINTF(", done\n");
             written = true;
         }
 
         if (!written && !write_silent)
         {
-            printf("\tStoring");
+            SPAMMY_PRINTF("\tStoring");
             fflush(stdout);
         }
         if (!written)
@@ -527,7 +538,7 @@ static bool Uncompress(const char *wadname)
         }
         if (!written && !write_silent)
         {
-            printf(", done.\n");
+            SPAMMY_PRINTF(", done.\n");
         }
     }
     /* update the directory location */
@@ -572,8 +583,9 @@ static bool ListEntries(const char *wadname)
         return false;
     }
 
-    printf(" Number  Length  Offset      Method      Name        Shared\n"
-           " ------  ------  ------      ------      ----        ------\n");
+    SPAMMY_PRINTF(
+        " Number  Length  Offset      Method      Name        Shared\n"
+        " ------  ------  ------      ------      ----        ------\n");
 
     for (count = 0; count < numentries; count++)
     {
@@ -662,6 +674,10 @@ static int FindPerc(int before, int after)
 static bool IwadWarning(const char *wadname)
 {
     char tempchar;
+    if (quiet_mode)
+    {
+        return true;
+    }
     printf("%s is an IWAD file; are you sure you want to change it? ", wadname);
     fflush(stdout);
     while (1)
