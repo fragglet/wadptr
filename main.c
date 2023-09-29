@@ -341,13 +341,13 @@ static bool Compress(const char *wadname)
             }
         }
 
-        if (allowsquash && S_IsGraphic(wadentry[count].name))
+        if (allowsquash && S_IsGraphic(count))
         {
             printf("\tSquashing ");
             fflush(stdout);
             findshrink = wadentry[count].length;
 
-            temp = S_Squash(wadentry[count].name);
+            temp = S_Squash(count);
             wadentry[count].offset = ftell(fstream); /*update dir */
             fwrite(temp, wadentry[count].length, 1, fstream);
 
@@ -499,11 +499,11 @@ static bool Uncompress(const char *wadname)
                 written = true;
             }
         }
-        if (allowsquash && S_IsGraphic(wadentry[count].name))
+        if (allowsquash && S_IsGraphic(count))
         {
             printf("\tUnsquashing");
             fflush(stdout);
-            tempres = S_Unsquash(wadentry[count].name);
+            tempres = S_Unsquash(count);
             wadentry[count].offset = ftell(fstream);
             fwrite(tempres, wadentry[count].length, 1, fstream);
             free(tempres);
@@ -606,10 +606,10 @@ static bool ListEntries(const char *wadname)
             else
                 printf("Unpacked    ");
         }
-        else if (S_IsGraphic(wadentry[count].name))
+        else if (S_IsGraphic(count))
         {
             /* this is a graphic */
-            if (S_IsSquashed(wadentry[count].name))
+            if (S_IsSquashed(count))
                 printf("Squashed    ");
             else
                 printf("Unsquashed  ");

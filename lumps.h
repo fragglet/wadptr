@@ -25,10 +25,10 @@ void P_Pack(char *levelname);
 void P_Unpack(char *resname);
 bool P_IsPacked(char *s);
 
-char *S_Squash(char *s);
-char *S_Unsquash(char *s);
-bool S_IsSquashed(char *s);
-bool S_IsGraphic(char *s);
+char *S_Squash(int entrynum);
+char *S_Unsquash(int entrynum);
+bool S_IsSquashed(int entrynum);
+bool S_IsGraphic(int entrynum);
 
 typedef struct {
     short xoffset;

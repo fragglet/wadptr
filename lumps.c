@@ -334,19 +334,20 @@ static void P_Rebuild(void)
 /* returns a pointer to the new(compressed) lump. This must be free()d when */
 /* it is no longer needed, as S_Squash() does not do this itself. */
 
-char *S_Squash(char *s)
+char *S_Squash(int entrynum)
 {
     unsigned char *working, *newres;
-    int entrynum, count;
+    int count;
     unsigned char *newptr;
     long lastpt;
 
-    if (!S_IsGraphic(s))
+    if (!S_IsGraphic(entrynum))
+    {
         return NULL;
-    entrynum = EntryExists(s);
+    }
     working = CacheLump(entrynum);
     if ((long) working == -1)
-        ErrorExit("squash: Couldn't find %.8s", s);
+        ErrorExit("squash: Couldn't find %.8s", wadentry[entrynum].name);
 
     /* find posts to be killed; if none, return original lump */
     if (S_FindRedundantColumns(working) == 0 && !s_unsquash_mode)
@@ -405,12 +406,12 @@ char *S_Squash(char *s)
 /* Unsquash a picture. Unsquashing rebuilds the image, just like when we
  * do the squashing, except that we set a special flag that skips
  * searching for identical columns. */
-char *S_Unsquash(char *s)
+char *S_Unsquash(int entrynum)
 {
     char *result;
 
     s_unsquash_mode = true;
-    result = S_Squash(s);
+    result = S_Squash(entrynum);
     s_unsquash_mode = false;
 
     return result;
@@ -493,15 +494,11 @@ static int S_FindColumnSize(unsigned char *col1)
 
 /* Find if a graphic is squashed */
 
-bool S_IsSquashed(char *s)
+bool S_IsSquashed(int entrynum)
 {
-    int entrynum;
     char *pic;
     int count, count2;
 
-    entrynum = EntryExists(s);
-    if (entrynum == -1)
-        ErrorExit("is_squashed: %.8s does not exist!", s);
     pic = CacheLump(entrynum); /* cache the lump */
 
     s_width = READ_SHORT(pic);
@@ -535,10 +532,11 @@ bool S_IsSquashed(char *s)
 
 /* Is this a graphic ? */
 
-bool S_IsGraphic(char *s)
+bool S_IsGraphic(int entrynum)
 {
     unsigned char *graphic;
-    int entrynum, count;
+    char *s = wadentry[entrynum].name;
+    int count;
     short width, height;
     unsigned char *columns;
 
