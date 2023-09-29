@@ -88,20 +88,14 @@ static int Suggest(void)
 
 /* Rebuild the WAD, making it smaller in the process */
 
-void Rebuild(const char *newname)
+void Rebuild(FILE *newwad)
 {
     int count;
     char *tempchar;
-    FILE *newwad;
     long along = 0, filepos;
 
     /* first run Suggest mode to find how to make it smaller */
     Suggest();
-
-    newwad = fopen(newname, "wb+"); /* open the new wad */
-
-    if (!newwad)
-        ErrorExit("Rebuild: Couldn't open to %s\n", newname);
 
     fwrite(iwad_name, 1, 4, newwad);
     fwrite(&along, 4, 1, newwad);
@@ -127,7 +121,6 @@ void Rebuild(const char *newname)
     diroffset = ftell(newwad);
     WriteWadDirectory(newwad);
     WriteWadHeader(newwad);
-    fclose(newwad);
 
     fflush(stdout); /* remove % count */
 }

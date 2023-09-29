@@ -20,6 +20,7 @@
  */
 
 #include <ctype.h>
+#include <errno.h>
 #include <stdbool.h>
 #include <time.h>
 
@@ -46,7 +47,66 @@ bool allowmerge = true;  /* lump merging on */
 const char *pwad_name = "PWAD";
 const char *iwad_name = "IWAD";
 
-static const char *tempwad_name = "~wptmp" EXTSEP "wad";
+static bool FileExists(const char *filename)
+{
+    FILE *fs;
+
+    fs = fopen(filename, "rb");
+    if (fs != NULL)
+    {
+        fclose(fs);
+        return true;
+    }
+
+    return false;
+}
+
+static FILE *OpenTempFile(const char *file_in_same_dir, char **filename)
+{
+    FILE *result;
+    size_t filename_len;
+    char *p;
+    int i;
+
+    filename_len = strlen(file_in_same_dir) + 24;
+    *filename = ALLOC_ARRAY(char, filename_len);
+
+    strncpy(*filename, file_in_same_dir, filename_len);
+    p = strrchr(*filename, DIRSEP[0]);
+    if (p != NULL)
+    {
+        ++p;
+    }
+    else
+    {
+        p = *filename;
+    }
+
+    for (i = 0; i < 100; i++)
+    {
+        snprintf(p, filename_len - (p - *filename), ".wadptr-temp-%03d", i);
+        if (FileExists(*filename))
+        {
+            continue;
+        }
+
+        // The x modifier guarantees we never overwrite a file.
+        result = fopen(*filename, "w+xb");
+        if (result != NULL)
+        {
+            return result;
+        }
+
+        if (errno != EEXIST)
+        {
+            ErrorExit("Failed to open %s for writing.\n", *filename);
+        }
+    }
+
+    ErrorExit("Failed to open a temporary file in same directory as '%s'\n",
+              file_in_same_dir);
+    return NULL;
+}
 
 void PrintProgress(int numerator, int denominator)
 {
@@ -203,6 +263,7 @@ static bool Compress(const char *wadname)
     FILE *fstream;
     bool written, write_silent;
     char *temp, a[50];
+    char *tempwad_name;
 
     wadfp = fopen(wadname, "rb");
     if (wadfp == NULL)
@@ -221,9 +282,7 @@ static bool Compress(const char *wadname)
 
     wadsize = diroffset + (ENTRY_SIZE * numentries);
 
-    fstream = fopen(tempwad_name, "wb+");
-    if (!fstream)
-        ErrorExit("Compress: Couldn't write a temporary file\n");
+    fstream = OpenTempFile(wadname, &tempwad_name);
 
     memset(a, 0, 12);
     fwrite(a, 12, 1, fstream); /* temp header. */
@@ -325,26 +384,25 @@ static bool Compress(const char *wadname)
 
     if (allowmerge)
     {
+        char *tempwad2_name;
+
         wadfp = fopen(tempwad_name, "rb+");
+        fstream = OpenTempFile(wadname, &tempwad2_name);
+
         printf("\nMerging identical lumps...");
         fflush(stdout);
-
-        if (outputwad == NULL)
-        {
-            /* remove identical lumps: Rebuild them back to
-               the original filename */
-            remove(wadname);
-            Rebuild(wadname);
-        }
-        else
-        {
-            Rebuild(outputwad);
-        }
+        Rebuild(fstream);
         printf(" done.\n");
+
+        fclose(fstream);
         fclose(wadfp);
+
         remove(tempwad_name);
+        free(tempwad_name);
+        tempwad_name = tempwad2_name;
     }
-    else if (outputwad == NULL)
+
+    if (outputwad == NULL)
     {
         remove(wadname);
         rename(tempwad_name, wadname);
@@ -354,7 +412,7 @@ static bool Compress(const char *wadname)
         rename(tempwad_name, outputwad);
     }
 
-    wadfp = fopen(wadname, "rb+"); /* so there is something to close */
+    free(tempwad_name);
 
     findshrink = FindPerc(wadsize, diroffset + (numentries * ENTRY_SIZE));
     printf("*** %s is %i%% smaller ***\n", wadname, findshrink);
@@ -369,7 +427,7 @@ static bool Uncompress(const char *wadname)
 {
     char tempstr[50];
     FILE *fstream;
-    char *tempres;
+    char *tempres, *tempwad_name;
     bool written, write_silent;
     long fileloc;
     int count;
@@ -389,7 +447,7 @@ static bool Uncompress(const char *wadname)
         return false;
     }
 
-    fstream = fopen(tempwad_name, "wb+");
+    fstream = OpenTempFile(wadname, &tempwad_name);
     memset(tempstr, 0, 12);
     fwrite(tempstr, 12, 1, fstream); /* temp header */
 
@@ -484,6 +542,7 @@ static bool Uncompress(const char *wadname)
         rename(tempwad_name, outputwad);
     }
 
+    free(tempwad_name);
     wadfp = NULL;
 
     return true;

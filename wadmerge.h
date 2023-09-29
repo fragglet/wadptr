@@ -19,8 +19,10 @@
 #ifndef __WADMERGE_H_INCLUDED__
 #define __WADMERGE_H_INCLUDED__
 
+#include <stdio.h>
+
 #define MAXLINKS 50000
 
-void Rebuild(const char *newname);
+void Rebuild(FILE *outwad);
 
 #endif
