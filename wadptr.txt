@@ -319,7 +319,7 @@ v1.1    -     Original release, only options are '-list',
 I can be e-mailed on the Internet at:
         fraggle@gmail.com
 Also, check out my homepage at:
-        http://www.soulsphere.org/
+        https://soulsphere.org/
 Updates and bug fixes of WADPTR will be placed here if
 neccesary.
 

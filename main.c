@@ -239,7 +239,7 @@ static void Help(void)
     printf("\n"
            "WADPTR - WAD Compressor version " VERSION "\n"
            "Copyright (c) 1997-2023 Simon Howard, Andreas Dehmel\n"
-           "<http://www.soulsphere.org/projects/wadptr/>\n"
+           "<https://soulsphere.org/projects/wadptr/>\n"
            "\n"
            "Usage:  WADPTR <-c|-u|-l> [options] inputwad [inputwad inputwad...]\n"
            "\n"
