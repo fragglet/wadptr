@@ -2,6 +2,7 @@ PREFIX = /usr/local
 EXECUTABLE = wadptr
 OBJECTS = main.o waddir.o errors.o wadmerge.o lumps.o
 DELETE = rm -f
+STRIP = strip
 CFLAGS = -Wall -O3 -DNORMALUNIX
 
 all: $(EXECUTABLE)
@@ -36,6 +37,7 @@ windist:
 	rm -rf dist
 	mkdir dist
 	cp wadptr.exe wadptr.txt dist/
+	$(STRIP) dist/wadptr.exe
 	cp COPYING.md dist/COPYING.txt
 	unix2dos -f dist/COPYING.txt dist/wadptr.txt
 	rm -f wadptr-$(VERSION).zip

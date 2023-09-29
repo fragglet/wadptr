@@ -35,7 +35,8 @@ jobs:
       run: make -j8 CC=x86_64-w64-mingw32-gcc
     - name: make package
       run: |
-        make windist VERSION=${{steps.version.outputs.VERSION}}
+        make windist VERSION=${{steps.version.outputs.VERSION}} \
+                     STRIP=x86_64-w64-mingw32-strip
     - name: Upload build
       uses: actions/upload-artifact@v1
       with:
