@@ -45,11 +45,11 @@ static int p_num_linedefs = 0,
            p_num_sidedefs = 0; /* number of sd/lds do not get confused */
 static const char *p_working;  /* the name of the level resource eg. "MAP01" */
 
-static sidedef_t *p_newsidedef;  /* the new sidedefs */
-static linedef_t *p_newlinedef;  /* the new linedefs */
-static size_t p_newsidedef_size; /* allocated size of p_newsidedef buffer*/
-static int *p_movedto;           /* keep track of where the sidedefs are now */
-static int p_newnum = 0;         /* the new number of sidedefs */
+static sidedef_t *p_newsidedef;       /* the new sidedefs */
+static linedef_t *p_newlinedef;       /* the new linedefs */
+static size_t p_newsidedef_count = 0; /* the new number of sidedefs */
+static size_t p_newsidedef_size;      /* allocated size of p_newsidedef buffer*/
+static int *p_newsidedef_index;       /* maps old sidedef number to new */
 
 uint8_t *p_linedefres = 0; /* the new linedef resource */
 uint8_t *p_sidedefres = 0; /* the new sidedef resource */
@@ -97,7 +97,7 @@ void P_Pack(char *levelname)
     p_linedefres = (uint8_t *) p_newlinedef;
     p_sidedefres = (uint8_t *) p_newsidedef;
 
-    wadentry[p_sidedefnum].length = p_newnum * SDEF_SIZE;
+    wadentry[p_sidedefnum].length = p_newsidedef_count * SDEF_SIZE;
 }
 
 /* Unpack a level */
@@ -216,9 +216,9 @@ static void P_DoPack(sidedef_t *sidedefs)
     int count, count2;
 
     p_newsidedef = ALLOC_ARRAY(sidedef_t, p_num_sidedefs);
-    p_movedto = ALLOC_ARRAY(int, p_num_sidedefs);
+    p_newsidedef_index = ALLOC_ARRAY(int, p_num_sidedefs);
 
-    p_newnum = 0;
+    p_newsidedef_count = 0;
     for (count = 0; count < p_num_sidedefs; count++)
     {
         if ((count % 100) == 0)
@@ -226,23 +226,24 @@ static void P_DoPack(sidedef_t *sidedefs)
             /* time for a percent-done update */
             PrintProgress(count, p_num_sidedefs);
         }
-        for (count2 = 0; count2 < p_newnum; count2++) /* check previous */
+        for (count2 = 0; count2 < p_newsidedef_count;
+             count2++) /* check previous */
         {
             if (!memcmp(&p_newsidedef[count2], &sidedefs[count],
                         sizeof(sidedef_t)))
             {
                 /* they are identical: this one can be removed */
-                p_movedto[count] = count2;
+                p_newsidedef_index[count] = count2;
                 break;
             }
         }
         /* a sidedef like this does not yet exist: add one */
-        if (count2 >= p_newnum)
+        if (count2 >= p_newsidedef_count)
         {
-            memcpy(&p_newsidedef[p_newnum], &sidedefs[count],
+            memcpy(&p_newsidedef[p_newsidedef_count], &sidedefs[count],
                    sizeof(sidedef_t));
-            p_movedto[count] = p_newnum;
-            p_newnum++;
+            p_newsidedef_index[count] = p_newsidedef_count;
+            p_newsidedef_count++;
         }
     }
     free(sidedefs);
@@ -255,35 +256,37 @@ static void P_BuildLinedefs(linedef_t *linedefs)
     int count;
 
     /* update the linedefs with where the sidedefs have been moved to, */
-    /* using p_movedto[] to find where they now are.. */
+    /* using p_newsidedef_index[] to find where they now are.. */
 
     for (count = 0; count < p_num_linedefs; count++)
     {
         if (linedefs[count].sidedef1 != NO_SIDEDEF)
-            linedefs[count].sidedef1 = p_movedto[linedefs[count].sidedef1];
+            linedefs[count].sidedef1 =
+                p_newsidedef_index[linedefs[count].sidedef1];
         if (linedefs[count].sidedef2 != NO_SIDEDEF)
-            linedefs[count].sidedef2 = p_movedto[linedefs[count].sidedef2];
+            linedefs[count].sidedef2 =
+                p_newsidedef_index[linedefs[count].sidedef2];
     }
 
     p_newlinedef = linedefs;
 
-    free(p_movedto);
+    free(p_newsidedef_index);
 }
 
 static int AppendNewSidedef(const sidedef_t *s)
 {
     int result;
 
-    while (p_newnum >= p_newsidedef_size)
+    while (p_newsidedef_count >= p_newsidedef_size)
     {
         p_newsidedef_size *= 2;
         p_newsidedef =
             REALLOC_ARRAY(sidedef_t, p_newsidedef, p_newsidedef_size);
     }
 
-    memcpy(&p_newsidedef[p_newnum], s, sizeof(sidedef_t));
-    result = p_newnum;
-    ++p_newnum;
+    memcpy(&p_newsidedef[p_newsidedef_count], s, sizeof(sidedef_t));
+    result = p_newsidedef_count;
+    ++p_newsidedef_count;
 
     return result;
 }
@@ -301,7 +304,7 @@ static void P_Rebuild(void)
 
     p_newsidedef_size = p_num_sidedefs;
     p_newsidedef = ALLOC_ARRAY(sidedef_t, p_newsidedef_size);
-    p_newnum = 0;
+    p_newsidedef_count = 0;
 
     for (count = 0; count < p_num_linedefs; count++)
     {
@@ -317,7 +320,7 @@ static void P_Rebuild(void)
         }
     }
     /* update the wad directory */
-    wadentry[p_sidedefnum].length = p_newnum * SDEF_SIZE;
+    wadentry[p_sidedefnum].length = p_newsidedef_count * SDEF_SIZE;
 
     /* no longer need the old sidedefs */
     free(sidedefs);
