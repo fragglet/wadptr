@@ -188,11 +188,10 @@ original graphic.
 WADPTR is a command line based utility. You give it commands
 in the following order:
 
-                WADPTR inputwad [outputwad] options
+     wadptr [options] inputwad [inputwad inputwad...]
 
-You must specify an input wad file, although WADPTR defaults
-to "output.wad" for the compress and uncompress procedures
-if you do not specify an output wad file.
+The -o option can be used to specify the output WAD file, although if
+it is not specified, the output file replaces the input file.
 
 The command line options are:
 
