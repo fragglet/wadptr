@@ -45,10 +45,11 @@ static int p_num_linedefs = 0,
            p_num_sidedefs = 0; /* number of sd/lds do not get confused */
 static const char *p_working;  /* the name of the level resource eg. "MAP01" */
 
-static sidedef_t *p_newsidedef; /* the new sidedefs */
-static linedef_t *p_newlinedef; /* the new linedefs */
-static int *p_movedto;          /* keep track of where the sidedefs are now */
-static int p_newnum = 0;        /* the new number of sidedefs */
+static sidedef_t *p_newsidedef;  /* the new sidedefs */
+static linedef_t *p_newlinedef;  /* the new linedefs */
+static size_t p_newsidedef_size; /* allocated size of p_newsidedef buffer*/
+static int *p_movedto;           /* keep track of where the sidedefs are now */
+static int p_newnum = 0;         /* the new number of sidedefs */
 
 uint8_t *p_linedefres = 0; /* the new linedef resource */
 uint8_t *p_sidedefres = 0; /* the new sidedef resource */
@@ -214,12 +215,7 @@ static void P_DoPack(sidedef_t *sidedefs)
 {
     int count, count2;
 
-    p_newsidedef = malloc(wadentry[p_sidedefnum].length * 10);
-    if (!p_newsidedef)
-    {
-        ErrorExit("P_DoPack: could not alloc memory for new sidedefs");
-    }
-
+    p_newsidedef = ALLOC_ARRAY(sidedef_t, p_num_sidedefs);
     p_movedto = ALLOC_ARRAY(int, p_num_sidedefs);
 
     p_newnum = 0;
@@ -274,6 +270,24 @@ static void P_BuildLinedefs(linedef_t *linedefs)
     free(p_movedto);
 }
 
+static int AppendNewSidedef(const sidedef_t *s)
+{
+    int result;
+
+    while (p_newnum >= p_newsidedef_size)
+    {
+        p_newsidedef_size *= 2;
+        p_newsidedef =
+            REALLOC_ARRAY(sidedef_t, p_newsidedef, p_newsidedef_size);
+    }
+
+    memcpy(&p_newsidedef[p_newnum], s, sizeof(sidedef_t));
+    result = p_newnum;
+    ++p_newnum;
+
+    return result;
+}
+
 /* Rebuild the sidedefs */
 
 static void P_Rebuild(void)
@@ -285,28 +299,21 @@ static void P_Rebuild(void)
     sidedefs = ReadSidedefs(p_sidedefnum, wadfp);
     linedefs = ReadLinedefs(p_linedefnum, wadfp);
 
-    p_newsidedef = malloc(wadentry[p_sidedefnum].length * 10);
-
-    if (!p_newsidedef)
-        ErrorExit("P_Rebuild: could not alloc memory for new sidedefs");
-
+    p_newsidedef_size = p_num_sidedefs;
+    p_newsidedef = ALLOC_ARRAY(sidedef_t, p_newsidedef_size);
     p_newnum = 0;
 
     for (count = 0; count < p_num_linedefs; count++)
     {
         if (linedefs[count].sidedef1 != NO_SIDEDEF)
         {
-            memcpy(&(p_newsidedef[p_newnum]),
-                   &(sidedefs[linedefs[count].sidedef1]), sizeof(sidedef_t));
-            linedefs[count].sidedef1 = p_newnum;
-            p_newnum++;
+            linedefs[count].sidedef1 =
+                AppendNewSidedef(&sidedefs[linedefs[count].sidedef1]);
         }
         if (linedefs[count].sidedef2 != NO_SIDEDEF)
         {
-            memcpy(&(p_newsidedef[p_newnum]),
-                   &(sidedefs[linedefs[count].sidedef2]), sizeof(sidedef_t));
-            linedefs[count].sidedef2 = p_newnum;
-            p_newnum++;
+            linedefs[count].sidedef2 =
+                AppendNewSidedef(&sidedefs[linedefs[count].sidedef2]);
         }
     }
     /* update the wad directory */
