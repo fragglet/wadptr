@@ -220,6 +220,18 @@ static void P_FindInfo(void)
     /* find number of linedefs and sidedefs for later.. */
     p_num_linedefs = wadentry[p_linedefnum].length / LDEF_SIZE;
     p_num_sidedefs = wadentry[p_sidedefnum].length / SDEF_SIZE;
+    if ((wadentry[p_linedefnum].length % LDEF_SIZE) != 0)
+    {
+        ErrorExit("P_FindInfo: %.8s linedef lump is %d bytes, "
+                  "not a multiple of %d",
+                  p_working, wadentry[p_linedefnum].length, LDEF_SIZE);
+    }
+    if ((wadentry[p_sidedefnum].length % SDEF_SIZE) != 0)
+    {
+        ErrorExit("P_FindInfo: %.8s sidedef lump is %d bytes, "
+                  "not a multiple of %d",
+                  p_working, wadentry[p_sidedefnum].length, SDEF_SIZE);
+    }
 }
 
 /* Append the given sidedef to the p_newsidedef array. */
