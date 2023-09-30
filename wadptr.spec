@@ -5,7 +5,7 @@ Release:	0
 Group:		Development/Tools/Building
 Summary:	Redundancy compressor for Doom WAD files
 License:	GPLv2+
-URL:		http://soulsphere.org/projects/wadptr/
+URL:		https://soulsphere.org/projects/wadptr/
 
 Source:		wadptr-%version.tar.gz
 BuildRoot:      %_tmppath/%name-%version-build
