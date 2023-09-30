@@ -1,5 +1,35 @@
 # wadptr revision history
 
+## 3.0 (2023-09-30)
+
+ * A bug was fixed with sidedef packing where if multiple scrolling walls
+   would share a sidedef, those walls would scroll at the wrong speed
+   (thanks to viti95 for reporting this on Doomworld). This has been
+   fixed in a generic way that should also cover other potential bugs
+   related to animated walls.
+ * Hexen format WADs, while not yet fully supported, can be safely
+   handled (sidedef packing is automatically disabled for these WADs).
+ * The progress indicator has been fixed.
+ * Some of the more spammy program output has been removed. There is now
+   a '-q' command line option to suppress normal output.
+ * The old 'wadptr.txt' documentation file was replaced with a
+   better-written Unix manpage.
+ * Static limits on the number of lumps in a WAD and the number of
+   sidedefs in a level have been removed.
+ * The original file is now replaced with the compressed or decompressed
+   version in a safer way; it always happens via an atomic rename as the
+   final step of processing. Temporary files are also created more safely.
+ * The Makefile was simplified and special support for old operating
+   systems like Solaris and HP-UX has been dropped. RISC OS support has
+   also been ditched.
+ * Source code was significantly cleaned up. Code has been reformatted
+   and functions renamed to better names. Legacy code left over from the
+   original DOS version was removed. The C99 boolean and fixed-width
+   integer types are now used where appropriate.
+ * Many static buffers have been eliminated in the code. The deprecated
+   `strcpy()` function is no longer used anywhere in the codebase.
+ * There are now automated tests using several large WAD files.
+
 ## 2.4 (2011-08-05)
 
 Fixes from Jan Engelhardt:

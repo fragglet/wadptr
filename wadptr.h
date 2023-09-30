@@ -24,7 +24,7 @@
 #include "waddir.h"
 #include "wadmerge.h"
 
-#define VERSION "2.4"
+#define VERSION "3.0"
 
 extern bool allowpack;   /* level packing on */
 extern bool allowsquash; /* picture squashing on */
