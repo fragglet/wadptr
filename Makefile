@@ -39,9 +39,9 @@ windist:
 	mkdir dist
 	cp wadptr.exe wadptr.txt dist/
 	$(STRIP) dist/wadptr.exe
-	cp COPYING.md dist/COPYING.txt
-	unix2dos -f dist/COPYING.txt dist/wadptr.txt
+	unix2dos -f dist/wadptr.txt
 	pandoc -f gfm -o dist/NEWS.html -s NEWS.md
+	pandoc -f gfm -o dist/COPYING.html -s COPYING.md
 	pandoc -f man wadptr.1 -o dist/wadptr.html
 	rm -f wadptr-$(VERSION).zip
 	zip -X -j -r wadptr-$(VERSION).zip dist
