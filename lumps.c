@@ -565,9 +565,6 @@ bool S_IsGraphic(int entrynum)
         return false;
     }
 
-    entrynum = EntryExists(s);
-    if (entrynum == -1)
-        ErrorExit("isgraphic: %.8s does not exist!", s);
     if (wadentry[entrynum].length <= 0)
     {
         /* don't read data from 0 size lumps */
