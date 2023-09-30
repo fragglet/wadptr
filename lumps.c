@@ -253,11 +253,34 @@ static int AppendNewSidedef(const sidedef_t *s)
     return result;
 }
 
+// Check the p_newsidedef array and try to find a sidedef that is the
+// same as the given sidedef. Returns -1 if none is found.
+static int FindNewSidedef(const sidedef_t *sidedef)
+{
+    int i;
+
+    if (sidedef->scrolling)
+    {
+        return -1;
+    }
+
+    for (i = 0; i < p_newsidedef_count; i++)
+    {
+        if (!p_newsidedef[i].scrolling &&
+            !memcmp(&p_newsidedef[i], sidedef, sizeof(sidedef_t)))
+        {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
 /* Actually pack the sidedefs */
 
 static void P_DoPack(sidedef_t *sidedefs)
 {
-    int count, count2;
+    int count, ns;
 
     p_newsidedef_size = p_num_sidedefs;
     p_newsidedef = ALLOC_ARRAY(sidedef_t, p_newsidedef_size);
@@ -271,19 +294,15 @@ static void P_DoPack(sidedef_t *sidedefs)
             /* time for a percent-done update */
             PrintProgress(count, p_num_sidedefs);
         }
-        /* have we already added an identical sidedef? */
-        for (count2 = 0; count2 < p_newsidedef_count; count2++)
+
+        ns = FindNewSidedef(&sidedefs[count]);
+        if (ns < p_newsidedef_count)
         {
-            if (!memcmp(&p_newsidedef[count2], &sidedefs[count],
-                        sizeof(sidedef_t)))
-            {
-                p_newsidedef_index[count] = count2;
-                break;
-            }
+            p_newsidedef_index[count] = ns;
         }
-        /* a sidedef like this does not yet exist: add one */
-        if (count2 >= p_newsidedef_count)
+        else
         {
+            /* a sidedef like this does not yet exist: add one */
             p_newsidedef_index[count] = AppendNewSidedef(&sidedefs[count]);
         }
     }
@@ -321,7 +340,8 @@ static void P_BuildLinedefs(linedef_t *linedefs)
 static void P_Rebuild(void)
 {
     sidedef_t *sidedefs;
-    linedef_t *linedefs;
+    linedef_t *linedefs, *ld;
+    bool scrolling;
     int count;
 
     sidedefs = ReadSidedefs(p_sidedefnum, wadfp);
@@ -333,17 +353,23 @@ static void P_Rebuild(void)
 
     for (count = 0; count < p_num_linedefs; count++)
     {
+        ld = &linedefs[count];
+        scrolling = ld->type == 48 || // Vanilla scroll left
+                    ld->type == 85 || // Boom scroll right
+                    ld->type == 255;  // Boom scroll-by-offsets
         if (linedefs[count].sidedef1 != NO_SIDEDEF)
         {
             CheckSidedefIndex(count, linedefs[count].sidedef1);
             linedefs[count].sidedef1 =
                 AppendNewSidedef(&sidedefs[linedefs[count].sidedef1]);
+            p_newsidedef[linedefs[count].sidedef1].scrolling = scrolling;
         }
         if (linedefs[count].sidedef2 != NO_SIDEDEF)
         {
             CheckSidedefIndex(count, linedefs[count].sidedef2);
             linedefs[count].sidedef2 =
                 AppendNewSidedef(&sidedefs[linedefs[count].sidedef2]);
+            p_newsidedef[linedefs[count].sidedef2].scrolling = scrolling;
         }
     }
     /* update the wad directory */
@@ -650,7 +676,7 @@ static linedef_t *ReadLinedefs(int lumpnum, FILE *fp)
         lines[i].vertex1 = READ_SHORT(cptr + LDEF_VERT1);
         lines[i].vertex2 = READ_SHORT(cptr + LDEF_VERT2);
         lines[i].flags = READ_SHORT(cptr + LDEF_FLAGS);
-        lines[i].types = READ_SHORT(cptr + LDEF_TYPES);
+        lines[i].type = READ_SHORT(cptr + LDEF_TYPES);
         lines[i].tag = READ_SHORT(cptr + LDEF_TAG);
         lines[i].sidedef1 = READ_SHORT(cptr + LDEF_SDEF1);
         lines[i].sidedef2 = READ_SHORT(cptr + LDEF_SDEF2);
@@ -676,7 +702,7 @@ int WriteLinedefs(linedef_t *lines, int bytes, FILE *fp)
         WRITE_SHORT(cptr + LDEF_VERT1, lines[i].vertex1);
         WRITE_SHORT(cptr + LDEF_VERT2, lines[i].vertex2);
         WRITE_SHORT(cptr + LDEF_FLAGS, lines[i].flags);
-        WRITE_SHORT(cptr + LDEF_TYPES, lines[i].types);
+        WRITE_SHORT(cptr + LDEF_TYPES, lines[i].type);
         WRITE_SHORT(cptr + LDEF_TAG, lines[i].tag);
         WRITE_SHORT(cptr + LDEF_SDEF1, lines[i].sidedef1);
         WRITE_SHORT(cptr + LDEF_SDEF2, lines[i].sidedef2);
@@ -720,6 +746,7 @@ static sidedef_t *ReadSidedefs(int lumpnum, FILE *fp)
         memset(sides[i].lower, 0, 8);
         strncpy(sides[i].lower, (char *) cptr + SDEF_LOWER, 8);
         sides[i].sector_ref = READ_SHORT(cptr + SDEF_SECTOR);
+        sides[i].scrolling = false;
         cptr += SDEF_SIZE;
         validbytes -= SDEF_SIZE;
     }

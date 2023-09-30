@@ -38,13 +38,17 @@ typedef struct {
     char middle[8];
     char lower[8];
     unsigned short sector_ref;
+
+    // If true, this sidedef is referenced by a linedef of a "scrolling
+    // wall" type, and should not be merged with other sidedefs.
+    bool scrolling;
 } sidedef_t;
 
 typedef struct {
     unsigned short vertex1;
     unsigned short vertex2;
     unsigned short flags;
-    unsigned short types;
+    unsigned short type;
     unsigned short tag;
     unsigned short sidedef1;
     unsigned short sidedef2;
