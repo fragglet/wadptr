@@ -28,7 +28,6 @@ wadmerge.o: wadmerge.c wadmerge.h waddir.h errors.h
 install:
 	install -D wadptr $(DESTDIR)$(PREFIX)/bin/wadptr
 	install -D wadptr.1 $(DESTDIR)$(PREFIX)/share/man/man1/wadptr.1
-	install -D wadptr.txt $(DESTDIR)$(PREFIX)/share/doc/wadptr/wadptr.txt
 
 clean:
 	$(DELETE) $(EXECUTABLE)
@@ -37,9 +36,8 @@ clean:
 windist:
 	rm -rf dist
 	mkdir dist
-	cp wadptr.exe wadptr.txt dist/
+	cp wadptr.exe dist/
 	$(STRIP) dist/wadptr.exe
-	unix2dos -f dist/wadptr.txt
 	pandoc -f gfm -o dist/NEWS.html -s NEWS.md
 	pandoc -f gfm -o dist/COPYING.html -s COPYING.md
 	pandoc -f man wadptr.1 -o dist/wadptr.html
