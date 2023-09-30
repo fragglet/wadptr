@@ -41,6 +41,7 @@ windist:
 	$(STRIP) dist/wadptr.exe
 	cp COPYING.md dist/COPYING.txt
 	unix2dos -f dist/COPYING.txt dist/wadptr.txt
+	pandoc -f man wadptr.1 -o dist/wadptr.html
 	rm -f wadptr-$(VERSION).zip
 	zip -X -j -r wadptr-$(VERSION).zip dist
 
