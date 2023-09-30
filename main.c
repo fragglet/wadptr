@@ -249,11 +249,11 @@ static void Help(void)
 {
     printf(
         "\n"
-        "WADPTR - WAD Compressor version " VERSION "\n"
+        "wadptr - WAD Compressor version " VERSION "\n"
         "Copyright (c) 1997-2023 Simon Howard, Andreas Dehmel\n"
         "<https://soulsphere.org/projects/wadptr/>\n"
         "\n"
-        "Usage:  WADPTR <-c|-u|-l> [options] inputwad [inputwad inputwad...]\n"
+        "Usage:  wadptr <-c|-u|-l> [options] inputwad [inputwad inputwad...]\n"
         "\n"
         " -c        :   Compress WAD\n"
         " -u        :   Uncompress WAD\n"
