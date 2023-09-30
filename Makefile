@@ -3,7 +3,7 @@ EXECUTABLE = wadptr
 OBJECTS = main.o waddir.o errors.o wadmerge.o lumps.o
 DELETE = rm -f
 STRIP = strip
-CFLAGS = -Wall -O3 -DNORMALUNIX
+CFLAGS = -Wall -O3
 
 all: $(EXECUTABLE)
 

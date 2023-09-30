@@ -33,14 +33,10 @@ extern bool allowmerge;  /* lump merging on */
 extern const char *pwad_name;
 extern const char *iwad_name;
 
-#ifdef NORMALUNIX
-#define DIRSEP "/"
-#define EXTSEP "."
-#define CURDIR "."
-#else
+#ifdef _WIN32
 #define DIRSEP "\\"
-#define EXTSEP "."
-#define CURDIR "."
+#else
+#define DIRSEP "/"
 #endif
 
 #define READ_SHORT(p) (short) ((p)[0] | ((p)[1] << 8))
