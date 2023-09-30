@@ -47,6 +47,7 @@ static enum { HELP, COMPRESS, UNCOMPRESS, LIST } action;
 bool allowpack = true;   /* level packing on */
 bool allowsquash = true; /* picture squashing on */
 bool allowmerge = true;  /* lump merging on */
+bool hexen_format_wad;
 static bool quiet_mode = false;
 
 const char *pwad_name = "PWAD";
@@ -266,6 +267,20 @@ static void Help(void)
         " -nopack   :   Disable sidedef packing\n");
 }
 
+// Temporary workaround for the fact that we don't support Hexen format
+// levels yet.
+static void CheckHexenFormat(const char *filename)
+{
+    hexen_format_wad = EntryExists("BEHAVIOR") >= 0;
+    if (hexen_format_wad && allowpack)
+    {
+        fprintf(stderr,
+                "%s: Hexen format WAD; disabling sidedef "
+                "packing for this WAD.\n",
+                filename);
+    }
+}
+
 /* Compress a WAD */
 
 static bool Compress(const char *wadname)
@@ -291,6 +306,7 @@ static bool Compress(const char *wadname)
     {
         return false;
     }
+    CheckHexenFormat(wadname);
 
     wadsize = diroffset + (ENTRY_SIZE * numentries);
 
@@ -316,7 +332,7 @@ static bool Compress(const char *wadname)
         }
         written = false;
 
-        if (allowpack)
+        if (allowpack && !hexen_format_wad)
         {
             if (IsLevel(count))
             {
@@ -464,6 +480,7 @@ static bool Uncompress(const char *wadname)
     {
         return false;
     }
+    CheckHexenFormat(wadname);
 
     fstream = OpenTempFile(wadname, &tempwad_name);
     memset(tempstr, 0, 12);
@@ -484,7 +501,7 @@ static bool Uncompress(const char *wadname)
             write_silent = false;
         }
 
-        if (allowpack)
+        if (allowpack && !hexen_format_wad)
         {
             if (IsLevel(count))
             {
