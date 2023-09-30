@@ -116,6 +116,17 @@ void P_Unpack(char *resname)
     p_sidedefres = (uint8_t *) p_newsidedef;
 }
 
+/* Sanity check a linedef's sidedef reference is valid */
+static void CheckSidedefIndex(int linedef_index, int sidedef_index)
+{
+    if (sidedef_index != NO_SIDEDEF &&
+        (sidedef_index < 0 || sidedef_index >= p_num_sidedefs))
+    {
+        ErrorExit("Linedef #%d contained invalid sidedef reference %d",
+                  linedef_index, sidedef_index);
+    }
+}
+
 /* Find if a level is packed */
 
 bool P_IsPacked(char *s)
@@ -139,6 +150,7 @@ bool P_IsPacked(char *s)
     {
         if (linedefs[count].sidedef1 != NO_SIDEDEF)
         {
+            CheckSidedefIndex(count, linedefs[count].sidedef1);
             if (sidedef_used[linedefs[count].sidedef1])
             {
                 /* side already used on a previous linedef */
@@ -150,6 +162,7 @@ bool P_IsPacked(char *s)
         }
         if (linedefs[count].sidedef2 != NO_SIDEDEF)
         {
+            CheckSidedefIndex(count, linedefs[count].sidedef2);
             if (sidedef_used[linedefs[count].sidedef2])
             {
                 packed = true;
@@ -271,8 +284,10 @@ static void P_BuildLinedefs(linedef_t *linedefs)
 {
     int count;
 
-    /* update the linedefs with where the sidedefs have been moved to, */
-    /* using p_newsidedef_index[] to find where they now are.. */
+    /* update the linedefs with the new sidedef indexes. note that we
+       do not need to perform the CheckSidedefIndex() checks here
+       because they have already been checked by a previous call to
+       P_Rebuild. */
 
     for (count = 0; count < p_num_linedefs; count++)
     {
@@ -308,11 +323,13 @@ static void P_Rebuild(void)
     {
         if (linedefs[count].sidedef1 != NO_SIDEDEF)
         {
+            CheckSidedefIndex(count, linedefs[count].sidedef1);
             linedefs[count].sidedef1 =
                 AppendNewSidedef(&sidedefs[linedefs[count].sidedef1]);
         }
         if (linedefs[count].sidedef2 != NO_SIDEDEF)
         {
+            CheckSidedefIndex(count, linedefs[count].sidedef2);
             linedefs[count].sidedef2 =
                 AppendNewSidedef(&sidedefs[linedefs[count].sidedef2]);
         }
