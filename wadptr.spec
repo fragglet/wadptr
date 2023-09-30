@@ -25,17 +25,14 @@ Authors:
 %setup
 
 %build
-make %{?_smp_mflags} linux;
+make
 
 %install
 b="%buildroot";
 make install DESTDIR="$b" PREFIX=/usr;
-mkdir -p "$b/%_docdir/%name";
-perl -i -pe 's/\x0d//gs' "$b/%_docdir/%name"/*.txt;
 
 %files
 %defattr(-,root,root)
 %_bindir/*
-%doc %_docdir/%name
 
 %changelog
