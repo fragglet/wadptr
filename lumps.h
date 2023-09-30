@@ -39,9 +39,10 @@ typedef struct {
     char lower[8];
     unsigned short sector_ref;
 
-    // If true, this sidedef is referenced by a linedef of a "scrolling
-    // wall" type, and should not be merged with other sidedefs.
-    bool scrolling;
+    // If true, this sidedef is referenced by a linedef with a special
+    // type. This fixes the "scrolling linedefs bug" most notably,
+    // although switches are also potentially affected.
+    bool special;
 } sidedef_t;
 
 typedef struct {

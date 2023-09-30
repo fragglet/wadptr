@@ -259,14 +259,14 @@ static int FindNewSidedef(const sidedef_t *sidedef)
 {
     int i;
 
-    if (sidedef->scrolling)
+    if (sidedef->special)
     {
         return -1;
     }
 
     for (i = 0; i < p_newsidedef_count; i++)
     {
-        if (!p_newsidedef[i].scrolling &&
+        if (!p_newsidedef[i].special &&
             !memcmp(&p_newsidedef[i], sidedef, sizeof(sidedef_t)))
         {
             return i;
@@ -341,7 +341,7 @@ static void P_Rebuild(void)
 {
     sidedef_t *sidedefs;
     linedef_t *linedefs, *ld;
-    bool scrolling;
+    bool is_special;
     int count;
 
     sidedefs = ReadSidedefs(p_sidedefnum, wadfp);
@@ -354,22 +354,32 @@ static void P_Rebuild(void)
     for (count = 0; count < p_num_linedefs; count++)
     {
         ld = &linedefs[count];
-        scrolling = ld->type == 48 || // Vanilla scroll left
-                    ld->type == 85 || // Boom scroll right
-                    ld->type == 255;  // Boom scroll-by-offsets
+        // Special lines always get their own dedicated sidedefs, because:
+        //  * If a scrolling linedef shares a sidedef with another linedef,
+        //    it will make that other linedef scroll, or if multiple
+        //    scrolling linedefs share a sidedef, it will scroll too fast.
+        //    An example is with the spinning podium at the top of the stairs
+        //    at the start of E1M1.
+        //  * Switch linedefs change the texture of the front sidedef when
+        //    the switch is activated. Similarly this could cause multiple
+        //    switches to all mistakenly animate.
+        // This could be more selective but different source ports add their
+        // own new linedef types. For simplicity we just exclude sidedef
+        // packing for all special lines.
+        is_special = ld->type != 0;
         if (linedefs[count].sidedef1 != NO_SIDEDEF)
         {
             CheckSidedefIndex(count, linedefs[count].sidedef1);
             linedefs[count].sidedef1 =
                 AppendNewSidedef(&sidedefs[linedefs[count].sidedef1]);
-            p_newsidedef[linedefs[count].sidedef1].scrolling = scrolling;
+            p_newsidedef[linedefs[count].sidedef1].special = is_special;
         }
         if (linedefs[count].sidedef2 != NO_SIDEDEF)
         {
             CheckSidedefIndex(count, linedefs[count].sidedef2);
             linedefs[count].sidedef2 =
                 AppendNewSidedef(&sidedefs[linedefs[count].sidedef2]);
-            p_newsidedef[linedefs[count].sidedef2].scrolling = scrolling;
+            p_newsidedef[linedefs[count].sidedef2].special = is_special;
         }
     }
     /* update the wad directory */
@@ -746,7 +756,7 @@ static sidedef_t *ReadSidedefs(int lumpnum, FILE *fp)
         memset(sides[i].lower, 0, 8);
         strncpy(sides[i].lower, (char *) cptr + SDEF_LOWER, 8);
         sides[i].sector_ref = READ_SHORT(cptr + SDEF_SECTOR);
-        sides[i].scrolling = false;
+        sides[i].special = false;
         cptr += SDEF_SIZE;
         validbytes -= SDEF_SIZE;
     }
