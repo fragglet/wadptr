@@ -27,6 +27,7 @@ wadmerge.o: wadmerge.c wadmerge.h waddir.h errors.h
 
 install:
 	install -D wadptr $(DESTDIR)$(PREFIX)/bin/wadptr
+	install -D wadptr.1 $(DESTDIR)$(PREFIX)/share/man/man1/wadptr.1
 	install -D wadptr.txt $(DESTDIR)$(PREFIX)/share/doc/wadptr/wadptr.txt
 
 clean:

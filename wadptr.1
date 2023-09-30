@@ -1,0 +1,136 @@
+.TH wadptr 1
+.SH NAME
+wadptr \- compression tool for .wad files
+.SH SYNOPSIS
+.B wadptr
+.RB [options]
+[ -c | -u | -l ]
+.I wadfile...
+.SH DESCRIPTION
+.PP
+.B wadptr
+is a tool for compressing Doom .wad files. It takes advantage of the
+structure of the WAD format and some of the lumps stored inside it to
+merge repeated data.
+.PP
+.SH COMMAND SYNTAX
+wadptr has three separate subcommands:
+.TP
+\fB-l\fR
+List contents of the specified WAD, showing detail about which lumps
+are compressed or merged with other lumps.
+.TP
+\fB-c\fR
+Compress the specified .wad file.
+.TP
+\fB-u\fR
+Uncompress the specified .wad file.
+.PP
+.SH OPTIONS
+wadptr has several additional options:
+.TP
+\fB-o filename.wad\fR
+Write the output .wad file to the given filename, instead of overwriting
+the original file.
+.TP
+\fB-q\fR
+Quiet mode. Normal output that is printed when compressing or
+decompressing files is suppressed, making wadptr work more like a
+normal Unix tool that only prints output when an error occurs.
+.TP
+\fB-nomerge\fR
+Disables WAD lump merging (see the \fBcompression schemes\fR section
+below).
+.TP
+\fB-nopack\fR
+Disables sidedef packing (see the \fBcompression schemes\fR section
+below).
+.TP
+\fB-nosquash\fR
+Disables graphic squashing (see the \fBcompression schemes\fR section
+below).
+.SH COMPRESSION SCHEMES
+The following are some brief technical details about how wadptr's .wad
+file compression works:
+.TP
+.B WAD lump merging
+WAD files sometimes contain the same lump repeated multiple times. An
+example is that in \fIdoom2.wad\fR, some of the music tracks are
+repeated for multiple levels (eg. \fBD_ROMERO\fR and \fBD_ROMER2\fR).
+Since the WAD directory format contains a pointer to the location of the
+lump within the .wad file, multiple lumps that contain the same data can
+be merged to point to the same data.
+This behavior can be disabled using the \fB-nomerge\fR option.
+.TP
+.B Sidedef packing
+Doom's levels are constructed out of lines called \fIlinedefs\fR. Each
+linedef can have one or two \fIsidedefs\fR which contain data about which
+texture to show on that side of the linedef. Since it's common for many
+linedefs to use the same textures, these identical sidedefs can be
+merged and shared by multiple linedefs.
+This behavior can be disabled using the \fB-nopack\fR option.
+.TP
+.B Graphic squashing
+Doom's graphics format splits images into vertical columns. A table
+stores the offset of each column within the lump. Sometimes an image can
+contain the same identical column multiple times. These identical
+columns can be merged together and the table offsets changed to point to
+the same data. This compression scheme works most effectively on images
+that are either very simple, based on repeating patterns, or those
+containing flat fields of a single color.
+This behavior can be disabled using the \fB-nosquash\fR option.
+.PP
+To see an example of wadptr used in a very effective way, see miniwad,
+a minimalist Doom-compatible IWAD file that is less than 250KiB in size:
+<https://github.com/fragglet/miniwad>
+.SH LIMITATIONS
+The \fB-c\fR command will compress a WAD file and the \fB-u\fR command
+can then be used to restore the original uncompressed file. However, the
+decompressed file may not exactly match the original file byte-for-byte.
+For example, some editors already pack sidedefs, and sometimes WAD files
+include junk data that wadptr will discard. If for some reason it's
+important to retain the original file, you should therefore make sure to
+to either back up the original file before using wadptr, or use the
+\fB-o\fR command line option to write to a different file.
+.PP
+Some level editors get confused by packed sidedefs. If your level editor
+has problems, use \fB-u\fR to uncompress the file before editing.
+.SH EXAMPLES
+Here are some examples for how to invoke the program:
+.TP
+wadptr -c foo.wad
+Compress \fBfoo.wad\fR, overwriting the original file.
+.TP
+wadptr -u foo.wad
+Uncompress \fBfoo.wad\fR, overwriting the original file.
+.TP
+wadptr -o newfoo.wad -c foo.wad
+Compress \fBfoo.wad\fR but write the resulting file to \fBnewfoo.wad\fR.
+.SH SEE ALSO
+\fBdeutex\fR(6), \fBbsp\fR(6), \fByadex\fR(6), \fBeureka\fR(1),
+\fBchocolate-doom\fR(6)
+.SH HISTORY
+wadptr was originally written in 1998 by Simon Howard as a command-line
+program for MS-DOS. Simon continues to maintain the project. The first
+version worked as an adjunct to \fBdeutex\fR(6), but with the 2.x series
+it changed to a standalone tool. Andreas Dehmel ported the program to
+several different Unix systems and also to RISC OS. The source code was
+recently (writing in 2023) overhauled and cleaned up.
+.PP
+\fIDoom\fR is a first-person shooter (FPS) game released by id Software
+in 1993 that has consistently topped lists of the best video games of
+all time. It retains an active modding community to this day that
+continues to develop new levels and reinvent the game in new and amazing
+ways.
+.SH COPYRIGHT
+Copyright(C) 1998-2023 Simon Howard, Andreas Dehmel
+.PP
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+.PP
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
