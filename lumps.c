@@ -27,8 +27,7 @@
 #include "lumps.h"
 #include "wadptr.h"
 
-struct block
-{
+struct block {
     uint16_t *elements;
     size_t len;
 };
@@ -708,7 +707,6 @@ static void MakeBlocklist(void)
             --b_blocklist[i].len;
         }
     }
-
 }
 
 static void AppendBlockmapElements(uint16_t *elements, size_t count)
@@ -716,8 +714,8 @@ static void AppendBlockmapElements(uint16_t *elements, size_t count)
     while (b_newblockmap_len + count > b_newblockmap_size)
     {
         b_newblockmap_size *= 2;
-        b_newblockmap = REALLOC_ARRAY(uint16_t, b_newblockmap,
-                                      b_newblockmap_size);
+        b_newblockmap =
+            REALLOC_ARRAY(uint16_t, b_newblockmap, b_newblockmap_size);
     }
 
     memcpy(&b_newblockmap[b_newblockmap_len], elements,
@@ -933,8 +931,8 @@ static bool ReadBlockmap(int lumpnum, FILE *fp)
     }
     b_blockmap = ALLOC_ARRAY(uint16_t, b_blockmap_len);
     fseek(fp, wadentry[lumpnum].offset, SEEK_SET);
-    if (fread(b_blockmap, sizeof(uint16_t),
-              b_blockmap_len, fp) != b_blockmap_len)
+    if (fread(b_blockmap, sizeof(uint16_t), b_blockmap_len, fp) !=
+        b_blockmap_len)
     {
         free(b_blockmap);
         return false;
