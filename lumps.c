@@ -27,6 +27,12 @@
 #include "lumps.h"
 #include "wadptr.h"
 
+struct block
+{
+    uint16_t *elements;
+    size_t len;
+};
+
 static void P_FindInfo(void);
 static void P_DoPack(sidedef_t *sidedefs);
 static void P_BuildLinedefs(linedef_t *linedefs);
@@ -37,6 +43,7 @@ static int S_FindColumnSize(uint8_t *col1);
 
 static linedef_t *ReadLinedefs(int lumpnum, FILE *fp);
 static sidedef_t *ReadSidedefs(int lumpnum, FILE *fp);
+static bool ReadBlockmap(int lumpnum, FILE *fp);
 
 static int p_levelnum;   /* entry number (index in WAD directory) */
 static int p_sidedefnum; /* sidedef wad entry number */
@@ -63,6 +70,15 @@ static short s_height, s_width; /* picture width, height etc. */
 static short s_loffset, s_toffset;
 static uint8_t *s_columns;  /* the location of each column in the lump */
 static long s_colsize[400]; /* the length(in bytes) of each column */
+
+/* Blockmap stacking globals */
+static uint16_t *b_blockmap;
+static size_t b_blockmap_len;
+static unsigned int b_num_blocks;
+static uint16_t *b_newblockmap;
+static size_t b_newblockmap_len;
+static size_t b_newblockmap_size;
+static struct block *b_blocklist;
 
 /* Pack a level */
 
@@ -659,6 +675,111 @@ bool S_IsGraphic(int entrynum)
     return true;
 }
 
+static void MakeBlocklist(void)
+{
+    struct block *b_blocklist;
+    int i, start_index, end_index;
+    bool engine_format = false;
+
+    b_blocklist = ALLOC_ARRAY(struct block, b_num_blocks);
+
+    for (i = 0; i < b_num_blocks; i++)
+    {
+        start_index = b_blockmap[4 + i];
+        b_blocklist[i].elements = &b_blockmap[start_index];
+
+        end_index = start_index;
+        while (b_blockmap[end_index] != 0xffff)
+        {
+            ++end_index;
+        }
+        b_blocklist[i].len = end_index - start_index;
+
+        engine_format = engine_format || b_blockmap[start_index] != 0;
+    }
+
+    // Convert to "engine format" by stripping leading zeroes:
+    // https://doomwiki.org/wiki/Blockmap#Blocklists
+    if (!engine_format)
+    {
+        for (i = 0; i < b_num_blocks; i++)
+        {
+            ++b_blocklist[i].elements;
+            --b_blocklist[i].len;
+        }
+    }
+
+}
+
+static void AppendBlockmapElements(uint16_t *elements, size_t count)
+{
+    while (b_newblockmap_len + count > b_newblockmap_size)
+    {
+        b_newblockmap_size *= 2;
+        b_newblockmap = REALLOC_ARRAY(uint16_t, b_newblockmap,
+                                      b_newblockmap_size);
+    }
+
+    memcpy(&b_newblockmap[b_newblockmap_len], elements,
+           count * sizeof(uint16_t));
+    b_newblockmap_len += count;
+}
+
+// TODO: This is not yet finished.
+void B_Stack(int lumpnum, FILE *fp)
+{
+    uint16_t *block_offsets;
+    int i, j;
+
+    if (!ReadBlockmap(lumpnum, fp))
+    {
+        return;
+    }
+
+    MakeBlocklist();
+
+    b_newblockmap_size = b_blockmap_len;
+    b_newblockmap = ALLOC_ARRAY(uint16_t, b_newblockmap_size);
+    b_newblockmap_len = 4 + b_num_blocks;
+    block_offsets = &b_newblockmap[4];
+
+    // Header is identical:
+    memcpy(b_newblockmap, b_blockmap, 4 * sizeof(uint16_t));
+
+    for (i = 0; i < b_newblockmap_len; i++)
+    {
+        for (j = 0; j < i; j++)
+        {
+            uint16_t suffix_index;
+
+            // We allow suffixes.
+            if (b_blocklist[i].len > b_blocklist[j].len)
+            {
+                continue;
+            }
+
+            suffix_index = b_blocklist[j].len - b_blocklist[i].len;
+
+            // Same elements? They can use the same block data.
+            if (!memcmp(b_blocklist[i].elements,
+                        b_blocklist[j].elements + suffix_index,
+                        b_blocklist[i].len * sizeof(uint16_t)))
+            {
+                block_offsets[i] = block_offsets[j] + suffix_index;
+                break;
+            }
+        }
+
+        // Not found. Add new elements.
+        if (j >= i)
+        {
+            block_offsets[i] = b_newblockmap_len;
+            AppendBlockmapElements(b_blocklist[i].elements,
+                                   b_blocklist[i].len + 1);
+        }
+    }
+}
+
 /*
  *  portable reading / writing of linedefs and sidedefs
  *  by Andreas Dehmel (dehmel@forwiss.tu-muenchen.de)
@@ -799,4 +920,37 @@ int WriteSidedefs(sidedef_t *sides, int bytes, FILE *fp)
         fwrite(convbuffer, 1, cptr - convbuffer, fp);
     }
     return 0;
+}
+
+static bool ReadBlockmap(int lumpnum, FILE *fp)
+{
+    int i;
+
+    b_blockmap_len = wadentry[lumpnum].length / sizeof(uint16_t);
+    if (b_blockmap_len < 4)
+    {
+        return false;
+    }
+    b_blockmap = ALLOC_ARRAY(uint16_t, b_blockmap_len);
+    fseek(fp, wadentry[lumpnum].offset, SEEK_SET);
+    if (fread(b_blockmap, sizeof(uint16_t),
+              b_blockmap_len, fp) != b_blockmap_len)
+    {
+        free(b_blockmap);
+        return false;
+    }
+
+    for (i = 0; i < b_blockmap_len; i++)
+    {
+        b_blockmap[i] = READ_SHORT((uint8_t *) &b_blockmap[i]);
+    }
+
+    b_num_blocks = b_blockmap[2] * b_blockmap[3];
+    if (b_blockmap_len < b_num_blocks + 4)
+    {
+        free(b_blockmap);
+        return false;
+    }
+
+    return true;
 }
