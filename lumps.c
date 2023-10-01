@@ -220,18 +220,6 @@ static void P_FindInfo(void)
     /* find number of linedefs and sidedefs for later.. */
     p_num_linedefs = wadentry[p_linedefnum].length / LDEF_SIZE;
     p_num_sidedefs = wadentry[p_sidedefnum].length / SDEF_SIZE;
-    if ((wadentry[p_linedefnum].length % LDEF_SIZE) != 0)
-    {
-        ErrorExit("P_FindInfo: %.8s linedef lump is %d bytes, "
-                  "not a multiple of %d",
-                  p_working, wadentry[p_linedefnum].length, LDEF_SIZE);
-    }
-    if ((wadentry[p_sidedefnum].length % SDEF_SIZE) != 0)
-    {
-        ErrorExit("P_FindInfo: %.8s sidedef lump is %d bytes, "
-                  "not a multiple of %d",
-                  p_working, wadentry[p_sidedefnum].length, SDEF_SIZE);
-    }
 }
 
 /* Append the given sidedef to the p_newsidedef array. */
@@ -335,6 +323,22 @@ static void P_BuildLinedefs(linedef_t *linedefs)
     free(p_newsidedef_index);
 }
 
+static void CheckLumpSizes(void)
+{
+    if ((wadentry[p_linedefnum].length % LDEF_SIZE) != 0)
+    {
+        ErrorExit("P_FindInfo: %.8s linedef lump is %d bytes, "
+                  "not a multiple of %d",
+                  p_working, wadentry[p_linedefnum].length, LDEF_SIZE);
+    }
+    if ((wadentry[p_sidedefnum].length % SDEF_SIZE) != 0)
+    {
+        ErrorExit("P_FindInfo: %.8s sidedef lump is %d bytes, "
+                  "not a multiple of %d",
+                  p_working, wadentry[p_sidedefnum].length, SDEF_SIZE);
+    }
+}
+
 /* Rebuild the sidedefs */
 
 static void P_Rebuild(void)
@@ -343,6 +347,8 @@ static void P_Rebuild(void)
     linedef_t *linedefs, *ld;
     bool is_special;
     int count;
+
+    CheckLumpSizes();
 
     sidedefs = ReadSidedefs(p_sidedefnum, wadfp);
     linedefs = ReadLinedefs(p_linedefnum, wadfp);
