@@ -674,6 +674,41 @@ bool S_IsGraphic(int entrynum)
     return true;
 }
 
+static void SortBlockElements(uint16_t *elements, size_t num_elements)
+{
+    uint16_t pivot;
+    size_t arr1_len;
+    int i, pivot_index;
+
+    if (num_elements <= 1)
+    {
+        // no-op.
+        return;
+    }
+
+    // Pick pivot from the middle, it might be already sorted.
+    pivot_index = num_elements / 2;
+    pivot = elements[pivot_index];
+    elements[pivot_index] = elements[num_elements - 1];
+
+    for (i = 0, arr1_len = 0; i < num_elements - 1; i++)
+    {
+        if (elements[i] < pivot)
+        {
+            uint16_t tmp = elements[i];
+            elements[i] = elements[arr1_len];
+            elements[arr1_len] = tmp;
+            ++arr1_len;
+        }
+    }
+
+    elements[num_elements - 1] = elements[arr1_len];
+    elements[arr1_len] = pivot;
+
+    SortBlockElements(elements, arr1_len);
+    SortBlockElements(&elements[arr1_len + 1], num_elements - arr1_len - 1);
+}
+
 static void MakeBlocklist(void)
 {
     struct block *b_blocklist;
@@ -695,6 +730,8 @@ static void MakeBlocklist(void)
         b_blocklist[i].len = end_index - start_index;
 
         engine_format = engine_format || b_blockmap[start_index] != 0;
+
+        SortBlockElements(b_blocklist[i].elements, b_blocklist[i].len);
     }
 
     // Convert to "engine format" by stripping leading zeroes:
