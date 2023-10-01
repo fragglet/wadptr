@@ -40,7 +40,7 @@ windist:
 	$(STRIP) dist/wadptr.exe
 	pandoc -f gfm -o dist/NEWS.html -s NEWS.md
 	pandoc -f gfm -o dist/COPYING.html -s COPYING.md
-	pandoc -f man wadptr.1 -o dist/wadptr.html
+	pandoc --template=default.html5 -f man wadptr.1 -o dist/wadptr.html
 	rm -f wadptr-$(VERSION).zip
 	zip -X -j -r wadptr-$(VERSION).zip dist
 
