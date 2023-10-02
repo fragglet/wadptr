@@ -353,18 +353,14 @@ static bool Compress(const char *wadname)
             {
                 /* write the pre-packed sidedef entry */
                 wadentry[count].offset = ftell(fstream);
-                WriteSidedefs((sidedef_t *) p_sidedefres,
-                              wadentry[count].length, fstream);
-                free(p_sidedefres);
+                wadentry[count].length = P_WriteSidedefs(fstream);
                 written = true;
             }
             else if (!strncmp(wadentry[count].name, "LINEDEFS", 8))
             {
                 /* write the pre-packed linedef entry */
                 wadentry[count].offset = ftell(fstream);
-                WriteLinedefs((linedef_t *) p_linedefres,
-                              wadentry[count].length, fstream);
-                free(p_linedefres);
+                wadentry[count].length = P_WriteLinedefs(fstream);
                 written = true;
             }
         }
@@ -514,17 +510,13 @@ static bool Uncompress(const char *wadname)
             if (!strncmp(wadentry[count].name, "SIDEDEFS", 8))
             {
                 wadentry[count].offset = ftell(fstream);
-                WriteSidedefs((sidedef_t *) p_sidedefres,
-                              wadentry[count].length, fstream);
-                free(p_sidedefres);
+                wadentry[count].length = P_WriteSidedefs(fstream);
                 written = true;
             }
             if (!strncmp(wadentry[count].name, "LINEDEFS", 8))
             {
                 wadentry[count].offset = ftell(fstream);
-                WriteLinedefs((linedef_t *) p_linedefres,
-                              wadentry[count].length, fstream);
-                free(p_linedefres);
+                wadentry[count].length = P_WriteLinedefs(fstream);
                 written = true;
             }
         }

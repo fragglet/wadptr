@@ -19,12 +19,11 @@
 #include "errors.h"
 #include "waddir.h"
 
-extern uint8_t *p_linedefres; /* the new linedef resource */
-extern uint8_t *p_sidedefres; /* the new sidedef resource */
-
 void P_Pack(char *levelname);
 void P_Unpack(char *resname);
 bool P_IsPacked(char *s);
+size_t P_WriteLinedefs(FILE *fstream);
+size_t P_WriteSidedefs(FILE *fstream);
 
 uint8_t *S_Squash(int entrynum);
 uint8_t *S_Unsquash(int entrynum);
@@ -77,8 +76,5 @@ typedef struct {
 #define LDEF_SDEF1 10
 #define LDEF_SDEF2 12
 #define LDEF_SIZE  14
-
-int WriteLinedefs(linedef_t *lines, int bytes, FILE *fp);
-int WriteSidedefs(sidedef_t *sides, int bytes, FILE *fp);
 
 #endif
