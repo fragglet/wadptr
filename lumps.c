@@ -813,6 +813,8 @@ void B_Stack(int lumpnum, FILE *fp)
                                    b_blocklist[i].len + 1);
         }
     }
+
+    free(b_blocklist);
 }
 
 /*
