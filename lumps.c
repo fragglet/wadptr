@@ -43,7 +43,6 @@ typedef struct {
 } sidedef_array_t;
 
 static void CheckLumpSizes(void);
-static void P_FindInfo(void);
 static sidedef_array_t P_DoPack(sidedef_array_t *sidedefs);
 static void P_RemapLinedefs(linedef_array_t *linedefs);
 static sidedef_array_t P_RebuildSidedefs(linedef_array_t *linedefs,
@@ -58,10 +57,8 @@ static int WriteLinedefs(const linedef_array_t *linedefs, FILE *fp);
 static int WriteSidedefs(const sidedef_array_t *sidedefs, FILE *fp);
 static bool ReadBlockmap(int lumpnum, FILE *fp);
 
-static int p_levelnum;        /* entry number (index in WAD directory) */
 static int p_sidedefnum;      /* sidedef wad entry number */
 static int p_linedefnum;      /* linedef wad entry number */
-static const char *p_working; /* the name of the level resource eg. "MAP01" */
 
 static linedef_array_t p_linedefs_result;
 static sidedef_array_t p_sidedefs_result;
@@ -94,13 +91,12 @@ static struct block *b_blocklist;
 /* p_sidedefres and p_linedefres. These must be free()d by other functions */
 /* when they are no longer needed, as P_Pack does not do this. */
 
-void P_Pack(char *levelname)
+void P_Pack(int sidedef_num)
 {
     sidedef_array_t sidedefs, sidedefs2;
 
-    p_working = levelname;
-
-    P_FindInfo();
+    p_linedefnum = sidedef_num - 1;
+    p_sidedefnum = sidedef_num;
 
     CheckLumpSizes();
 
@@ -139,13 +135,13 @@ size_t P_WriteSidedefs(FILE *fstream)
 /* Same thing, in reverse. Saves the new sidedef and linedef lumps to */
 /* p_sidedefres and p_linedefres. */
 
-void P_Unpack(char *resname)
+void P_Unpack(int sidedef_num)
 {
     sidedef_array_t sidedefs;
 
-    p_working = resname;
+    p_linedefnum = sidedef_num - 1;
+    p_sidedefnum = sidedef_num;
 
-    P_FindInfo();
     CheckLumpSizes();
 
     p_linedefs_result = ReadLinedefs(p_linedefnum, wadfp);
@@ -169,7 +165,7 @@ static void CheckSidedefIndex(int linedef_index, int sidedef_index,
 
 /* Find if a level is packed */
 
-bool P_IsPacked(char *s)
+bool P_IsPacked(int sidedef_num)
 {
     linedef_array_t linedefs;
     uint8_t *sidedef_used;
@@ -177,9 +173,9 @@ bool P_IsPacked(char *s)
     bool packed = false;
     int count;
 
-    p_working = s;
-
-    P_FindInfo();
+    // SIDEDEFS always follows LINEDEFS.
+    p_linedefnum = sidedef_num - 1;
+    p_sidedefnum = sidedef_num;
 
     linedefs = ReadLinedefs(p_linedefnum, wadfp);
 
@@ -210,49 +206,6 @@ bool P_IsPacked(char *s)
     free(linedefs.lines);
     free(sidedef_used);
     return packed;
-}
-
-/* Find necessary stuff before processing */
-
-static void P_FindInfo(void)
-{
-    int count, n;
-
-    /* first find the level entry */
-    for (count = 0; count < numentries; count++)
-    {
-        if (!strncmp(wadentry[count].name, p_working, 8))
-        { /* matches the name given */
-            p_levelnum = count;
-            break;
-        }
-    }
-    if (count == numentries)
-        ErrorExit("P_FindInfo: Couldn't find level: %.8s", p_working);
-
-    n = 0;
-
-    /* now find the sidedefs */
-    for (count = p_levelnum + 1; count < numentries; count++)
-    {
-        if (!IsLevelEntry(wadentry[count].name))
-        {
-            ErrorExit("P_FindInfo: Can't find sidedef/linedef entries!");
-        }
-
-        if (!strncmp(wadentry[count].name, "SIDEDEFS", 8))
-        {
-            n++;
-            p_sidedefnum = count;
-        }
-        if (!strncmp(wadentry[count].name, "LINEDEFS", 8))
-        {
-            n++;
-            p_linedefnum = count;
-        }
-        if (n == 2)
-            break; /* found both :) */
-    }
 }
 
 /* Append the given sidedef to the given array. */
@@ -362,15 +315,15 @@ static void CheckLumpSizes(void)
 {
     if ((wadentry[p_linedefnum].length % LDEF_SIZE) != 0)
     {
-        ErrorExit("P_FindInfo: %.8s linedef lump is %d bytes, "
+        ErrorExit("P_RebuildSidedefs: LINEDEFS lump (#%d) is %d bytes, "
                   "not a multiple of %d",
-                  p_working, wadentry[p_linedefnum].length, LDEF_SIZE);
+                  p_linedefnum, wadentry[p_linedefnum].length, LDEF_SIZE);
     }
     if ((wadentry[p_sidedefnum].length % SDEF_SIZE) != 0)
     {
-        ErrorExit("P_FindInfo: %.8s sidedef lump is %d bytes, "
+        ErrorExit("P_RebuildSidedefs: SIDEDEFS lump (#%d) is %d bytes, "
                   "not a multiple of %d",
-                  p_working, wadentry[p_sidedefnum].length, SDEF_SIZE);
+                  p_sidedefnum, wadentry[p_sidedefnum].length, SDEF_SIZE);
     }
 }
 

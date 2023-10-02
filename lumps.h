@@ -19,9 +19,12 @@
 #include "errors.h"
 #include "waddir.h"
 
-void P_Pack(char *levelname);
-void P_Unpack(char *resname);
-bool P_IsPacked(char *s);
+// The sidedef packing functions take the index of a SIDEDEFS lump to pack,
+// and assume that the preceding lump is the LINEDEFS lump.
+void P_Pack(int sidedef_num);
+void P_Unpack(int sidedef_num);
+bool P_IsPacked(int sidedef_num);
+
 size_t P_WriteLinedefs(FILE *fstream);
 size_t P_WriteSidedefs(FILE *fstream);
 

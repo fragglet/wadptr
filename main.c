@@ -341,7 +341,7 @@ static bool Compress(const char *wadname)
                 findshrink = FindLevelSize(wadentry[count].name);
 
                 /* pack the level */
-                P_Pack(wadentry[count].name);
+                P_Pack(count + 3);
 
                 findshrink =
                     FindPerc(findshrink, FindLevelSize(wadentry[count].name));
@@ -503,7 +503,7 @@ static bool Uncompress(const char *wadname)
             {
                 SPAMMY_PRINTF("\tUnpacking");
                 fflush(stdout);
-                P_Unpack(wadentry[count].name);
+                P_Unpack(count + 3);
                 SPAMMY_PRINTF(", done.\n");
                 write_silent = true;
             }
@@ -623,7 +623,7 @@ static bool ListEntries(const char *wadname)
         if (IsLevel(count))
         {
             /* this is a level */
-            if (P_IsPacked(wadentry[count].name))
+            if (P_IsPacked(count + 3))
                 printf("Packed      ");
             else
                 printf("Unpacked    ");
