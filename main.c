@@ -281,6 +281,15 @@ static void CheckHexenFormat(const char *filename)
     }
 }
 
+// LINEDEFS and SIDEDEFS lumps follow each other in Doom WADs. This is
+// baked into the engine - Doom doesn't actually even look at the names.
+static bool IsSidedefs(int count)
+{
+    return !strncmp(wadentry[count].name, "SIDEDEFS", 8)
+        && count > 0
+        && !strncmp(wadentry[count - 1].name, "LINEDEFS", 8);
+}
+
 /* Compress a WAD */
 
 static bool Compress(const char *wadname)
@@ -288,7 +297,7 @@ static bool Compress(const char *wadname)
     int count, findshrink;
     long wadsize; /* wad size(to find % smaller) */
     FILE *fstream;
-    bool written, write_silent;
+    bool written;
     uint8_t *temp;
     char *tempwad_name, a[50];
 
@@ -318,50 +327,39 @@ static bool Compress(const char *wadname)
 
     for (count = 0; count < numentries; count++)
     {
-        /* hide individual level entries */
-        if (!IsLevelEntry(wadentry[count].name))
-        {
-            SPAMMY_PRINTF("Adding: %.8s       ", wadentry[count].name);
-            fflush(stdout);
-            write_silent = false;
-        }
-        else
-        {
-            /* we only print the level header */
-            write_silent = true;
-        }
+        SPAMMY_PRINTF("Adding: %.8s       ", wadentry[count].name);
+        fflush(stdout);
         written = false;
 
         if (allowpack && !hexen_format_wad)
         {
-            if (IsLevel(count))
+            if (count + 1 < numentries && IsSidedefs(count + 1))
+            {
+                // We will write both LINEDEFS and SIDEDEFS when we reach
+                // the next lump.
+                SPAMMY_PRINTF("\tDeferred... (0%%)\n");
+                written = true;
+            }
+            else if (IsSidedefs(count))
             {
                 SPAMMY_PRINTF("\tPacking");
                 fflush(stdout);
-                findshrink = FindLevelSize(wadentry[count].name);
+                findshrink = wadentry[count].length;
 
                 /* pack the level */
-                P_Pack(count + 3);
+                P_Pack(count);
 
-                findshrink =
-                    FindPerc(findshrink, FindLevelSize(wadentry[count].name));
-                SPAMMY_PRINTF(" (%i%%), done.\n", findshrink);
+                wadentry[count - 1].offset = ftell(fstream);
+                wadentry[count - 1].length = P_WriteLinedefs(fstream);
 
-                write_silent = true;
-            }
-            else if (!strncmp(wadentry[count].name, "SIDEDEFS", 8))
-            {
-                /* write the pre-packed sidedef entry */
                 wadentry[count].offset = ftell(fstream);
                 wadentry[count].length = P_WriteSidedefs(fstream);
+
                 written = true;
-            }
-            else if (!strncmp(wadentry[count].name, "LINEDEFS", 8))
-            {
-                /* write the pre-packed linedef entry */
-                wadentry[count].offset = ftell(fstream);
-                wadentry[count].length = P_WriteLinedefs(fstream);
-                written = true;
+
+                findshrink =
+                    FindPerc(findshrink, wadentry[count].length);
+                SPAMMY_PRINTF(" (%i%%), done.\n", findshrink);
             }
         }
 
@@ -381,20 +379,14 @@ static bool Compress(const char *wadname)
             written = true;
         }
 
-        if (!written && !write_silent)
+        if (!written)
         {
             SPAMMY_PRINTF("\tStoring ");
             fflush(stdout);
-        }
-        if (!written)
-        {
             temp = CacheLump(count);
             wadentry[count].offset = ftell(fstream); /*update dir */
             fwrite(temp, wadentry[count].length, 1, fstream);
             free(temp);
-        }
-        if (!written && !write_silent)
-        {
             SPAMMY_PRINTF("(0%%), done.\n");
         }
     }
@@ -458,7 +450,7 @@ static bool Uncompress(const char *wadname)
     char tempstr[50], *tempwad_name;
     FILE *fstream;
     uint8_t *tempres;
-    bool written, write_silent;
+    bool written;
     long fileloc;
     int count;
 
@@ -486,37 +478,31 @@ static bool Uncompress(const char *wadname)
     {
         written = false;
 
-        if (IsLevelEntry(wadentry[count].name))
-        {
-            write_silent = true;
-        }
-        else
-        {
-            SPAMMY_PRINTF("Adding: %.8s       ", wadentry[count].name);
-            fflush(stdout);
-            write_silent = false;
-        }
+        SPAMMY_PRINTF("Adding: %.8s       ", wadentry[count].name);
+        fflush(stdout);
 
         if (allowpack && !hexen_format_wad)
         {
-            if (IsLevel(count))
+            if (count + 1 < numentries && IsSidedefs(count + 1))
+            {
+                // Write on next loop.
+                SPAMMY_PRINTF("\tDeferred...\n");
+                written = true;
+            }
+            else if (IsSidedefs(count))
             {
                 SPAMMY_PRINTF("\tUnpacking");
                 fflush(stdout);
-                P_Unpack(count + 3);
-                SPAMMY_PRINTF(", done.\n");
-                write_silent = true;
-            }
-            if (!strncmp(wadentry[count].name, "SIDEDEFS", 8))
-            {
+
+                P_Unpack(count);
+
+                wadentry[count - 1].offset = ftell(fstream);
+                wadentry[count - 1].length = P_WriteLinedefs(fstream);
+
                 wadentry[count].offset = ftell(fstream);
                 wadentry[count].length = P_WriteSidedefs(fstream);
-                written = true;
-            }
-            if (!strncmp(wadentry[count].name, "LINEDEFS", 8))
-            {
-                wadentry[count].offset = ftell(fstream);
-                wadentry[count].length = P_WriteLinedefs(fstream);
+
+                SPAMMY_PRINTF(", done.\n");
                 written = true;
             }
         }
@@ -532,21 +518,15 @@ static bool Uncompress(const char *wadname)
             written = true;
         }
 
-        if (!written && !write_silent)
+        if (!written)
         {
             SPAMMY_PRINTF("\tStoring");
             fflush(stdout);
-        }
-        if (!written)
-        {
             tempres = CacheLump(count);
             fileloc = ftell(fstream);
             fwrite(tempres, wadentry[count].length, 1, fstream);
             free(tempres);
             wadentry[count].offset = fileloc;
-        }
-        if (!written && !write_silent)
-        {
             SPAMMY_PRINTF(", done.\n");
         }
     }
@@ -598,32 +578,17 @@ static bool ListEntries(const char *wadname)
 
     for (count = 0; count < numentries; count++)
     {
-        if (IsLevelEntry(wadentry[count].name))
-            continue;
-
         /* wad entry number */
-        printf("%7d", count + 1);
-
-        /* size */
-        if (IsLevel(count))
-        {
-            /* the whole level not just the id lump */
-            printf(" %7d", FindLevelSize(wadentry[count].name));
-        }
-        else
-        {
-            /* not a level, doesn't matter */
-            printf(" %7ld", wadentry[count].length);
-        }
+        printf("%7d %7ld", count + 1, wadentry[count].length);
 
         /* file offset */
         printf("  0x%08lx  ", wadentry[count].offset);
 
         /* compression method */
-        if (IsLevel(count))
+        if (IsSidedefs(count))
         {
             /* this is a level */
-            if (P_IsPacked(count + 3))
+            if (P_IsPacked(count))
                 printf("Packed      ");
             else
                 printf("Unpacked    ");
