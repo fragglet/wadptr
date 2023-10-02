@@ -110,10 +110,6 @@ void P_Pack(int sidedef_num)
     free(sidedefs2.sides);
 
     P_RemapLinedefs(&p_linedefs_result); /* update sidedef indexes */
-
-    // TODO: We shouldn't really do this, but we need to update it to
-    // make the percentage output work properly in the -c output.
-    wadentry[p_sidedefnum].length = p_sidedefs_result.len * SDEF_SIZE;
 }
 
 size_t P_WriteLinedefs(FILE *fstream)
