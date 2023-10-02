@@ -33,7 +33,6 @@ void *CacheLump(int entrynum);
 int WriteWadHeader(FILE *fp);
 int WriteWadDirectory(FILE *fp);
 
-bool IsLevel(int entry);
 bool IsLevelEntry(char *s);
 int FindLevelSize(char *s);
 

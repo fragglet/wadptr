@@ -173,18 +173,6 @@ void *CacheLump(int entrynum)
     return working;
 }
 
-/* Various WAD-related is??? functions */
-
-bool IsLevel(int entry)
-{
-    if (entry >= numentries)
-        return false;
-
-    /* 9/9/99: generalised support: if the next entry is a */
-    /* things resource then it's a level */
-    return !strncmp(wadentry[entry + 1].name, "THINGS", 8);
-}
-
 static const char *level_lump_names[] = {
     "THINGS",   // Level things data
     "LINEDEFS", // Level linedef data
@@ -212,6 +200,8 @@ static const char *level_lump_names[] = {
     "ENDMAP",   // UDMF end of level
 };
 
+// Returns true if the specified lump name is one of the "sub-lumps"
+// associated with levels (in the list above).
 bool IsLevelEntry(char *s)
 {
     int i;
