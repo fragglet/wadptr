@@ -932,14 +932,7 @@ static bool ReadBlockmap(int lumpnum, FILE *fp)
     {
         return false;
     }
-    b_blockmap = ALLOC_ARRAY(uint16_t, b_blockmap_len);
-    fseek(fp, wadentry[lumpnum].offset, SEEK_SET);
-    if (fread(b_blockmap, sizeof(uint16_t), b_blockmap_len, fp) !=
-        b_blockmap_len)
-    {
-        free(b_blockmap);
-        return false;
-    }
+    b_blockmap = CacheLump(lumpnum);
 
     for (i = 0; i < b_blockmap_len; i++)
     {
