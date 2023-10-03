@@ -27,10 +27,17 @@
 #include "lumps.h"
 #include "wadptr.h"
 
-struct block {
+typedef struct {
     uint16_t *elements;
     size_t len;
-};
+} block_t;
+
+typedef struct {
+    uint16_t *elements;
+    size_t len, size;
+    int num_blocks;
+    block_t *blocklist;
+} blockmap_t;
 
 typedef struct {
     linedef_t *lines;
@@ -55,10 +62,10 @@ static linedef_array_t ReadLinedefs(int lumpnum, FILE *fp);
 static sidedef_array_t ReadSidedefs(int lumpnum, FILE *fp);
 static int WriteLinedefs(const linedef_array_t *linedefs, FILE *fp);
 static int WriteSidedefs(const sidedef_array_t *sidedefs, FILE *fp);
-static bool ReadBlockmap(int lumpnum, FILE *fp);
+static blockmap_t ReadBlockmap(int lumpnum, FILE *fp);
 
-static int p_sidedefnum;      /* sidedef wad entry number */
-static int p_linedefnum;      /* linedef wad entry number */
+static int p_sidedefnum; /* sidedef wad entry number */
+static int p_linedefnum; /* linedef wad entry number */
 
 static linedef_array_t p_linedefs_result;
 static sidedef_array_t p_sidedefs_result;
@@ -76,13 +83,7 @@ static uint8_t *s_columns;  /* the location of each column in the lump */
 static long s_colsize[400]; /* the length(in bytes) of each column */
 
 /* Blockmap stacking globals */
-static uint16_t *b_blockmap;
-static size_t b_blockmap_len;
-static unsigned int b_num_blocks;
-static uint16_t *b_newblockmap;
-static size_t b_newblockmap_len;
-static size_t b_newblockmap_size;
-static struct block *b_blocklist;
+static blockmap_t b_blockmap;
 
 /* Pack a level */
 
@@ -671,96 +672,104 @@ static void SortBlockElements(uint16_t *elements, size_t num_elements)
     SortBlockElements(&elements[arr1_len + 1], num_elements - arr1_len - 1);
 }
 
-static void MakeBlocklist(void)
+static void MakeBlocklist(blockmap_t *blockmap)
 {
-    struct block *b_blocklist;
+    block_t *block;
     int i, start_index, end_index;
     bool engine_format = false;
 
-    b_blocklist = ALLOC_ARRAY(struct block, b_num_blocks);
+    blockmap->blocklist = ALLOC_ARRAY(block_t, blockmap->num_blocks);
 
-    for (i = 0; i < b_num_blocks; i++)
+    for (i = 0; i < blockmap->num_blocks; i++)
     {
-        start_index = b_blockmap[4 + i];
-        b_blocklist[i].elements = &b_blockmap[start_index];
+        block = &blockmap->blocklist[i];
+        start_index = blockmap->elements[4 + i];
+        block->elements = &blockmap->elements[start_index];
 
         end_index = start_index;
-        while (b_blockmap[end_index] != 0xffff)
+        while (blockmap->elements[end_index] != 0xffff)
         {
             ++end_index;
         }
-        b_blocklist[i].len = end_index - start_index;
+        block->len = end_index - start_index;
 
-        engine_format = engine_format || b_blockmap[start_index] != 0;
+        engine_format = engine_format || block->elements[0] != 0;
 
-        SortBlockElements(b_blocklist[i].elements, b_blocklist[i].len);
+        SortBlockElements(block->elements, block->len);
     }
 
     // Convert to "engine format" by stripping leading zeroes:
     // https://doomwiki.org/wiki/Blockmap#Blocklists
     if (!engine_format)
     {
-        for (i = 0; i < b_num_blocks; i++)
+        for (i = 0; i < blockmap->num_blocks; i++)
         {
-            ++b_blocklist[i].elements;
-            --b_blocklist[i].len;
+            ++blockmap->blocklist[i].elements;
+            --blockmap->blocklist[i].len;
         }
     }
 }
 
-static void AppendBlockmapElements(uint16_t *elements, size_t count)
+// TODO: We don't really need it right now, but this doesn't update the
+// blockmap->blocklist[]->elements pointers when reallocating.
+static void AppendBlockmapElements(blockmap_t *blockmap, uint16_t *elements,
+                                   size_t count)
 {
-    while (b_newblockmap_len + count > b_newblockmap_size)
+    while (blockmap->len + count > blockmap->size)
     {
-        b_newblockmap_size *= 2;
-        b_newblockmap =
-            REALLOC_ARRAY(uint16_t, b_newblockmap, b_newblockmap_size);
+        blockmap->size *= 2;
+        blockmap->elements =
+            REALLOC_ARRAY(uint16_t, blockmap->elements, blockmap->size);
     }
 
-    memcpy(&b_newblockmap[b_newblockmap_len], elements,
+    memcpy(&blockmap->elements[blockmap->len], elements,
            count * sizeof(uint16_t));
-    b_newblockmap_len += count;
+    blockmap->len += count;
 }
 
 // TODO: This is not yet finished.
 void B_Stack(int lumpnum, FILE *fp)
 {
+    blockmap_t blockmap;
     uint16_t *block_offsets;
     int i, j;
 
-    if (!ReadBlockmap(lumpnum, fp))
+    blockmap = ReadBlockmap(lumpnum, fp);
+    if (b_blockmap.len == 0)
     {
-        return;
+        ErrorExit("failed to read blockmap?");
     }
 
-    MakeBlocklist();
+    MakeBlocklist(&blockmap);
 
-    b_newblockmap_size = b_blockmap_len;
-    b_newblockmap = ALLOC_ARRAY(uint16_t, b_newblockmap_size);
-    b_newblockmap_len = 4 + b_num_blocks;
-    block_offsets = &b_newblockmap[4];
+    b_blockmap.size = blockmap.len;
+    b_blockmap.elements = ALLOC_ARRAY(uint16_t, b_blockmap.size);
+    b_blockmap.len = 4 + blockmap.num_blocks;
+    b_blockmap.num_blocks = blockmap.num_blocks;
+    block_offsets = &b_blockmap.elements[4];
 
     // Header is identical:
-    memcpy(b_newblockmap, b_blockmap, 4 * sizeof(uint16_t));
+    memcpy(b_blockmap.elements, blockmap.elements, 4 * sizeof(uint16_t));
 
-    for (i = 0; i < b_newblockmap_len; i++)
+    for (i = 0; i < blockmap.num_blocks; i++)
     {
+        const block_t *ib = &blockmap.blocklist[i];
+
         for (j = 0; j < i; j++)
         {
+            const block_t *jb = &blockmap.blocklist[j];
             uint16_t suffix_index;
 
-            // We allow suffixes.
-            if (b_blocklist[i].len > b_blocklist[j].len)
+            if (ib->len > jb->len)
             {
                 continue;
             }
 
-            suffix_index = b_blocklist[j].len - b_blocklist[i].len;
+            // We allow suffixes.
+            suffix_index = jb->len - ib->len;
 
             // Same elements? They can use the same block data.
-            if (!memcmp(b_blocklist[i].elements,
-                        b_blocklist[j].elements + suffix_index,
-                        b_blocklist[i].len * sizeof(uint16_t)))
+            if (!memcmp(ib->elements, jb->elements + suffix_index, ib->len * 2))
             {
                 block_offsets[i] = block_offsets[j] + suffix_index;
                 break;
@@ -770,13 +779,13 @@ void B_Stack(int lumpnum, FILE *fp)
         // Not found. Add new elements.
         if (j >= i)
         {
-            block_offsets[i] = b_newblockmap_len;
-            AppendBlockmapElements(b_blocklist[i].elements,
-                                   b_blocklist[i].len + 1);
+            block_offsets[i] = b_blockmap.len;
+            AppendBlockmapElements(&b_blockmap, ib->elements, ib->len + 1);
         }
     }
 
-    free(b_blocklist);
+    free(blockmap.elements);
+    free(blockmap.blocklist);
 }
 
 /*
@@ -919,46 +928,51 @@ static int WriteSidedefs(const sidedef_array_t *sidedefs, FILE *fp)
     return 0;
 }
 
-static bool ReadBlockmap(int lumpnum, FILE *fp)
+static blockmap_t ReadBlockmap(int lumpnum, FILE *fp)
 {
+    blockmap_t result;
     int i;
 
-    b_blockmap_len = wadentry[lumpnum].length / sizeof(uint16_t);
-    if (b_blockmap_len < 4)
+    result.len = wadentry[lumpnum].length / sizeof(uint16_t);
+    if (result.len < 4)
     {
-        return false;
+        result.elements = NULL;
+        result.len = 0;
+        return result;
     }
-    b_blockmap = CacheLump(lumpnum);
+    result.elements = CacheLump(lumpnum);
+    result.blocklist = 0;
 
-    for (i = 0; i < b_blockmap_len; i++)
+    for (i = 0; i < result.len; i++)
     {
-        b_blockmap[i] = READ_SHORT((uint8_t *) &b_blockmap[i]);
-    }
-
-    b_num_blocks = b_blockmap[2] * b_blockmap[3];
-    if (b_blockmap_len < b_num_blocks + 4)
-    {
-        free(b_blockmap);
-        return false;
+        result.elements[i] = READ_SHORT((uint8_t *) &result.elements[i]);
     }
 
-    return true;
+    result.num_blocks = result.elements[2] * result.elements[3];
+    if (result.len < result.num_blocks + 4)
+    {
+        free(result.elements);
+        result.elements = NULL;
+        result.len = 0;
+    }
+
+    return result;
 }
 
-/*static*/ bool WriteBlockmap(FILE *fp)
+/*static*/ bool WriteBlockmap(const blockmap_t *blockmap, FILE *fp)
 {
     uint8_t *buffer;
     bool result;
     int i;
 
-    buffer = ALLOC_ARRAY(uint8_t, b_blockmap_len * 2);
+    buffer = ALLOC_ARRAY(uint8_t, blockmap->len * 2);
 
-    for (i = 0; i < b_blockmap_len; i++)
+    for (i = 0; i < blockmap->len; i++)
     {
-        WRITE_SHORT(&buffer[i * 2], b_blockmap[i]);
+        WRITE_SHORT(&buffer[i * 2], blockmap->elements[i]);
     }
 
-    result = fwrite(buffer, 2, b_blockmap_len, fp) == b_blockmap_len;
+    result = fwrite(buffer, 2, blockmap->len, fp) == blockmap->len;
 
     free(buffer);
 
