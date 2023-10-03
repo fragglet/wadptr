@@ -47,6 +47,7 @@ static enum { HELP, COMPRESS, UNCOMPRESS, LIST } action;
 bool allowpack = true;   /* level packing on */
 bool allowsquash = true; /* picture squashing on */
 bool allowmerge = true;  /* lump merging on */
+bool allowstack = true; /* blockmap stacking */
 bool hexen_format_wad;
 static bool quiet_mode = false;
 
@@ -191,6 +192,8 @@ static void ParseCommandLine(void)
             allowsquash = false;
         if (!strcmp(g_argv[count], "-nopack"))
             allowpack = false;
+        if (!strcmp(g_argv[count], "-nostack"))
+            allowstack = false;
 
         if (g_argv[count][0] != '-')
         {
@@ -357,10 +360,23 @@ static bool Compress(const char *wadname)
 
                 written = true;
 
-                findshrink =
-                    FindPerc(findshrink, wadentry[count].length);
+                findshrink = FindPerc(findshrink, wadentry[count].length);
                 SPAMMY_PRINTF(" (%i%%), done.\n", findshrink);
             }
+        }
+
+        if (allowstack && !strncmp(wadentry[count].name, "BLOCKMAP", 8))
+        {
+            SPAMMY_PRINTF("\tStacking ");
+            findshrink = wadentry[count].length;
+
+            B_Stack(count);
+            wadentry[count].offset = ftell(fstream);
+            wadentry[count].length = B_WriteBlockmap(fstream);
+
+            findshrink = FindPerc(findshrink, wadentry[count].length);
+            SPAMMY_PRINTF("(%i%%), done.\n", findshrink);
+            written = true;
         }
 
         if (allowsquash && S_IsGraphic(count))
