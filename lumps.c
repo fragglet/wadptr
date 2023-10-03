@@ -693,7 +693,7 @@ static void MakeBlocklist(blockmap_t *blockmap)
         {
             ++end_index;
         }
-        block->len = end_index - start_index;
+        block->len = end_index - start_index + 1;
 
         engine_format = engine_format || block->elements[0] != 0;
 
@@ -729,66 +729,90 @@ static void AppendBlockmapElements(blockmap_t *blockmap, uint16_t *elements,
     blockmap->len += count;
 }
 
-// TODO: This is not yet finished.
+static int FindIdenticalBlock(const blockmap_t *blockmap, size_t num_blocks,
+                              const block_t *block)
+{
+    int i;
+
+    for (i = 0; i < num_blocks; i++)
+    {
+        const block_t *ib = &blockmap->blocklist[i];
+
+        // We allow suffixes, but unless the blockmap is in "engine
+        // format" it probably won't make a difference.
+        if (block->len > ib->len)
+        {
+            continue;
+        }
+
+        if (!memcmp(block->elements, ib->elements + ib->len - block->len,
+                    block->len * 2))
+        {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
+static blockmap_t RebuildBlockmap(blockmap_t *blockmap)
+{
+    blockmap_t result;
+    uint16_t *block_offsets;
+    int i;
+
+    MakeBlocklist(blockmap);
+
+    result.size = blockmap->len;
+    result.elements = ALLOC_ARRAY(uint16_t, result.size);
+    result.len = 4 + blockmap->num_blocks;
+    result.num_blocks = blockmap->num_blocks;
+    block_offsets = &result.elements[4];
+
+    // Header is identical:
+    memcpy(result.elements, blockmap->elements, 4 * sizeof(uint16_t));
+
+    for (i = 0; i < blockmap->num_blocks; i++)
+    {
+        const block_t *block = &blockmap->blocklist[i];
+        int match_index = FindIdenticalBlock(blockmap, i, block);
+
+        if (match_index >= 0)
+        {
+            // Copy the offset of the other block, but if it's a suffix
+            // match then we need to offset.
+            block_offsets[i] = block_offsets[match_index]
+                + blockmap->blocklist[match_index].len
+                - block->len;
+        }
+        else
+        {
+            block_offsets[i] = result.len;
+            AppendBlockmapElements(&result, block->elements, block->len);
+        }
+    }
+
+    free(blockmap->blocklist);
+
+    return result;
+}
+
 void B_Stack(int lumpnum)
 {
-    blockmap_t blockmap;
-    uint16_t *block_offsets;
-    int i, j;
-
-    blockmap = ReadBlockmap(lumpnum, wadfp);
+    blockmap_t blockmap = ReadBlockmap(lumpnum, wadfp);
     if (blockmap.len == 0)
     {
         // TODO: Need some better error handling.
         ErrorExit("failed to read blockmap?");
     }
 
-    MakeBlocklist(&blockmap);
+    b_blockmap = RebuildBlockmap(&blockmap);
 
-    b_blockmap.size = blockmap.len;
-    b_blockmap.elements = ALLOC_ARRAY(uint16_t, b_blockmap.size);
-    b_blockmap.len = 4 + blockmap.num_blocks;
-    b_blockmap.num_blocks = blockmap.num_blocks;
-    block_offsets = &b_blockmap.elements[4];
-
-    // Header is identical:
-    memcpy(b_blockmap.elements, blockmap.elements, 4 * sizeof(uint16_t));
-
-    for (i = 0; i < blockmap.num_blocks; i++)
-    {
-        const block_t *ib = &blockmap.blocklist[i];
-
-        for (j = 0; j < i; j++)
-        {
-            const block_t *jb = &blockmap.blocklist[j];
-            uint16_t suffix_index;
-
-            if (ib->len > jb->len)
-            {
-                continue;
-            }
-
-            // We allow suffixes.
-            suffix_index = jb->len - ib->len;
-
-            // Same elements? They can use the same block data.
-            if (!memcmp(ib->elements, jb->elements + suffix_index, ib->len * 2))
-            {
-                block_offsets[i] = block_offsets[j] + suffix_index;
-                break;
-            }
-        }
-
-        // Not found. Add new elements.
-        if (j >= i)
-        {
-            block_offsets[i] = b_blockmap.len;
-            AppendBlockmapElements(&b_blockmap, ib->elements, ib->len + 1);
-        }
-    }
+    // TODO: Check the rebuilt blockmap really is smaller. If it was
+    // built using eg. ZokumBSP, the original is probably better than
+    // what we've produced.
 
     free(blockmap.elements);
-    free(blockmap.blocklist);
 }
 
 size_t B_WriteBlockmap(FILE *fstream)
@@ -798,7 +822,6 @@ size_t B_WriteBlockmap(FILE *fstream)
         ErrorExit("Error writing blockmap");
     }
     free(b_blockmap.elements);
-    free(b_blockmap.blocklist);
     return b_blockmap.len * 2;
 }
 
