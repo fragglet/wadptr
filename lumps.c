@@ -704,7 +704,7 @@ static int FindIdenticalBlock(const blockmap_t *blockmap, size_t num_blocks,
     return -1;
 }
 
-static blockmap_t RebuildBlockmap(blockmap_t *blockmap)
+static blockmap_t RebuildBlockmap(blockmap_t *blockmap, bool compress)
 {
     blockmap_t result;
     uint16_t *block_offsets;
@@ -724,15 +724,20 @@ static blockmap_t RebuildBlockmap(blockmap_t *blockmap)
     for (i = 0; i < blockmap->num_blocks; i++)
     {
         const block_t *block = &blockmap->blocklist[i];
-        int match_index = FindIdenticalBlock(blockmap, i, block);
+        int match_index = -1;
+
+        if (compress)
+        {
+            match_index = FindIdenticalBlock(blockmap, i, block);
+        }
 
         if (match_index >= 0)
         {
             // Copy the offset of the other block, but if it's a suffix
             // match then we need to offset.
-            block_offsets[i] = block_offsets[match_index]
-                + blockmap->blocklist[match_index].len
-                - block->len;
+            block_offsets[i] = block_offsets[match_index] +
+                               blockmap->blocklist[match_index].len -
+                               block->len;
         }
         else
         {
@@ -755,11 +760,25 @@ void B_Stack(int lumpnum)
         ErrorExit("failed to read blockmap?");
     }
 
-    b_blockmap = RebuildBlockmap(&blockmap);
+    b_blockmap = RebuildBlockmap(&blockmap, true);
 
     // TODO: Check the rebuilt blockmap really is smaller. If it was
     // built using eg. ZokumBSP, the original is probably better than
     // what we've produced.
+
+    free(blockmap.elements);
+}
+
+void B_Unstack(int lumpnum)
+{
+    blockmap_t blockmap = ReadBlockmap(lumpnum, wadfp);
+    if (blockmap.len == 0)
+    {
+        // TODO: Need some better error handling.
+        ErrorExit("failed to read blockmap?");
+    }
+
+    b_blockmap = RebuildBlockmap(&blockmap, false);
 
     free(blockmap.elements);
 }

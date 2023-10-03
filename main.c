@@ -47,7 +47,7 @@ static enum { HELP, COMPRESS, UNCOMPRESS, LIST } action;
 bool allowpack = true;   /* level packing on */
 bool allowsquash = true; /* picture squashing on */
 bool allowmerge = true;  /* lump merging on */
-bool allowstack = true; /* blockmap stacking */
+bool allowstack = true;  /* blockmap stacking */
 bool hexen_format_wad;
 static bool quiet_mode = false;
 
@@ -521,6 +521,19 @@ static bool Uncompress(const char *wadname)
                 written = true;
             }
         }
+        if (allowstack && !strncmp(wadentry[count].name, "BLOCKMAP", 8))
+        {
+            SPAMMY_PRINTF("\tUnstacking");
+            fflush(stdout);
+
+            B_Unstack(count);
+            wadentry[count].offset = ftell(fstream);
+            wadentry[count].length = B_WriteBlockmap(fstream);
+
+            SPAMMY_PRINTF(", done.\n");
+            written = true;
+        }
+
         if (allowsquash && S_IsGraphic(count))
         {
             SPAMMY_PRINTF("\tUnsquashing");
