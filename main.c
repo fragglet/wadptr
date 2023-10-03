@@ -288,9 +288,8 @@ static void CheckHexenFormat(const char *filename)
 // baked into the engine - Doom doesn't actually even look at the names.
 static bool IsSidedefs(int count)
 {
-    return !strncmp(wadentry[count].name, "SIDEDEFS", 8)
-        && count > 0
-        && !strncmp(wadentry[count - 1].name, "LINEDEFS", 8);
+    return !strncmp(wadentry[count].name, "SIDEDEFS", 8) && count > 0 &&
+           !strncmp(wadentry[count - 1].name, "LINEDEFS", 8);
 }
 
 /* Compress a WAD */
