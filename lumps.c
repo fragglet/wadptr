@@ -683,6 +683,7 @@ static void MakeBlocklist(blockmap_t *blockmap)
     for (i = 0; i < blockmap->num_blocks; i++)
     {
         block = &blockmap->blocklist[i];
+        // TODO: Need to do some array bounds checking here.
         start_index = blockmap->elements[4 + i];
         block->elements = &blockmap->elements[start_index];
 
