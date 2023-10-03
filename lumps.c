@@ -677,7 +677,6 @@ static void MakeBlocklist(blockmap_t *blockmap)
 {
     block_t *block;
     int i, start_index, end_index;
-    bool engine_format = false;
 
     blockmap->blocklist = ALLOC_ARRAY(block_t, blockmap->num_blocks);
 
@@ -695,20 +694,7 @@ static void MakeBlocklist(blockmap_t *blockmap)
         }
         block->len = end_index - start_index + 1;
 
-        engine_format = engine_format || block->elements[0] != 0;
-
         SortBlockElements(block->elements, block->len);
-    }
-
-    // Convert to "engine format" by stripping leading zeroes:
-    // https://doomwiki.org/wiki/Blockmap#Blocklists
-    if (!engine_format)
-    {
-        for (i = 0; i < blockmap->num_blocks; i++)
-        {
-            ++blockmap->blocklist[i].elements;
-            --blockmap->blocklist[i].len;
-        }
     }
 }
 
