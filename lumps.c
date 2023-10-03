@@ -944,3 +944,23 @@ static bool ReadBlockmap(int lumpnum, FILE *fp)
 
     return true;
 }
+
+/*static*/ bool WriteBlockmap(FILE *fp)
+{
+    uint8_t *buffer;
+    bool result;
+    int i;
+
+    buffer = ALLOC_ARRAY(uint8_t, b_blockmap_len * 2);
+
+    for (i = 0; i < b_blockmap_len; i++)
+    {
+        WRITE_SHORT(&buffer[i * 2], b_blockmap[i]);
+    }
+
+    result = fwrite(buffer, 2, b_blockmap_len, fp) == b_blockmap_len;
+
+    free(buffer);
+
+    return result;
+}
