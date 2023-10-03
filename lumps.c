@@ -63,6 +63,7 @@ static sidedef_array_t ReadSidedefs(int lumpnum, FILE *fp);
 static int WriteLinedefs(const linedef_array_t *linedefs, FILE *fp);
 static int WriteSidedefs(const sidedef_array_t *sidedefs, FILE *fp);
 static blockmap_t ReadBlockmap(int lumpnum, FILE *fp);
+static bool WriteBlockmap(const blockmap_t *blockmap, FILE *fp);
 
 static int p_sidedefnum; /* sidedef wad entry number */
 static int p_linedefnum; /* linedef wad entry number */
@@ -790,6 +791,17 @@ void B_Stack(int lumpnum)
     free(blockmap.blocklist);
 }
 
+size_t B_WriteBlockmap(FILE *fstream)
+{
+    if (!WriteBlockmap(&b_blockmap, fstream))
+    {
+        ErrorExit("Error writing blockmap");
+    }
+    free(b_blockmap.elements);
+    free(b_blockmap.blocklist);
+    return b_blockmap.len * 2;
+}
+
 /*
  *  portable reading / writing of linedefs and sidedefs
  *  by Andreas Dehmel (dehmel@forwiss.tu-muenchen.de)
@@ -961,7 +973,7 @@ static blockmap_t ReadBlockmap(int lumpnum, FILE *fp)
     return result;
 }
 
-/*static*/ bool WriteBlockmap(const blockmap_t *blockmap, FILE *fp)
+static bool WriteBlockmap(const blockmap_t *blockmap, FILE *fp)
 {
     uint8_t *buffer;
     bool result;
