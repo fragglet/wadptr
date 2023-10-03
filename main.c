@@ -267,7 +267,9 @@ static void Help(void)
         " -q        :   Quiet mode; suppress normal output\n"
         " -nomerge  :   Disable lump merging\n"
         " -nosquash :   Disable graphic squashing\n"
-        " -nopack   :   Disable sidedef packing\n");
+        " -nopack   :   Disable sidedef packing\n"
+        " -nostack  :   Disable blockmap stacking\n"
+        );
 }
 
 // Temporary workaround for the fact that we don't support Hexen format

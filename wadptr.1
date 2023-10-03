@@ -49,6 +49,10 @@ below).
 \fB-nosquash\fR
 Disables graphic squashing (see the \fBcompression schemes\fR section
 below).
+.TP
+\fB-nostack\fR
+Disables blockmap stacking (see the \fBcompression schemes\fR section
+below).
 .SH COMPRESSION SCHEMES
 The following are some brief technical details about how wadptr's .wad
 file compression works:
@@ -79,6 +83,14 @@ the same data. This compression scheme works most effectively on images
 that are either very simple, based on repeating patterns, or those
 containing flat fields of a single color.
 This behavior can be disabled using the \fB-nosquash\fR option.
+.TP
+.B Blockmap stacking
+A precomputed table named the blockmap is used for collision detection;
+it divides up each level into 128x128 blocks and indexes which lines
+appear in each block. Often, different blocks contain the same identical
+set of lines. This compression scheme saves space by merging identical
+blocks together.
+This behavior can be disabled using the \fB-nostack\fR option.
 .PP
 To see an example of wadptr used in a very effective way, see miniwad,
 a minimalist Doom-compatible IWAD file that is less than 250KiB in size:
@@ -92,6 +104,12 @@ include junk data that wadptr will discard. If for some reason it's
 important to retain the original file, you should therefore make sure to
 to either back up the original file before using wadptr, or use the
 \fB-o\fR command line option to write to a different file.
+.PP
+For compatibility reasons, wadptr's blockmap stacking is deliberately
+very conservative. Far more aggressive techniques can be used to shrink
+blockmap lumps further, particularly for large levels that run up
+against the blockmap size limit. If you need this, check out ZokumBSP:
+<https://github.com/zokum-no/zokumbsp>
 .PP
 Some level editors get confused by packed sidedefs. If your level editor
 has problems, use \fB-u\fR to uncompress the file before editing.
