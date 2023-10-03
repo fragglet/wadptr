@@ -728,15 +728,16 @@ static void AppendBlockmapElements(blockmap_t *blockmap, uint16_t *elements,
 }
 
 // TODO: This is not yet finished.
-void B_Stack(int lumpnum, FILE *fp)
+void B_Stack(int lumpnum)
 {
     blockmap_t blockmap;
     uint16_t *block_offsets;
     int i, j;
 
-    blockmap = ReadBlockmap(lumpnum, fp);
-    if (b_blockmap.len == 0)
+    blockmap = ReadBlockmap(lumpnum, wadfp);
+    if (blockmap.len == 0)
     {
+        // TODO: Need some better error handling.
         ErrorExit("failed to read blockmap?");
     }
 
