@@ -251,24 +251,21 @@ static bool DoAction(const char *wadname)
 static void Help(void)
 {
     printf(
-        "\n"
         "wadptr - WAD Compressor version " VERSION "\n"
         "Copyright (c) 1997-2023 Simon Howard, Andreas Dehmel\n"
+        "Distributed under the GNU GPL v2; see COPYING for details\n"
         "<https://soulsphere.org/projects/wadptr/>\n"
         "\n"
-        "Usage:  wadptr <-c|-u|-l> [options] inputwad [inputwad inputwad...]\n"
+        "Usage: wadptr [options] <-c|-u|-l> inputwad [inputwad inputwad...]\n"
         "\n"
-        " -c        :   Compress WAD\n"
-        " -u        :   Uncompress WAD\n"
-        " -l        :   List WAD\n"
-        " -h        :   Help\n"
+        " Commands:            Options:\n"
+        " -c  Compress WAD     -o <file>  Write output WAD to <file>\n"
+        " -u  Uncompress WAD   -q         Quiet mode; suppress normal output\n"
+        " -l  List WAD         -nomerge   Disable lump merging\n"
+        "                      -nosquash  Disable graphic squashing\n"
+        "                      -nopack    Disable sidedef packing\n"
+        "                      -nostack   Disable blockmap stacking\n"
         "\n"
-        " -o <file> :   Write output WAD to <file>\n"
-        " -q        :   Quiet mode; suppress normal output\n"
-        " -nomerge  :   Disable lump merging\n"
-        " -nosquash :   Disable graphic squashing\n"
-        " -nopack   :   Disable sidedef packing\n"
-        " -nostack  :   Disable blockmap stacking\n"
         );
 }
 
