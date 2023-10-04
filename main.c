@@ -426,7 +426,7 @@ static bool Compress(const char *wadname)
 
         SPAMMY_PRINTF("\nMerging identical lumps...");
         fflush(stdout);
-        Rebuild(fstream);
+        RebuildMergedWad(fstream);
         SPAMMY_PRINTF(" done.\n");
 
         fclose(fstream);

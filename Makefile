@@ -1,6 +1,6 @@
 PREFIX = /usr/local
 EXECUTABLE = wadptr
-OBJECTS = main.o waddir.o errors.o wadmerge.o lumps.o
+OBJECTS = main.o waddir.o errors.o wadmerge.o lumps.o sha1.o
 DELETE = rm -f
 STRIP = strip
 CFLAGS = -Wall -O3
@@ -21,6 +21,9 @@ errors.o: errors.c errors.h
 
 lumps.o: lumps.c lumps.h waddir.h errors.h
 	$(CC) $(CFLAGS) -c lumps.c
+
+sha1.o: sha1.c sha1.h
+	$(CC) $(CFLAGS) -c sha1.c
 
 wadmerge.o: wadmerge.c wadmerge.h waddir.h errors.h
 	$(CC) $(CFLAGS) -c wadmerge.c

@@ -16,116 +16,90 @@
  * sharing them between multiple wad directory entries.
  */
 
+#include <stdlib.h>
+
+#include "sha1.h"
 #include "wadmerge.h"
 #include "wadptr.h"
 
-static int *Suggest(void)
+typedef struct {
+    sha1_digest_t hash;
+    uint32_t offset;
+} lump_data_t;
+
+static void HashData(uint8_t *data, size_t data_len, sha1_digest_t hash)
 {
-    int count, count2, linkcnt = 0;
-    int *result;
-    short *links; /* possible links */
-    uint8_t *check1, *check2;
-    int maxlinks = MAXLINKS;
-
-    links = ALLOC_ARRAY(short, 2 * maxlinks);
-
-    /* find similar entries */
-    for (count = 0; count < numentries; count++)
-    {
-        /* check against previous */
-        for (count2 = 0; count2 < count; count2++)
-        {
-            if ((wadentry[count].length == wadentry[count2].length) &&
-                wadentry[count].length != 0)
-            {
-                /* same length, might be same lump */
-                if (linkcnt >= maxlinks)
-                {
-                    maxlinks += MAXLINKS;
-                    links = REALLOC_ARRAY(short, links, 2 * maxlinks);
-                }
-                links[2 * linkcnt] = count;
-                links[2 * linkcnt + 1] = count2;
-                ++linkcnt;
-            }
-        }
-    }
-
-    /* now check 'em out + see if they really are the same */
-    result = ALLOC_ARRAY(int, numentries);
-    for (count = 0; count < numentries; count++)
-    {
-        result[count] = -1;
-    }
-
-    for (count = 0; count < linkcnt; count++)
-    {
-        if (result[links[2 * count]] != -1)
-        {
-            /* already done that one */
-            continue;
-        }
-
-        check1 = CacheLump(links[2 * count]);
-        check2 = CacheLump(links[2 * count + 1]);
-
-        if (!memcmp(check1, check2, wadentry[links[2 * count]].length))
-        {
-            /* they are the same ! */
-            result[links[2 * count]] = links[2 * count + 1];
-        }
-
-        free(check1); /* free back both lumps */
-        free(check2);
-
-        if ((count % 100) == 0)
-        {
-            PrintProgress(count, linkcnt);
-        }
-    }
-
-    free(links);
-
-    return result;
+    sha1_context_t ctx;
+    SHA1_Init(&ctx);
+    SHA1_Update(&ctx, data, data_len);
+    SHA1_Final(hash, &ctx);
 }
 
-/* Rebuild the WAD, making it smaller in the process */
-
-void Rebuild(FILE *newwad)
+// We use SHA1 hash to identify identical lumps that have already been
+// written. In theory this could result in a hash collision, but in practice
+// unless you're using a Doom WAD file to store your SHA1 collision proof of
+// concept data, it should be fine.
+static const lump_data_t *FindExistingLump(lump_data_t *lumps, int num_lumps,
+                                           sha1_digest_t hash)
 {
-    int count;
-    int *sameas;
-    uint8_t *cached;
-    long along = 0, filepos;
+    int i;
 
-    /* first run Suggest mode to find how to make it smaller */
-    sameas = Suggest();
+    for (i = num_lumps - 1; i >= 0; --i)
+    {
+        if (!memcmp(lumps[i].hash, hash, sizeof(sha1_digest_t)))
+        {
+            return &lumps[i];
+        }
+    }
+
+    return NULL;
+}
+
+void RebuildMergedWad(FILE *newwad)
+{
+    lump_data_t *lumps;
+    int i, num_lumps;
+    uint8_t *cached;
+    long along = 0;
+
+    lumps = ALLOC_ARRAY(lump_data_t, numentries);
+    num_lumps = 0;
 
     fwrite(iwad_name, 1, 4, newwad);
     fwrite(&along, 4, 1, newwad);
     fwrite(&along, 4, 1, newwad);
 
-    for (count = 0; count < numentries; count++)
+    for (i = 0; i < numentries; i++)
     {
-        /* first check if it's compressed(linked) */
-        if (sameas[count] != -1)
+        sha1_digest_t hash;
+        const lump_data_t *ld;
+
+        if ((i % 100) == 0)
         {
-            wadentry[count].offset = wadentry[sameas[count]].offset;
+            PrintProgress(i, numentries);
         }
-        else
+
+        cached = CacheLump(i);
+        HashData(cached, wadentry[i].length, hash);
+        ld = FindExistingLump(lumps, num_lumps, hash);
+
+        if (ld == NULL)
         {
-            filepos = ftell(newwad);
-            cached = CacheLump(count);
-            fwrite(cached, 1, wadentry[count].length, newwad);
-            free(cached);
-            wadentry[count].offset = filepos;
+            memcpy(lumps[num_lumps].hash, hash, sizeof(sha1_digest_t));
+            lumps[num_lumps].offset = ftell(newwad);
+            fwrite(cached, 1, wadentry[i].length, newwad);
+            ld = &lumps[num_lumps];
+            ++num_lumps;
         }
+
+        wadentry[i].offset = ld->offset;
+        free(cached);
     }
+
     /* write the wad directory */
     diroffset = ftell(newwad);
     WriteWadDirectory(newwad);
     WriteWadHeader(newwad);
 
-    fflush(stdout); /* remove % count */
-    free(sameas);
+    free(lumps);
 }

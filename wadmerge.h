@@ -21,8 +21,6 @@
 
 #include <stdio.h>
 
-#define MAXLINKS 50000
-
-void Rebuild(FILE *outwad);
+void RebuildMergedWad(FILE *outwad);
 
 #endif
