@@ -27,6 +27,62 @@ typedef struct {
     uint32_t offset;
 } lump_data_t;
 
+static void SortMapElements(unsigned int *elements, size_t num_elements)
+{
+    unsigned int pivot;
+    size_t arr1_len;
+    int i;
+
+    if (num_elements <= 1)
+    {
+        // no-op.
+        return;
+    }
+
+    pivot = elements[num_elements - 1];
+
+    for (i = 0, arr1_len = 0; i < num_elements - 1; i++)
+    {
+        if (strncmp(wadentry[elements[i]].name, wadentry[pivot].name, 8) < 0)
+        {
+            unsigned int tmp = elements[i];
+            elements[i] = elements[arr1_len];
+            elements[arr1_len] = tmp;
+            ++arr1_len;
+        }
+    }
+
+    elements[num_elements - 1] = elements[arr1_len];
+    elements[arr1_len] = pivot;
+
+    SortMapElements(elements, arr1_len);
+    SortMapElements(&elements[arr1_len + 1], num_elements - arr1_len - 1);
+}
+
+// This is an optimization not for WAD size, but for compressed WAD size.
+// We write out lumps not in WAD directory order, but ordered by lump
+// name. This causes similar lumps to be grouped together within the WAD
+// file; for compression algorithms such as LZ77 or LZSS, which work by
+// keeping a sliding window of recently written data, this means that
+// similar data from one lump can be reused by the next. A good example
+// is SIDEDEFS lumps which contain large numbers of texture names; placing
+// all within the same location in the WAD file assists the compression
+// algorithm.
+static unsigned int *MakeSortedMap(void)
+{
+    unsigned int *result = ALLOC_ARRAY(unsigned int, numentries);
+    int i;
+
+    for (i = 0; i < numentries; i++)
+    {
+        result[i] = i;
+    }
+
+    SortMapElements(result, numentries);
+
+    return result;
+}
+
 static void HashData(uint8_t *data, size_t data_len, sha1_digest_t hash)
 {
     sha1_context_t ctx;
@@ -57,6 +113,7 @@ static const lump_data_t *FindExistingLump(lump_data_t *lumps, int num_lumps,
 
 void RebuildMergedWad(FILE *newwad)
 {
+    unsigned int *sorted_map = MakeSortedMap();
     lump_data_t *lumps;
     int i, num_lumps;
     uint8_t *cached;
@@ -73,26 +130,27 @@ void RebuildMergedWad(FILE *newwad)
     {
         sha1_digest_t hash;
         const lump_data_t *ld;
+        int lumpnum = sorted_map[i];
 
         if ((i % 100) == 0)
         {
             PrintProgress(i, numentries);
         }
 
-        cached = CacheLump(i);
-        HashData(cached, wadentry[i].length, hash);
+        cached = CacheLump(lumpnum);
+        HashData(cached, wadentry[lumpnum].length, hash);
         ld = FindExistingLump(lumps, num_lumps, hash);
 
         if (ld == NULL)
         {
             memcpy(lumps[num_lumps].hash, hash, sizeof(sha1_digest_t));
             lumps[num_lumps].offset = ftell(newwad);
-            fwrite(cached, 1, wadentry[i].length, newwad);
+            fwrite(cached, 1, wadentry[lumpnum].length, newwad);
             ld = &lumps[num_lumps];
             ++num_lumps;
         }
 
-        wadentry[i].offset = ld->offset;
+        wadentry[lumpnum].offset = ld->offset;
         free(cached);
     }
 
@@ -102,4 +160,5 @@ void RebuildMergedWad(FILE *newwad)
     WriteWadHeader(newwad);
 
     free(lumps);
+    free(sorted_map);
 }
