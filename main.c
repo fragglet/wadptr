@@ -365,15 +365,27 @@ static bool Compress(const char *wadname)
 
         if (allowstack && !strncmp(wadentry[count].name, "BLOCKMAP", 8))
         {
+            bool success;
+
             SPAMMY_PRINTF("\tStacking ");
             findshrink = wadentry[count].length;
 
-            B_Stack(count);
+            success = B_Stack(count);
             wadentry[count].offset = ftell(fstream);
             wadentry[count].length = B_WriteBlockmap(fstream);
 
             findshrink = FindPerc(findshrink, wadentry[count].length);
-            SPAMMY_PRINTF("(%i%%), done.\n", findshrink);
+            if (success)
+            {
+                SPAMMY_PRINTF("(%i%%), done.", findshrink);
+            }
+            else
+            {
+                // TODO: Print some kind of info message at the end of
+                // compression to notify the user that not all blockmaps
+                // could be stacked.
+                SPAMMY_PRINTF("(0%%), failed.\n");
+            }
             written = true;
         }
 
@@ -522,14 +534,23 @@ static bool Uncompress(const char *wadname)
         }
         if (allowstack && !strncmp(wadentry[count].name, "BLOCKMAP", 8))
         {
+            bool success;
+
             SPAMMY_PRINTF("\tUnstacking");
             fflush(stdout);
 
-            B_Unstack(count);
+            success = B_Unstack(count);
             wadentry[count].offset = ftell(fstream);
             wadentry[count].length = B_WriteBlockmap(fstream);
 
-            SPAMMY_PRINTF(", done.\n");
+            if (success)
+            {
+                SPAMMY_PRINTF(", done.\n");
+            }
+            else
+            {
+                SPAMMY_PRINTF(", failed.\n");
+            }
             written = true;
         }
 
