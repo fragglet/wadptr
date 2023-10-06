@@ -33,8 +33,8 @@ uint8_t *S_Unsquash(int entrynum);
 bool S_IsSquashed(int entrynum);
 bool S_IsGraphic(int entrynum);
 
-void B_Stack(int lumpnum);
-void B_Unstack(int lumpnum);
+bool B_Stack(int lumpnum);
+bool B_Unstack(int lumpnum);
 size_t B_WriteBlockmap(FILE *fstream);
 
 typedef struct {

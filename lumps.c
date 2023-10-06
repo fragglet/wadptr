@@ -27,6 +27,10 @@
 #include "lumps.h"
 #include "wadptr.h"
 
+// Blockmap lumps have a vanilla limit of ~64KiB; the 16-bit integers
+// are interpreted by the engine as signed integers.
+#define MAX_BLOCKMAP_OFFSET  0x7fff  /* 16-bit ints */
+
 typedef struct {
     uint16_t *elements;
     size_t len;
@@ -739,6 +743,13 @@ static blockmap_t RebuildBlockmap(blockmap_t *blockmap, bool compress)
                                blockmap->blocklist[match_index].len -
                                block->len;
         }
+        else if (result.len > MAX_BLOCKMAP_OFFSET)
+        {
+            free(result.elements);
+            result.elements = NULL;
+            result.len = 0;
+            break;
+        }
         else
         {
             block_offsets[i] = result.len;
@@ -751,7 +762,7 @@ static blockmap_t RebuildBlockmap(blockmap_t *blockmap, bool compress)
     return result;
 }
 
-void B_Stack(int lumpnum)
+bool B_Stack(int lumpnum)
 {
     blockmap_t blockmap = ReadBlockmap(lumpnum, wadfp);
     if (blockmap.len == 0)
@@ -761,15 +772,21 @@ void B_Stack(int lumpnum)
     }
 
     b_blockmap = RebuildBlockmap(&blockmap, true);
+    if (b_blockmap.len == 0)
+    {
+        b_blockmap = blockmap;
+        return false;
+    }
 
     // TODO: Check the rebuilt blockmap really is smaller. If it was
     // built using eg. ZokumBSP, the original is probably better than
     // what we've produced.
 
     free(blockmap.elements);
+    return true;
 }
 
-void B_Unstack(int lumpnum)
+bool B_Unstack(int lumpnum)
 {
     blockmap_t blockmap = ReadBlockmap(lumpnum, wadfp);
     if (blockmap.len == 0)
@@ -779,8 +796,14 @@ void B_Unstack(int lumpnum)
     }
 
     b_blockmap = RebuildBlockmap(&blockmap, false);
+    if (b_blockmap.len == 0)
+    {
+        b_blockmap = blockmap;
+        return false;
+    }
 
     free(blockmap.elements);
+    return true;
 }
 
 size_t B_WriteBlockmap(FILE *fstream)
