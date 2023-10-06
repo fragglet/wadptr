@@ -53,6 +53,10 @@ quickcheck: $(EXECUTABLE)
 	make -C quickcheck wads
 	./wadptr -q -c quickcheck/extract/*.wad
 	make -C quickcheck check
+	# We check the demos play back if we uncompress the WADs again.
+	# for loop is because of #4
+	for d in quickcheck/extract/*.wad; do ./wadptr -q -u $$d; done
+	make -C quickcheck check
 
 .PHONY: install clean dist quickcheck
 
