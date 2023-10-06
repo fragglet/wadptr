@@ -12,10 +12,16 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+    - name: Install dependencies
+      run: |
+        sudo apt update
+        sudo apt -q install chocolate-doom
     - name: make
       run: make
     - name: run tests
-      run: ./run_tests.sh
+      run: |
+        ./run_tests.sh
+        make -j quickcheck
 
   windows_crossbuild:
     runs-on: ubuntu-latest
