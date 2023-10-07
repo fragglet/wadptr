@@ -51,13 +51,10 @@ static sidedef_array_t p_sidedefs_result;
 
 static int *p_newsidedef_index; /* maps old sidedef number to new */
 
-/* Pack a level */
-
-/* Call P_Pack() with the level name eg. p_pack("MAP01");. p_pack will then */
-/* pack that level. The new sidedef and linedef lumps are pointed to by */
-/* p_sidedefres and p_linedefres. These must be free()d by other functions */
-/* when they are no longer needed, as P_Pack does not do this. */
-
+/* Call P_Pack() with the level name eg. p_pack("MAP01"); P_Pack will then
+   pack that level. The new sidedef and linedef lumps are pointed to by
+   p_sidedefres and p_linedefres. These must be free()d by other functions
+   when they are no longer needed, as P_Pack does not do this. */
 void P_Pack(int sidedef_num)
 {
     sidedef_array_t sidedefs, sidedefs2;
@@ -93,11 +90,8 @@ size_t P_WriteSidedefs(FILE *fstream)
     return p_sidedefs_result.len * SDEF_SIZE;
 }
 
-/* Unpack a level */
-
-/* Same thing, in reverse. Saves the new sidedef and linedef lumps to */
-/* p_sidedefres and p_linedefres. */
-
+/* Same thing, in reverse. Saves the new sidedef and linedef lumps to
+   p_sidedefres and p_linedefres. */
 void P_Unpack(int sidedef_num)
 {
     sidedef_array_t sidedefs;
@@ -128,8 +122,6 @@ static void CheckSidedefIndex(int linedef_index, int sidedef_index,
                   linedef_index, sidedef_index);
     }
 }
-
-/* Find if a level is packed */
 
 bool P_IsPacked(int sidedef_num)
 {
@@ -218,7 +210,6 @@ static int FindSidedef(const sidedef_array_t *sidedefs,
 }
 
 /* Actually pack the sidedefs */
-
 static sidedef_array_t P_DoPack(sidedef_array_t *sidedefs)
 {
     sidedef_array_t result;
@@ -254,7 +245,6 @@ static sidedef_array_t P_DoPack(sidedef_array_t *sidedefs)
 }
 
 /* Update the linedefs and save sidedefs */
-
 static void P_RemapLinedefs(linedef_array_t *linedefs)
 {
     int count;
@@ -292,8 +282,6 @@ static void CheckLumpSizes(void)
                   p_sidedefnum, wadentry[p_sidedefnum].length, SDEF_SIZE);
     }
 }
-
-/* Rebuild the sidedefs */
 
 static sidedef_array_t P_RebuildSidedefs(linedef_array_t *linedefs,
                                          const sidedef_array_t *sidedefs)

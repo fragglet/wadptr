@@ -35,13 +35,9 @@ static short s_loffset, s_toffset;
 static uint8_t *s_columns;  /* the location of each column in the lump */
 static long s_colsize[400]; /* the length(in bytes) of each column */
 
-/* Graphic squashing routines */
-
-/* Squash a graphic lump */
-
-/* Squashes a graphic. Call with the lump name - eg. S_Squash("TITLEPIC"); */
-/* returns a pointer to the new(compressed) lump. This must be free()d when */
-/* it is no longer needed, as S_Squash() does not do this itself. */
+/* Squashes a graphic. Call with the lump name - eg. S_Squash("TITLEPIC");
+   returns a pointer to the new(compressed) lump. This must be free()d when
+   it is no longer needed, as S_Squash() does not do this itself. */
 
 uint8_t *S_Squash(int entrynum)
 {
@@ -125,8 +121,6 @@ uint8_t *S_Unsquash(int entrynum)
     return result;
 }
 
-/* Find the redundant columns */
-
 static int S_FindRedundantColumns(uint8_t *x)
 {
     int count, count2;
@@ -182,8 +176,6 @@ static int S_FindRedundantColumns(uint8_t *x)
     return num_killed;
 }
 
-/* Find the size of a column */
-
 static int S_FindColumnSize(uint8_t *col1)
 {
     int count = 0;
@@ -199,8 +191,6 @@ static int S_FindColumnSize(uint8_t *col1)
         count += col1[count + 1] + 4;
     }
 }
-
-/* Find if a graphic is squashed */
 
 bool S_IsSquashed(int entrynum)
 {
@@ -237,8 +227,6 @@ bool S_IsSquashed(int entrynum)
     /* it cant be: no 2 columns have the same lump location */
     return false;
 }
-
-/* Is this a graphic ? */
 
 bool S_IsGraphic(int entrynum)
 {
