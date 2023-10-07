@@ -17,11 +17,60 @@
  */
 
 #include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
 
+#include "errors.h"
 #include "sidedefs.h"
 #include "waddir.h"
 #include "wadptr.h"
+
+#define NO_SIDEDEF ((unsigned short) -1)
+
+/*
+ * Portable structure IO
+ * (to handle endianness; also neither struct is a multiple of 4 in size)
+ */
+#define SDEF_XOFF   0
+#define SDEF_YOFF   2
+#define SDEF_UPPER  4
+#define SDEF_MIDDLE 12
+#define SDEF_LOWER  20
+#define SDEF_SECTOR 28
+#define SDEF_SIZE   30
+
+#define LDEF_VERT1 0
+#define LDEF_VERT2 2
+#define LDEF_FLAGS 4
+#define LDEF_TYPES 6
+#define LDEF_TAG   8
+#define LDEF_SDEF1 10
+#define LDEF_SDEF2 12
+#define LDEF_SIZE  14
+
+typedef struct {
+    short xoffset;
+    short yoffset;
+    char upper[8];
+    char middle[8];
+    char lower[8];
+    unsigned short sector_ref;
+
+    // If true, this sidedef is referenced by a linedef with a special
+    // type. This fixes the "scrolling linedefs bug" most notably,
+    // although switches are also potentially affected.
+    bool special;
+} sidedef_t;
+
+typedef struct {
+    unsigned short vertex1;
+    unsigned short vertex2;
+    unsigned short flags;
+    unsigned short type;
+    unsigned short tag;
+    unsigned short sidedef1;
+    unsigned short sidedef2;
+} linedef_t;
 
 typedef struct {
     linedef_t *lines;
