@@ -806,6 +806,36 @@ bool B_Unstack(int lumpnum)
     return true;
 }
 
+bool B_IsStacked(int lumpnum)
+{
+    uint16_t *block_offsets;
+    int i, j;
+
+    blockmap_t blockmap = ReadBlockmap(lumpnum, wadfp);
+    if (blockmap.len == 0)
+    {
+        // TODO: Need some better error handling.
+        ErrorExit("failed to read blockmap?");
+    }
+
+    block_offsets = &blockmap.elements[4];
+
+    for (i = 0; i < blockmap.num_blocks; i++)
+    {
+        for (j = 0; j < i; j++)
+        {
+            if (block_offsets[i] == block_offsets[j])
+            {
+                free(blockmap.elements);
+                return true;
+            }
+        }
+    }
+
+    free(blockmap.elements);
+    return false;
+}
+
 size_t B_WriteBlockmap(FILE *fstream)
 {
     if (!WriteBlockmap(&b_blockmap, fstream))

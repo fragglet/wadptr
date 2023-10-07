@@ -667,6 +667,17 @@ static bool ListEntries(const char *wadname)
             else
                 printf("Unsquashed  ");
         }
+        else if (!strncmp(wadentry[count].name, "BLOCKMAP", 8))
+        {
+            if (B_IsStacked(count))
+            {
+                printf("Stacked     ");
+            }
+            else
+            {
+                printf("Unstacked   ");
+            }
+        }
         else
         {
             /* ordinary lump w/no compression */

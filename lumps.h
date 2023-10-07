@@ -35,6 +35,7 @@ bool S_IsGraphic(int entrynum);
 
 bool B_Stack(int lumpnum);
 bool B_Unstack(int lumpnum);
+bool B_IsStacked(int lumpnum);
 size_t B_WriteBlockmap(FILE *fstream);
 
 typedef struct {
