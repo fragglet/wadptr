@@ -21,9 +21,9 @@ jobs:
     - name: make
       run: make
     - name: run tests
-      run: |
-        ./run_tests.sh
-        make -j quickcheck
+      run: ./run_tests.sh
+    - name: quickcheck
+      run: make -j quickcheck
 
   windows_crossbuild:
     runs-on: ubuntu-latest
