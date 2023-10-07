@@ -26,7 +26,6 @@ typedef struct {
 #define ENTRY_SIZE 16
 
 bool ReadWad(void);
-void WriteWad(void);
 int EntryExists(char *entrytofind);
 void *CacheLump(int entrynum);
 

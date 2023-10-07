@@ -145,15 +145,6 @@ int WriteWadDirectory(FILE *fp)
     return 0;
 }
 
-void WriteWad(void)
-{
-    WriteWadHeader(wadfp);
-
-    fseek(wadfp, diroffset, SEEK_SET);
-
-    WriteWadDirectory(wadfp);
-}
-
 int EntryExists(char *entrytofind)
 {
     int count;
