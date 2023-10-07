@@ -23,7 +23,7 @@
 
 // Blockmap lumps have a vanilla limit of ~64KiB; the 16-bit integers
 // are interpreted by the engine as signed integers.
-#define MAX_BLOCKMAP_OFFSET  0x7fff  /* 16-bit ints */
+#define MAX_BLOCKMAP_OFFSET 0x7fff /* 16-bit ints */
 
 typedef struct {
     uint16_t *elements;
@@ -40,7 +40,7 @@ typedef struct {
 static blockmap_t ReadBlockmap(int lumpnum, FILE *fp);
 static bool WriteBlockmap(const blockmap_t *blockmap, FILE *fp);
 
-static blockmap_t b_blockmap;
+static blockmap_t blockmap_result;
 
 static void MakeBlocklist(blockmap_t *blockmap)
 {
@@ -172,20 +172,20 @@ bool B_Stack(int lumpnum)
         ErrorExit("failed to read blockmap?");
     }
 
-    b_blockmap = RebuildBlockmap(&blockmap, true);
-    if (b_blockmap.len == 0)
+    blockmap_result = RebuildBlockmap(&blockmap, true);
+    if (blockmap_result.len == 0)
     {
-        b_blockmap = blockmap;
+        blockmap_result = blockmap;
         return false;
     }
 
     // Check the rebuilt blockmap really is smaller. If it was built
     // using eg. ZokumBSP, the original is probably better than what
     // we've produced.
-    if (b_blockmap.len < blockmap.len)
+    if (blockmap_result.len < blockmap.len)
     {
-        free(b_blockmap.elements);
-        b_blockmap = blockmap;
+        free(blockmap_result.elements);
+        blockmap_result = blockmap;
         return true;
     }
 
@@ -202,10 +202,10 @@ bool B_Unstack(int lumpnum)
         ErrorExit("failed to read blockmap?");
     }
 
-    b_blockmap = RebuildBlockmap(&blockmap, false);
-    if (b_blockmap.len == 0)
+    blockmap_result = RebuildBlockmap(&blockmap, false);
+    if (blockmap_result.len == 0)
     {
-        b_blockmap = blockmap;
+        blockmap_result = blockmap;
         return false;
     }
 
@@ -245,12 +245,12 @@ bool B_IsStacked(int lumpnum)
 
 size_t B_WriteBlockmap(FILE *fstream)
 {
-    if (!WriteBlockmap(&b_blockmap, fstream))
+    if (!WriteBlockmap(&blockmap_result, fstream))
     {
         ErrorExit("Error writing blockmap");
     }
-    free(b_blockmap.elements);
-    return b_blockmap.len * 2;
+    free(blockmap_result.elements);
+    return blockmap_result.len * 2;
 }
 
 static blockmap_t ReadBlockmap(int lumpnum, FILE *fp)

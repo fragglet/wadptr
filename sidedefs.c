@@ -43,68 +43,68 @@ static sidedef_array_t ReadSidedefs(int lumpnum, FILE *fp);
 static int WriteLinedefs(const linedef_array_t *linedefs, FILE *fp);
 static int WriteSidedefs(const sidedef_array_t *sidedefs, FILE *fp);
 
-static int p_sidedefnum; /* sidedef wad entry number */
-static int p_linedefnum; /* linedef wad entry number */
+static int sidedefnum; /* sidedef wad entry number */
+static int linedefnum; /* linedef wad entry number */
 
-static linedef_array_t p_linedefs_result;
-static sidedef_array_t p_sidedefs_result;
+static linedef_array_t linedefs_result;
+static sidedef_array_t sidedefs_result;
 
-static int *p_newsidedef_index; /* maps old sidedef number to new */
+static int *newsidedef_index; /* maps old sidedef number to new */
 
-/* Call P_Pack() with the level name eg. p_pack("MAP01"); P_Pack will then
+/* Call P_Pack() with the level name eg. pack("MAP01"); P_Pack will then
    pack that level. The new sidedef and linedef lumps are pointed to by
-   p_sidedefres and p_linedefres. These must be free()d by other functions
+   sidedefres and linedefres. These must be free()d by other functions
    when they are no longer needed, as P_Pack does not do this. */
 void P_Pack(int sidedef_num)
 {
     sidedef_array_t sidedefs, sidedefs2;
 
-    p_linedefnum = sidedef_num - 1;
-    p_sidedefnum = sidedef_num;
+    linedefnum = sidedef_num - 1;
+    sidedefnum = sidedef_num;
 
     CheckLumpSizes();
 
-    sidedefs = ReadSidedefs(p_sidedefnum, wadfp);
-    p_linedefs_result = ReadLinedefs(p_linedefnum, wadfp);
+    sidedefs = ReadSidedefs(sidedefnum, wadfp);
+    linedefs_result = ReadLinedefs(linedefnum, wadfp);
 
-    sidedefs2 = P_RebuildSidedefs(&p_linedefs_result, &sidedefs);
+    sidedefs2 = P_RebuildSidedefs(&linedefs_result, &sidedefs);
     free(sidedefs.sides);
 
-    p_sidedefs_result = P_DoPack(&sidedefs2);
+    sidedefs_result = P_DoPack(&sidedefs2);
     free(sidedefs2.sides);
 
-    P_RemapLinedefs(&p_linedefs_result); /* update sidedef indexes */
+    P_RemapLinedefs(&linedefs_result); /* update sidedef indexes */
 }
 
 size_t P_WriteLinedefs(FILE *fstream)
 {
-    WriteLinedefs(&p_linedefs_result, fstream);
-    free(p_linedefs_result.lines);
-    return p_linedefs_result.len * LDEF_SIZE;
+    WriteLinedefs(&linedefs_result, fstream);
+    free(linedefs_result.lines);
+    return linedefs_result.len * LDEF_SIZE;
 }
 
 size_t P_WriteSidedefs(FILE *fstream)
 {
-    WriteSidedefs(&p_sidedefs_result, fstream);
-    free(p_sidedefs_result.sides);
-    return p_sidedefs_result.len * SDEF_SIZE;
+    WriteSidedefs(&sidedefs_result, fstream);
+    free(sidedefs_result.sides);
+    return sidedefs_result.len * SDEF_SIZE;
 }
 
 /* Same thing, in reverse. Saves the new sidedef and linedef lumps to
-   p_sidedefres and p_linedefres. */
+   sidedefres and linedefres. */
 void P_Unpack(int sidedef_num)
 {
     sidedef_array_t sidedefs;
 
-    p_linedefnum = sidedef_num - 1;
-    p_sidedefnum = sidedef_num;
+    linedefnum = sidedef_num - 1;
+    sidedefnum = sidedef_num;
 
     CheckLumpSizes();
 
-    p_linedefs_result = ReadLinedefs(p_linedefnum, wadfp);
+    linedefs_result = ReadLinedefs(linedefnum, wadfp);
 
-    sidedefs = ReadSidedefs(p_sidedefnum, wadfp);
-    p_sidedefs_result = P_RebuildSidedefs(&p_linedefs_result, &sidedefs);
+    sidedefs = ReadSidedefs(sidedefnum, wadfp);
+    sidedefs_result = P_RebuildSidedefs(&linedefs_result, &sidedefs);
     free(sidedefs.sides);
 
     // TODO: We should catch the case where unpacking would exceed the
@@ -132,12 +132,12 @@ bool P_IsPacked(int sidedef_num)
     int count;
 
     // SIDEDEFS always follows LINEDEFS.
-    p_linedefnum = sidedef_num - 1;
-    p_sidedefnum = sidedef_num;
+    linedefnum = sidedef_num - 1;
+    sidedefnum = sidedef_num;
 
-    linedefs = ReadLinedefs(p_linedefnum, wadfp);
+    linedefs = ReadLinedefs(linedefnum, wadfp);
 
-    num_sidedefs = wadentry[p_sidedefnum].length / SDEF_SIZE;
+    num_sidedefs = wadentry[sidedefnum].length / SDEF_SIZE;
     sidedef_used = ALLOC_ARRAY(uint8_t, num_sidedefs);
     for (count = 0; count < num_sidedefs; count++)
     {
@@ -218,7 +218,7 @@ static sidedef_array_t P_DoPack(sidedef_array_t *sidedefs)
     result.size = sidedefs->len;
     result.sides = ALLOC_ARRAY(sidedef_t, result.size);
     result.len = 0;
-    p_newsidedef_index = ALLOC_ARRAY(int, sidedefs->len);
+    newsidedef_index = ALLOC_ARRAY(int, sidedefs->len);
 
     for (count = 0; count < sidedefs->len; count++)
     {
@@ -231,12 +231,12 @@ static sidedef_array_t P_DoPack(sidedef_array_t *sidedefs)
         ns = FindSidedef(&result, &sidedefs->sides[count]);
         if (ns >= 0)
         {
-            p_newsidedef_index[count] = ns;
+            newsidedef_index[count] = ns;
         }
         else
         {
             /* a sidedef like this does not yet exist: add one */
-            p_newsidedef_index[count] =
+            newsidedef_index[count] =
                 AppendNewSidedef(&result, &sidedefs->sides[count]);
         }
     }
@@ -258,28 +258,28 @@ static void P_RemapLinedefs(linedef_array_t *linedefs)
     {
         if (linedefs->lines[count].sidedef1 != NO_SIDEDEF)
             linedefs->lines[count].sidedef1 =
-                p_newsidedef_index[linedefs->lines[count].sidedef1];
+                newsidedef_index[linedefs->lines[count].sidedef1];
         if (linedefs->lines[count].sidedef2 != NO_SIDEDEF)
             linedefs->lines[count].sidedef2 =
-                p_newsidedef_index[linedefs->lines[count].sidedef2];
+                newsidedef_index[linedefs->lines[count].sidedef2];
     }
 
-    free(p_newsidedef_index);
+    free(newsidedef_index);
 }
 
 static void CheckLumpSizes(void)
 {
-    if ((wadentry[p_linedefnum].length % LDEF_SIZE) != 0)
+    if ((wadentry[linedefnum].length % LDEF_SIZE) != 0)
     {
         ErrorExit("P_RebuildSidedefs: LINEDEFS lump (#%d) is %d bytes, "
                   "not a multiple of %d",
-                  p_linedefnum, wadentry[p_linedefnum].length, LDEF_SIZE);
+                  linedefnum, wadentry[linedefnum].length, LDEF_SIZE);
     }
-    if ((wadentry[p_sidedefnum].length % SDEF_SIZE) != 0)
+    if ((wadentry[sidedefnum].length % SDEF_SIZE) != 0)
     {
         ErrorExit("P_RebuildSidedefs: SIDEDEFS lump (#%d) is %d bytes, "
                   "not a multiple of %d",
-                  p_sidedefnum, wadentry[p_sidedefnum].length, SDEF_SIZE);
+                  sidedefnum, wadentry[sidedefnum].length, SDEF_SIZE);
     }
 }
 
@@ -471,4 +471,3 @@ static int WriteSidedefs(const sidedef_array_t *sidedefs, FILE *fp)
     }
     return 0;
 }
-
