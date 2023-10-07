@@ -155,59 +155,75 @@ int main(int argc, char *argv[])
 
 static void ParseCommandLine(void)
 {
-    int count;
+    int i;
 
     action = HELP; /* default to Help if not told what to do */
 
-    count = 1;
     filelist_index = -1;
-    while (count < g_argc)
+
+    for (i = 1; i < g_argc; i++)
     {
-        if ((!strcmp(g_argv[count], "-help")) || (!strcmp(g_argv[count], "-h")))
+        if (!strcmp(g_argv[i], "-help") || !strcmp(g_argv[i], "-h"))
         {
             action = HELP;
             break;
         }
-
-        if ((!strcmp(g_argv[count], "-list")) || (!strcmp(g_argv[count], "-l")))
+        else if (!strcmp(g_argv[i], "-list") ||
+                 !strcmp(g_argv[i], "-l"))
+        {
             action = LIST;
-
-        if ((!strcmp(g_argv[count], "-compress")) ||
-            (!strcmp(g_argv[count], "-c")))
+        }
+        else if (!strcmp(g_argv[i], "-compress") ||
+                 !strcmp(g_argv[i], "-c"))
+        {
             action = COMPRESS;
-
-        if ((!strcmp(g_argv[count], "-uncompress")) ||
-            (!strcmp(g_argv[count], "-u")))
+        }
+        else if (!strcmp(g_argv[i], "-uncompress") ||
+                 !strcmp(g_argv[i], "-u"))
+        {
             action = UNCOMPRESS;
-
-        if (!strcmp(g_argv[count], "-quiet") || !strcmp(g_argv[count], "-q"))
+        }
+        else if (!strcmp(g_argv[i], "-quiet") ||
+                 !strcmp(g_argv[i], "-q"))
         {
             quiet_mode = true;
         }
-
-        /* specific disabling */
-        if (!strcmp(g_argv[count], "-nomerge"))
-            allowmerge = false;
-        if (!strcmp(g_argv[count], "-nosquash"))
-            allowsquash = false;
-        if (!strcmp(g_argv[count], "-nopack"))
-            allowpack = false;
-        if (!strcmp(g_argv[count], "-nostack"))
-            allowstack = false;
-
-        if (g_argv[count][0] != '-')
+        else if (!strcmp(g_argv[i], "-nomerge"))
         {
-            filelist_index = count;
+            allowmerge = false;
+        }
+        else if (!strcmp(g_argv[i], "-nosquash"))
+        {
+            allowsquash = false;
+        }
+        else if (!strcmp(g_argv[i], "-nopack"))
+        {
+            allowpack = false;
+        }
+        else if (!strcmp(g_argv[i], "-nostack"))
+        {
+            allowstack = false;
+        }
+        else if (!strcmp(g_argv[i], "-output") ||
+                 !strcmp(g_argv[i], "-o"))
+        {
+            if (i + 1 >= g_argc)
+            {
+                ErrorExit("The -o argument requires a filename "
+                          "to be specified.");
+            }
+            outputwad = g_argv[i];
+            ++i;
+        }
+        else if (g_argv[i][0] != '-')
+        {
+            filelist_index = i;
             break;
         }
-
-        if ((!strcmp(g_argv[count], "-output")) ||
-            (!strcmp(g_argv[count], "-o")))
+        else
         {
-            outputwad = g_argv[++count];
+            ErrorExit("Invalid command line argument '%s'.", g_argv[i]);
         }
-
-        count++;
     }
 
     if (action == HELP)
