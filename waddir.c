@@ -219,17 +219,3 @@ bool IsLevelEntry(char *s)
     }
     return false;
 }
-
-/* Find the total size of a level */
-
-int FindLevelSize(char *s)
-{
-    int entrynum, count, sizecount = 0;
-
-    entrynum = EntryExists(s);
-
-    for (count = entrynum + 1; count < entrynum + 11; count++)
-        sizecount += wadentry[count].length;
-
-    return sizecount;
-}

@@ -34,7 +34,6 @@ int WriteWadHeader(FILE *fp);
 int WriteWadDirectory(FILE *fp);
 
 bool IsLevelEntry(char *s);
-int FindLevelSize(char *s);
 
 extern FILE *wadfp;
 extern long numentries, diroffset;
