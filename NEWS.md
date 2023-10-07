@@ -1,5 +1,22 @@
 # wadptr revision history
 
+## 3.1 (2023-10-07)
+
+ * This release adds support for BLOCKMAP lump compression. For
+   compatibility reasons, the algorithm is deliberately conservative
+   and does not use some of the more aggressive optimizations supported
+   by ZokumBSP, but a reference to ZokumBSP was added in the manual.
+ * The WAD lump merging code was rewritten. It is now much faster, and
+   lump data is now arranged within generated WAD files in a way that
+   helps make WADs compress better when compressed as eg. .zip or .gz.
+ * The list command (-l) no longer hides level sub-lumps like BLOCKMAP
+   or SIDEDEFS. The full set of lumps is always listed.
+ * A bug was fixed where it wasn't possible to list the contents of
+   Hexen format WADs.
+ * The Chocolate Doom quickcheck regression test suite was integrated
+   to prevent demo desyncs from being introduced by wadptr.
+ * A static limit on graphic sizes was eliminated.
+
 ## 3.0 (2023-09-30)
 
  * A bug was fixed with sidedef packing where if multiple scrolling walls
