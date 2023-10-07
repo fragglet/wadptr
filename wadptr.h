@@ -20,7 +20,6 @@
 #include <string.h>
 
 #include "errors.h"
-#include "lumps.h"
 #include "waddir.h"
 #include "wadmerge.h"
 

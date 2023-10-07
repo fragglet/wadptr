@@ -24,6 +24,9 @@
 #include <stdbool.h>
 #include <time.h>
 
+#include "blockmap.h"
+#include "graphics.h"
+#include "sidedefs.h"
 #include "wadptr.h"
 
 #define SPAMMY_PRINTF \

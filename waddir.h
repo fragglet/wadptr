@@ -19,7 +19,7 @@ typedef struct {
     char name[8];
 } entry_t;
 
-/* portable structure IO (see lumps.h) */
+/* portable structure IO */
 #define ENTRY_OFF  0
 #define ENTRY_LEN  4
 #define ENTRY_NAME 8

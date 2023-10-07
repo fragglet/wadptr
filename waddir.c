@@ -15,6 +15,10 @@
  * WAD loading and reading routines: by me, me, me!
  */
 
+#include <stdio.h>
+#include <stdbool.h>
+#include <stdint.h>
+
 #include "waddir.h"
 #include "wadptr.h"
 

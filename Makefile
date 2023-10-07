@@ -1,6 +1,7 @@
 PREFIX = /usr/local
 EXECUTABLE = wadptr
-OBJECTS = main.o waddir.o errors.o wadmerge.o lumps.o sha1.o
+OBJECTS = main.o waddir.o errors.o wadmerge.o \
+          graphics.o sidedefs.o blockmap.o sha1.o
 DELETE = rm -f
 STRIP = strip
 CFLAGS = -Wall -O3
@@ -10,7 +11,8 @@ all: $(EXECUTABLE)
 $(EXECUTABLE): $(OBJECTS)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJECTS)
 
-main.o: main.c wadptr.h errors.h waddir.h wadmerge.h lumps.h
+main.o: main.c wadptr.h errors.h waddir.h wadmerge.h \
+        blockmap.h graphics.h sidedefs.h
 	$(CC) $(CFLAGS) -c main.c
 
 waddir.o: waddir.c waddir.h errors.h
@@ -19,8 +21,14 @@ waddir.o: waddir.c waddir.h errors.h
 errors.o: errors.c errors.h
 	$(CC) $(CFLAGS) -c errors.c
 
-lumps.o: lumps.c lumps.h waddir.h errors.h
-	$(CC) $(CFLAGS) -c lumps.c
+graphics.o: graphics.h wadptr.h
+	$(CC) $(CFLAGS) -c graphics.c
+
+sidedefs.o: sidedefs.h wadptr.h
+	$(CC) $(CFLAGS) -c sidedefs.c
+
+blockmap.o: blockmap.h wadptr.h
+	$(CC) $(CFLAGS) -c blockmap.c
 
 sha1.o: sha1.c sha1.h
 	$(CC) $(CFLAGS) -c sha1.c

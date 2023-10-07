@@ -1,15 +1,23 @@
 /*
- * Functions for compressing individual lumps
+ * Copyright(C) 1998-2023 Simon Howard, Andreas Dehmel
  *
- * P_* : Sidedef packing extension routines. Combines sidedefs which are
- *       identical in a level, and shares them between multiple linedefs
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- * S_* : Graphic squashing routines. Combines identical columns in
- *       graphic lumps to make them smaller
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ *
+ * Sidedef packing extension routines. Combines sidedefs which are
+ * identical in a level, and shares them between multiple linedefs.
  */
 
-#ifndef __LUMPS_H_INCLUDED__
-#define __LUMPS_H_INCLUDED__
+#ifndef __SIDEDEFS_H_INCLUDED__
+#define __SIDEDEFS_H_INCLUDED__
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -17,7 +25,6 @@
 #include <stdlib.h>
 
 #include "errors.h"
-#include "waddir.h"
 
 // The sidedef packing functions take the index of a SIDEDEFS lump to pack,
 // and assume that the preceding lump is the LINEDEFS lump.
@@ -27,16 +34,6 @@ bool P_IsPacked(int sidedef_num);
 
 size_t P_WriteLinedefs(FILE *fstream);
 size_t P_WriteSidedefs(FILE *fstream);
-
-uint8_t *S_Squash(int entrynum);
-uint8_t *S_Unsquash(int entrynum);
-bool S_IsSquashed(int entrynum);
-bool S_IsGraphic(int entrynum);
-
-bool B_Stack(int lumpnum);
-bool B_Unstack(int lumpnum);
-bool B_IsStacked(int lumpnum);
-size_t B_WriteBlockmap(FILE *fstream);
 
 typedef struct {
     short xoffset;
