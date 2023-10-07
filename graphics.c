@@ -23,86 +23,93 @@
 #include "waddir.h"
 #include "wadptr.h"
 
-static int S_FindRedundantColumns(uint8_t *s);
-static int S_FindColumnSize(uint8_t *col1);
+static void S_ParseLump(uint8_t *x);
+static int S_FindColumnLength(uint8_t *col1);
 
 /* Graphic squashing globals */
 static bool unsquash_mode = false; /* True when we are inside a
                                       S_Unsquash() call. */
-static int *equalcolumn = NULL; /* for each column: another column which is */
-                                /* identical or -1 if there isn't one */
 static short height, width;     /* picture width, height etc. */
 static short loffset, toffset;
-static uint8_t *columns = NULL; /* the location of each column in the lump */
+static uint8_t **columns = NULL; /* the location of each column in the lump */
 static int *colsize = NULL;     /* the length(in bytes) of each column */
+
+static void AppendBytes(uint8_t **ptr, size_t *len, size_t *sz,
+                        uint8_t *newdata, size_t newdata_len)
+{
+    while (*len + newdata_len > *sz)
+    {
+        *sz *= 2;
+        *ptr = REALLOC_ARRAY(uint8_t, *ptr, *sz);
+    }
+
+    memcpy(*ptr + *len, newdata, newdata_len);
+    *len += newdata_len;
+}
 
 /* Squashes a graphic. Call with the lump name - eg. S_Squash("TITLEPIC");
    returns a pointer to the new(compressed) lump. This must be free()d when
    it is no longer needed, as S_Squash() does not do this itself. */
 uint8_t *S_Squash(int entrynum)
 {
-    uint8_t *working, *newres, *newptr;
-    int count;
-    long lastpt;
+    uint8_t *oldlump, *newres;
+    size_t newres_len, newres_size;
+    int x, x2;
 
     if (!S_IsGraphic(entrynum))
     {
         return NULL;
     }
-    working = CacheLump(entrynum);
-    if ((long) working == -1)
-        ErrorExit("squash: Couldn't find %.8s", wadentry[entrynum].name);
+    oldlump = CacheLump(entrynum);
 
-    /* find posts to be killed; if none, return original lump */
-    if (S_FindRedundantColumns(working) == 0 && !unsquash_mode)
-        return working;
+    S_ParseLump(oldlump);
 
-    /* TODO: Fix static limit. */
-    newres = ALLOC_ARRAY(uint8_t, 100000);
+    newres_len = 8 + (width * 4);
+    newres_size = 8 + (width * 4);
+    newres = ALLOC_ARRAY(uint8_t, newres_size);
 
-    /* find various info: size,offset etc. */
-    WRITE_SHORT(newres, width);
-    WRITE_SHORT(newres + 2, height);
-    WRITE_SHORT(newres + 4, loffset);
-    WRITE_SHORT(newres + 6, toffset);
+    // Copy header
+    memcpy(newres, oldlump, 8);
 
-    /* the new column pointers for the new lump */
-    newptr = newres + 8;
-
-    lastpt = 8 + (width * 4); /* last point in the lump */
-
-    for (count = 0; count < width; count++)
+    for (x = 0; x < width; x++)
     {
-        if (equalcolumn[count] == -1)
+        for (x2 = 0; !unsquash_mode && x2 < x; x2++)
         {
-            /* add a new column */
-            WRITE_LONG(newptr + 4 * count,
-                       lastpt); /* point this column to lastpt */
-            memcpy(newres + lastpt, working + READ_LONG(columns + 4 * count),
-                   colsize[count]);
-            lastpt += colsize[count];
-        }
-        else
-        {
-            /* postfix compression, see S_FindRedundantColumns() */
-            long identOff;
+            uint8_t *suffix_ptr;
 
-            identOff = READ_LONG(newptr + 4 * equalcolumn[count]);
-            identOff += colsize[equalcolumn[count]] - colsize[count];
-            WRITE_LONG(newptr + 4 * count, identOff);
+            if (colsize[x2] < colsize[x])
+            {
+                continue;
+            }
+
+            // We allow prefix matches.
+            suffix_ptr = columns[x2] + colsize[x2] - colsize[x];
+            if (!memcmp(suffix_ptr, columns[x], colsize[x]))
+            {
+                memcpy(newres + 8 + x * 4, newres + 8 + x2 * 4, 4);
+                break;
+            }
+        }
+
+        // Not found, append new column.
+        if (x2 >= x)
+        {
+            WRITE_LONG(newres + 8 + 4 * x, newres_len);
+            AppendBytes(&newres, &newres_len, &newres_size,
+                        columns[x], colsize[x]);
         }
     }
 
-    if (!unsquash_mode && lastpt > wadentry[entrynum].length)
+    if (!unsquash_mode && newres_len > wadentry[entrynum].length)
     {
         /* the new resource was bigger than the old one! */
         free(newres);
-        return working;
+        return oldlump;
     }
     else
     {
-        wadentry[entrynum].length = lastpt;
-        free(working);
+        wadentry[entrynum].length = newres_len;
+        free(oldlump);
         return newres;
     }
 }
@@ -121,65 +128,26 @@ uint8_t *S_Unsquash(int entrynum)
     return result;
 }
 
-static int S_FindRedundantColumns(uint8_t *x)
+static void S_ParseLump(uint8_t *lump)
 {
-    int count, count2;
-    int num_killed = 0;
+    int x;
 
-    width = READ_SHORT(x);
-    height = READ_SHORT(x + 2);
-    loffset = READ_SHORT(x + 4);
-    toffset = READ_SHORT(x + 6);
+    width = READ_SHORT(lump);
+    height = READ_SHORT(lump + 2);
+    loffset = READ_SHORT(lump + 4);
+    toffset = READ_SHORT(lump + 6);
 
-    equalcolumn = REALLOC_ARRAY(int, equalcolumn, width);
+    columns = REALLOC_ARRAY(uint8_t *, columns, width);
     colsize = REALLOC_ARRAY(int, colsize, width);
 
-    columns = x + 8;
-
-    for (count = 0; count < width; count++)
+    for (x = 0; x < width; x++)
     {
-        long tmpcol;
-
-        /* first assume no identical column exists */
-        equalcolumn[count] = -1;
-
-        /* find the column size */
-        tmpcol = READ_LONG(columns + 4 * count);
-        colsize[count] = S_FindColumnSize(x + tmpcol);
-
-        /* Unsquash mode is identical to squash mode but we just don't
-           look for any identical columns. */
-        if (unsquash_mode)
-        {
-            continue;
-        }
-
-        /* check all previous columns */
-        for (count2 = 0; count2 < count; count2++)
-        {
-            /* compression is also possible if col is a postfix of col2 */
-            if (colsize[count] > colsize[count2])
-            {
-                /* new column longer than previous, can't be postfix */
-                continue;
-            }
-
-            if (!memcmp(x + tmpcol,
-                        x + READ_LONG(columns + 4 * count2) + colsize[count2] -
-                            colsize[count],
-                        colsize[count]))
-            {
-                equalcolumn[count] = count2;
-                num_killed++;
-                break;
-            }
-        }
+        columns[x] = lump + READ_LONG(lump + 8 + 4 * x);
+        colsize[x] = S_FindColumnLength(columns[x]);
     }
-    /* tell squash how many can be 'got rid of' */
-    return num_killed;
 }
 
-static int S_FindColumnSize(uint8_t *col1)
+static int S_FindColumnLength(uint8_t *col1)
 {
     int count = 0;
 
@@ -187,8 +155,7 @@ static int S_FindColumnSize(uint8_t *col1)
     {
         if (col1[count] == 255)
         {
-            /* no more posts */
-            return count + 1; /* must be +1 or the pic gets cacked up */
+            return count + 1;
         }
         /* jump to the beginning of the next post */
         count += col1[count + 1] + 4;
@@ -197,38 +164,28 @@ static int S_FindColumnSize(uint8_t *col1)
 
 bool S_IsSquashed(int entrynum)
 {
+    bool result = false;
     uint8_t *pic;
-    int count, count2;
+    int x, x2;
 
     pic = CacheLump(entrynum); /* cache the lump */
+    S_ParseLump(pic);
 
-    width = READ_SHORT(pic);
-    height = READ_SHORT(pic + 2);
-    loffset = READ_SHORT(pic + 4);
-    toffset = READ_SHORT(pic + 6);
-
-    /* find the column locations */
-    columns = pic + 8;
-
-    for (count = 0; count < width; count++)
+    for (x = 0; !result && x < width; x++)
     {
-        long tmpcol;
-
-        tmpcol = READ_LONG(columns + 4 * count);
         /* every previous column */
-        for (count2 = 0; count2 < count; count2++)
+        for (x2 = 0; x2 < x; x2++)
         {
-            if (tmpcol == READ_LONG(columns + 4 * count2))
+            if (columns[x] == columns[x2])
             {
-                /* these columns have the same lump location; it is squashed */
-                free(pic);
-                return true;
+                result = true;
             }
         }
     }
+
     free(pic);
-    /* it cant be: no 2 columns have the same lump location */
-    return false;
+
+    return result;
 }
 
 bool S_IsGraphic(int entrynum)
