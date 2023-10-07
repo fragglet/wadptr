@@ -494,7 +494,7 @@ static bool Uncompress(const char *wadname)
     char tempstr[50], *tempwad_name;
     FILE *fstream;
     uint8_t *tempres;
-    bool written;
+    bool written, blockmap_failures = false;
     long fileloc;
     int count;
 
@@ -568,6 +568,7 @@ static bool Uncompress(const char *wadname)
             else
             {
                 SPAMMY_PRINTF(", failed.\n");
+                blockmap_failures = true;
             }
             written = true;
         }
@@ -617,6 +618,13 @@ static bool Uncompress(const char *wadname)
 
     free(tempwad_name);
     wadfp = NULL;
+
+    if (blockmap_failures)
+    {
+        SPAMMY_PRINTF("Some BLOCKMAP lumps could not be unstacked because "
+                      "the decompressed\nversion would exceed the vanilla "
+                      "BLOCKMAP size limit.\n");
+    }
 
     return true;
 }

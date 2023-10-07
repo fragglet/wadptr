@@ -151,6 +151,9 @@ void P_Unpack(int sidedef_num)
     sidedefs = ReadSidedefs(p_sidedefnum, wadfp);
     p_sidedefs_result = P_RebuildSidedefs(&p_linedefs_result, &sidedefs);
     free(sidedefs.sides);
+
+    // TODO: We should catch the case where unpacking would exceed the
+    // vanilla SIDEDEFS limit.
 }
 
 /* Sanity check a linedef's sidedef reference is valid */
