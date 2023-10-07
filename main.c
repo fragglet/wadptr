@@ -226,9 +226,11 @@ static void ParseCommandLine(void)
     }
 
     if (action == UNCOMPRESS && !allowmerge)
-        ErrorExit("Sorry, uncompressing will undo any lump merging on WADs.\n"
+    {
+        ErrorExit("Sorry, uncompressing will undo any lump merging on WADs. \n"
                   "The -nomerge command is not available with the "
-                  "-u(Uncompress) option.");
+                  "-u (uncompress) option.");
+    }
 }
 
 /* Does an action based on command line */
