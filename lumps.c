@@ -596,7 +596,7 @@ bool S_IsGraphic(int entrynum)
         return false;
     if (IsLevelEntry(s))
         return false;
-    if (s[0] == 'D' && ((s[1] == '_') || (s[1] == 'S')))
+    if (s[0] == 'D' && (s[1] == '_' || s[1] == 'S'))
     {
         /* sfx or music */
         return false;
@@ -613,16 +613,15 @@ bool S_IsGraphic(int entrynum)
     height = READ_SHORT(graphic + 2);
     columns = graphic + 8;
 
-    if ((width > 320) || (height > 200) || (width == 0) || (height == 0) ||
-        (width < 0) || (height < 0))
+    if (width > 320 || height > 200 || width <= 0 || height <= 0)
     {
         free(graphic);
         return false;
     }
 
     /* it could be a graphic, but better safe than sorry */
-    if ((wadentry[entrynum].length == 4096) || /* flat; */
-        (wadentry[entrynum].length == 4000))   /* endoom */
+    if (wadentry[entrynum].length == 4096 || /* flat; */
+        wadentry[entrynum].length == 4000)   /* endoom */
     {
         free(graphic);
         return false;

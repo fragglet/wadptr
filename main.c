@@ -669,8 +669,8 @@ static bool ListEntries(const char *wadname)
         for (count2 = 0; count2 < count; count2++)
         {
             /* same offset + size */
-            if ((wadentry[count2].offset == wadentry[count].offset) &&
-                (wadentry[count2].length == wadentry[count].length))
+            if (wadentry[count2].offset == wadentry[count].offset &&
+                wadentry[count2].length == wadentry[count].length)
             {
                 printf("%.8s\n", wadentry[count2].name);
                 break;
