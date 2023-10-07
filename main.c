@@ -395,7 +395,7 @@ static bool Compress(const char *wadname)
             findshrink = FindPerc(findshrink, wadentry[count].length);
             if (success)
             {
-                SPAMMY_PRINTF("(%i%%), done.", findshrink);
+                SPAMMY_PRINTF("(%i%%), done.\n", findshrink);
             }
             else
             {
