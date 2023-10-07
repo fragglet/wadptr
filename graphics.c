@@ -28,18 +28,17 @@ static int S_FindColumnSize(uint8_t *col1);
 
 /* Graphic squashing globals */
 static bool unsquash_mode = false; /* True when we are inside a
-                                        S_Unsquash() call. */
-static int equalcolumn[400]; /* 1 for each column: another column which is */
-                             /* identical or -1 if there isn't one */
-static short height, width;  /* picture width, height etc. */
+                                      S_Unsquash() call. */
+static int *equalcolumn = NULL; /* for each column: another column which is */
+                                /* identical or -1 if there isn't one */
+static short height, width;     /* picture width, height etc. */
 static short loffset, toffset;
-static uint8_t *columns;  /* the location of each column in the lump */
-static long colsize[400]; /* the length(in bytes) of each column */
+static uint8_t *columns = NULL; /* the location of each column in the lump */
+static int *colsize = NULL;     /* the length(in bytes) of each column */
 
 /* Squashes a graphic. Call with the lump name - eg. S_Squash("TITLEPIC");
    returns a pointer to the new(compressed) lump. This must be free()d when
    it is no longer needed, as S_Squash() does not do this itself. */
-
 uint8_t *S_Squash(int entrynum)
 {
     uint8_t *working, *newres, *newptr;
@@ -131,6 +130,9 @@ static int S_FindRedundantColumns(uint8_t *x)
     height = READ_SHORT(x + 2);
     loffset = READ_SHORT(x + 4);
     toffset = READ_SHORT(x + 6);
+
+    equalcolumn = REALLOC_ARRAY(int, equalcolumn, width);
+    colsize = REALLOC_ARRAY(int, colsize, width);
 
     columns = x + 8;
 
