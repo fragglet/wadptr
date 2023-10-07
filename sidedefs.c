@@ -20,6 +20,7 @@
 #include <string.h>
 
 #include "sidedefs.h"
+#include "waddir.h"
 #include "wadptr.h"
 
 typedef struct {

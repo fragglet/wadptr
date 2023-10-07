@@ -19,10 +19,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "errors.h"
-#include "waddir.h"
-#include "wadmerge.h"
-
 #define VERSION "3.0"
 
 extern bool allowpack;   /* level packing on */

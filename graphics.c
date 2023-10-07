@@ -20,6 +20,7 @@
 #include <string.h>
 
 #include "graphics.h"
+#include "waddir.h"
 #include "wadptr.h"
 
 static int S_FindRedundantColumns(uint8_t *s);

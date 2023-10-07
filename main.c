@@ -27,6 +27,8 @@
 #include "blockmap.h"
 #include "graphics.h"
 #include "sidedefs.h"
+#include "waddir.h"
+#include "wadmerge.h"
 #include "wadptr.h"
 
 #define SPAMMY_PRINTF \

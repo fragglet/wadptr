@@ -19,6 +19,7 @@
 #include <stdlib.h>
 
 #include "sha1.h"
+#include "waddir.h"
 #include "wadmerge.h"
 #include "wadptr.h"
 

@@ -19,6 +19,7 @@
 #include <string.h>
 
 #include "blockmap.h"
+#include "waddir.h"
 #include "wadptr.h"
 
 // Blockmap lumps have a vanilla limit of ~64KiB; the 16-bit integers
