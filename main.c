@@ -171,23 +171,19 @@ static void ParseCommandLine(void)
             action = HELP;
             break;
         }
-        else if (!strcmp(g_argv[i], "-list") ||
-                 !strcmp(g_argv[i], "-l"))
+        else if (!strcmp(g_argv[i], "-list") || !strcmp(g_argv[i], "-l"))
         {
             action = LIST;
         }
-        else if (!strcmp(g_argv[i], "-compress") ||
-                 !strcmp(g_argv[i], "-c"))
+        else if (!strcmp(g_argv[i], "-compress") || !strcmp(g_argv[i], "-c"))
         {
             action = COMPRESS;
         }
-        else if (!strcmp(g_argv[i], "-uncompress") ||
-                 !strcmp(g_argv[i], "-u"))
+        else if (!strcmp(g_argv[i], "-uncompress") || !strcmp(g_argv[i], "-u"))
         {
             action = UNCOMPRESS;
         }
-        else if (!strcmp(g_argv[i], "-quiet") ||
-                 !strcmp(g_argv[i], "-q"))
+        else if (!strcmp(g_argv[i], "-quiet") || !strcmp(g_argv[i], "-q"))
         {
             quiet_mode = true;
         }
@@ -207,8 +203,7 @@ static void ParseCommandLine(void)
         {
             allowstack = false;
         }
-        else if (!strcmp(g_argv[i], "-output") ||
-                 !strcmp(g_argv[i], "-o"))
+        else if (!strcmp(g_argv[i], "-output") || !strcmp(g_argv[i], "-o"))
         {
             if (i + 1 >= g_argc)
             {
@@ -286,8 +281,7 @@ static void Help(void)
         "                      -nosquash  Disable graphic squashing\n"
         "                      -nopack    Disable sidedef packing\n"
         "                      -nostack   Disable blockmap stacking\n"
-        "\n"
-        );
+        "\n");
 }
 
 // Temporary workaround for the fact that we don't support Hexen format
