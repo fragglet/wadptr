@@ -10,13 +10,6 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
- *
- * Compresses Doom WAD files through several methods:
- *
- * - Merges identical lumps (see wadmerge.c)
- * - 'Squashes' graphics (see lumps.c)
- * - Packs the sidedefs in levels (see lumps.c)
  */
 
 #include <ctype.h>
