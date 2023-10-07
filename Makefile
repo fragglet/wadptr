@@ -11,30 +11,18 @@ all: $(EXECUTABLE)
 $(EXECUTABLE): $(OBJECTS)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJECTS)
 
-main.o: main.c wadptr.h errors.h waddir.h wadmerge.h \
-        blockmap.h graphics.h sidedefs.h
-	$(CC) $(CFLAGS) -c main.c
+%.o: %.c
+	$(CC) $(CFLAGS) -o $@ -c $<
 
-waddir.o: waddir.c waddir.h errors.h
-	$(CC) $(CFLAGS) -c waddir.c
-
+blockmap.o: blockmap.c blockmap.h wadptr.h errors.h waddir.h wadmerge.h
 errors.o: errors.c errors.h
-	$(CC) $(CFLAGS) -c errors.c
-
-graphics.o: graphics.h wadptr.h
-	$(CC) $(CFLAGS) -c graphics.c
-
-sidedefs.o: sidedefs.h wadptr.h
-	$(CC) $(CFLAGS) -c sidedefs.c
-
-blockmap.o: blockmap.h wadptr.h
-	$(CC) $(CFLAGS) -c blockmap.c
-
+graphics.o: graphics.c graphics.h wadptr.h errors.h waddir.h wadmerge.h
+main.o: main.c blockmap.h graphics.h sidedefs.h errors.h wadptr.h \
+        waddir.h wadmerge.h
 sha1.o: sha1.c sha1.h
-	$(CC) $(CFLAGS) -c sha1.c
-
-wadmerge.o: wadmerge.c wadmerge.h waddir.h errors.h
-	$(CC) $(CFLAGS) -c wadmerge.c
+sidedefs.o: sidedefs.c sidedefs.h errors.h wadptr.h waddir.h wadmerge.h
+waddir.o: waddir.c waddir.h errors.h wadptr.h wadmerge.h
+wadmerge.o: wadmerge.c sha1.h wadmerge.h wadptr.h errors.h waddir.h
 
 install:
 	install -D wadptr $(DESTDIR)$(PREFIX)/bin/wadptr
