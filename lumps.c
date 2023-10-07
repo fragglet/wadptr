@@ -781,9 +781,15 @@ bool B_Stack(int lumpnum)
         return false;
     }
 
-    // TODO: Check the rebuilt blockmap really is smaller. If it was
-    // built using eg. ZokumBSP, the original is probably better than
-    // what we've produced.
+    // Check the rebuilt blockmap really is smaller. If it was built
+    // using eg. ZokumBSP, the original is probably better than what
+    // we've produced.
+    if (b_blockmap.len < blockmap.len)
+    {
+        free(b_blockmap.elements);
+        b_blockmap = blockmap;
+        return true;
+    }
 
     free(blockmap.elements);
     return true;
