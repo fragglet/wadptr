@@ -754,6 +754,7 @@ static blockmap_t RebuildBlockmap(blockmap_t *blockmap, bool compress)
         {
             block_offsets[i] = result.len;
             AppendBlockmapElements(&result, block->elements, block->len);
+            block_offsets = &result.elements[4];
         }
     }
 
