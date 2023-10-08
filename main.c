@@ -623,7 +623,11 @@ static bool Uncompress(const char *wadname)
 
 static const char *CompressionMethod(int lumpnum)
 {
-    if (IsSidedefs(lumpnum))
+    if (wadentry[lumpnum].length == 0)
+    {
+        return "Empty";
+    }
+    else if (IsSidedefs(lumpnum))
     {
         /* this is a level */
         if (P_IsPacked(lumpnum))
