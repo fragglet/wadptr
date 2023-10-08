@@ -144,8 +144,7 @@ static blockmap_t RebuildBlockmap(const blockmap_t *blockmap, bool compress)
             // Copy the offset of the other block, but if it's a suffix
             // match then we need to offset.
             block_offsets[i] = block_offsets[match_index] +
-                               blocklist[match_index].len -
-                               block->len;
+                               blocklist[match_index].len - block->len;
         }
         else if (result.len > MAX_BLOCKMAP_OFFSET)
         {

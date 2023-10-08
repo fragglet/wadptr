@@ -691,9 +691,8 @@ static bool ListEntries(const char *wadname)
 
     for (i = 0; i < numentries; i++)
     {
-        printf("%7d %7ld  0x%08lx  %-11s %-8.8s    ", i + 1,
-               wadentry[i].length, wadentry[i].offset,
-               CompressionMethod(i), wadentry[i].name);
+        printf("%7d %7ld  0x%08lx  %-11s %-8.8s    ", i + 1, wadentry[i].length,
+               wadentry[i].offset, CompressionMethod(i), wadentry[i].name);
 
         // shared resource?
         for (j = 0; wadentry[i].length > 0 && j < i; j++)

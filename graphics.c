@@ -29,10 +29,10 @@ static int FindColumnLength(int x, const uint8_t *column, size_t len);
 /* Graphic squashing globals */
 static bool unsquash_mode = false; /* True when we are inside a
                                       S_Unsquash() call. */
-static short height, width;     /* picture width, height etc. */
+static short height, width;        /* picture width, height etc. */
 static short loffset, toffset;
 static uint8_t **columns = NULL; /* the location of each column in the lump */
-static int *colsize = NULL;     /* the length(in bytes) of each column */
+static int *colsize = NULL;      /* the length(in bytes) of each column */
 
 static void AppendBytes(uint8_t **ptr, size_t *len, size_t *sz,
                         const uint8_t *newdata, const size_t newdata_len)
@@ -95,8 +95,8 @@ uint8_t *S_Squash(int entrynum)
         if (x2 >= x)
         {
             WRITE_LONG(newres + 8 + 4 * x, newres_len);
-            AppendBytes(&newres, &newres_len, &newres_size,
-                        columns[x], colsize[x]);
+            AppendBytes(&newres, &newres_len, &newres_size, columns[x],
+                        colsize[x]);
         }
     }
 
@@ -145,8 +145,8 @@ static void ParseLump(uint8_t *lump, size_t lump_len)
         uint32_t offset = READ_LONG(lump + 8 + 4 * x);
         if (offset > lump_len)
         {
-            ErrorExit("Column %d offset invalid: %08x > length %ld", x,
-                      offset, lump_len);
+            ErrorExit("Column %d offset invalid: %08x > length %ld", x, offset,
+                      lump_len);
         }
         columns[x] = lump + offset;
         colsize[x] = FindColumnLength(x, columns[x], lump_len - offset);
@@ -168,7 +168,8 @@ static int FindColumnLength(int x, const uint8_t *column, size_t len)
         if (i > len)
         {
             ErrorExit("Column %d overruns the end of the lump with no 0xff "
-                      "terminating byte", x);
+                      "terminating byte",
+                      x);
         }
     }
 }

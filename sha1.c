@@ -309,4 +309,3 @@ void SHA1_Final(sha1_digest_t digest, sha1_context_t *hd)
 
     memcpy(digest, hd->buf, sizeof(sha1_digest_t));
 }
-
