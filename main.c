@@ -672,7 +672,7 @@ static const char *CompressionMethod(int lumpnum)
 /* List WAD entries */
 static bool ListEntries(const char *wadname)
 {
-    int count, count2;
+    int i, j;
 
     wadfp = fopen(wadname, "rb");
     if (wadfp == NULL)
@@ -689,37 +689,26 @@ static bool ListEntries(const char *wadname)
         " Number  Length  Offset      Method      Name        Shared\n"
         " ------  ------  ------      ------      ----        ------\n");
 
-    for (count = 0; count < numentries; count++)
+    for (i = 0; i < numentries; i++)
     {
-        /* wad entry number */
-        printf("%7d %7ld", count + 1, wadentry[count].length);
+        printf("%7d %7ld  0x%08lx  %-11s %-8.8s    ", i + 1,
+               wadentry[i].length, wadentry[i].offset,
+               CompressionMethod(i), wadentry[i].name);
 
-        /* file offset */
-        printf("  0x%08lx  ", wadentry[count].offset);
-
-        /* resource name */
-        printf("%-11s %-8.8s    ", CompressionMethod(count),
-               wadentry[count].name);
-
-        /* shared resource */
-        if (wadentry[count].length == 0)
+        // shared resource?
+        for (j = 0; wadentry[i].length > 0 && j < i; j++)
         {
-            printf("No\n");
-            continue;
-        }
-        for (count2 = 0; count2 < count; count2++)
-        {
-            /* same offset + size */
-            if (wadentry[count2].offset == wadentry[count].offset &&
-                wadentry[count2].length == wadentry[count].length)
+            if (wadentry[j].offset == wadentry[i].offset &&
+                wadentry[j].length == wadentry[i].length)
             {
-                printf("%.8s\n", wadentry[count2].name);
+                printf("%.8s\n", wadentry[j].name);
                 break;
             }
         }
-        /* no identical lumps if it reached the last one */
-        if (count2 == count)
+        if (wadentry[i].length == 0 || j >= i)
+        {
             printf("No\n");
+        }
     }
 
     return true;
