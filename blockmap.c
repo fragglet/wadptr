@@ -35,7 +35,6 @@ typedef struct {
     uint16_t *elements;
     size_t len, size;
     int num_blocks;
-    block_t *blocklist;
 } blockmap_t;
 
 static blockmap_t ReadBlockmap(int lumpnum, FILE *fp);
@@ -43,16 +42,17 @@ static bool WriteBlockmap(const blockmap_t *blockmap, FILE *fp);
 
 static blockmap_t blockmap_result;
 
-static void MakeBlocklist(blockmap_t *blockmap)
+static block_t *MakeBlocklist(const blockmap_t *blockmap)
 {
+    block_t *blocklist;
     block_t *block;
     int i, start_index, end_index;
 
-    blockmap->blocklist = ALLOC_ARRAY(block_t, blockmap->num_blocks);
+    blocklist = ALLOC_ARRAY(block_t, blockmap->num_blocks);
 
     for (i = 0; i < blockmap->num_blocks; i++)
     {
-        block = &blockmap->blocklist[i];
+        block = &blocklist[i];
         // TODO: Need to do some array bounds checking here.
         start_index = blockmap->elements[4 + i];
         block->elements = &blockmap->elements[start_index];
@@ -64,6 +64,8 @@ static void MakeBlocklist(blockmap_t *blockmap)
         }
         block->len = end_index - start_index + 1;
     }
+
+    return blocklist;
 }
 
 // TODO: We don't really need it right now, but this doesn't update the
@@ -83,14 +85,14 @@ static void AppendBlockmapElements(blockmap_t *blockmap, uint16_t *elements,
     blockmap->len += count;
 }
 
-static int FindIdenticalBlock(const blockmap_t *blockmap, size_t num_blocks,
+static int FindIdenticalBlock(const block_t *blocklist, size_t num_blocks,
                               const block_t *block)
 {
     int i;
 
     for (i = 0; i < num_blocks; i++)
     {
-        const block_t *ib = &blockmap->blocklist[i];
+        const block_t *ib = &blocklist[i];
 
         // We allow suffixes, but unless the blockmap is in "engine
         // format" it probably won't make a difference.
@@ -109,13 +111,14 @@ static int FindIdenticalBlock(const blockmap_t *blockmap, size_t num_blocks,
     return -1;
 }
 
-static blockmap_t RebuildBlockmap(blockmap_t *blockmap, bool compress)
+static blockmap_t RebuildBlockmap(const blockmap_t *blockmap, bool compress)
 {
     blockmap_t result;
+    block_t *blocklist;
     uint16_t *block_offsets;
     int i;
 
-    MakeBlocklist(blockmap);
+    blocklist = MakeBlocklist(blockmap);
 
     result.size = blockmap->len;
     result.elements = ALLOC_ARRAY(uint16_t, result.size);
@@ -128,12 +131,12 @@ static blockmap_t RebuildBlockmap(blockmap_t *blockmap, bool compress)
 
     for (i = 0; i < blockmap->num_blocks; i++)
     {
-        const block_t *block = &blockmap->blocklist[i];
+        const block_t *block = &blocklist[i];
         int match_index = -1;
 
         if (compress)
         {
-            match_index = FindIdenticalBlock(blockmap, i, block);
+            match_index = FindIdenticalBlock(blocklist, i, block);
         }
 
         if (match_index >= 0)
@@ -141,7 +144,7 @@ static blockmap_t RebuildBlockmap(blockmap_t *blockmap, bool compress)
             // Copy the offset of the other block, but if it's a suffix
             // match then we need to offset.
             block_offsets[i] = block_offsets[match_index] +
-                               blockmap->blocklist[match_index].len -
+                               blocklist[match_index].len -
                                block->len;
         }
         else if (result.len > MAX_BLOCKMAP_OFFSET)
@@ -159,7 +162,7 @@ static blockmap_t RebuildBlockmap(blockmap_t *blockmap, bool compress)
         }
     }
 
-    free(blockmap->blocklist);
+    free(blocklist);
 
     return result;
 }
@@ -267,7 +270,6 @@ static blockmap_t ReadBlockmap(int lumpnum, FILE *fp)
         return result;
     }
     result.elements = CacheLump(lumpnum);
-    result.blocklist = 0;
 
     for (i = 0; i < result.len; i++)
     {
