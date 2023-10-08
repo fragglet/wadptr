@@ -23,7 +23,7 @@
 static void SortMapElements(unsigned int *elements, size_t num_elements,
                             sort_compare_fn_t compare_fn)
 {
-    unsigned int pivot;
+    unsigned int pivot, pivot_index;
     size_t arr1_len;
     int i;
 
@@ -33,7 +33,11 @@ static void SortMapElements(unsigned int *elements, size_t num_elements,
         return;
     }
 
-    pivot = elements[num_elements - 1];
+    // Pick pivot from the middle, in case the list is already sorted
+    // (or mostly sorted)
+    pivot_index = num_elements / 2;
+    pivot = elements[pivot_index];
+    elements[pivot_index] = elements[num_elements - 1];
 
     for (i = 0, arr1_len = 0; i < num_elements - 1; i++)
     {
