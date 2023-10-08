@@ -83,7 +83,7 @@ typedef struct {
 } sidedef_array_t;
 
 static void CheckLumpSizes(void);
-static sidedef_array_t DoPack(sidedef_array_t *sidedefs);
+static sidedef_array_t DoPack(const sidedef_array_t *sidedefs);
 static void RemapLinedefs(linedef_array_t *linedefs);
 static sidedef_array_t RebuildSidedefs(linedef_array_t *linedefs,
                                        const sidedef_array_t *sidedefs);
@@ -260,7 +260,7 @@ static int FindSidedef(const sidedef_array_t *sidedefs,
 }
 
 /* Actually pack the sidedefs */
-static sidedef_array_t DoPack(sidedef_array_t *sidedefs)
+static sidedef_array_t DoPack(const sidedef_array_t *sidedefs)
 {
     sidedef_array_t result;
     int count, ns;

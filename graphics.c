@@ -35,7 +35,7 @@ static uint8_t **columns = NULL; /* the location of each column in the lump */
 static int *colsize = NULL;     /* the length(in bytes) of each column */
 
 static void AppendBytes(uint8_t **ptr, size_t *len, size_t *sz,
-                        uint8_t *newdata, size_t newdata_len)
+                        const uint8_t *newdata, const size_t newdata_len)
 {
     while (*len + newdata_len > *sz)
     {
