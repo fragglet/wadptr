@@ -217,9 +217,9 @@ bool S_IsGraphic(int entrynum)
         return false;
     }
 
-    if (wadentry[entrynum].length <= 0)
+    if (wadentry[entrynum].length < 8)
     {
-        /* don't read data from 0 size lumps */
+        // too short
         return false;
     }
     graphic = CacheLump(entrynum);
@@ -228,7 +228,8 @@ bool S_IsGraphic(int entrynum)
     height = READ_SHORT(graphic + 2);
     columns = graphic + 8;
 
-    if (width > 320 || height > 200 || width <= 0 || height <= 0)
+    if (width > 320 || height > 200 || width <= 0 || height <= 0
+     || 8 + width * 4 > wadentry[entrynum].length)
     {
         free(graphic);
         return false;
