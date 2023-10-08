@@ -83,10 +83,10 @@ typedef struct {
 } sidedef_array_t;
 
 static void CheckLumpSizes(void);
-static sidedef_array_t P_DoPack(sidedef_array_t *sidedefs);
-static void P_RemapLinedefs(linedef_array_t *linedefs);
-static sidedef_array_t P_RebuildSidedefs(linedef_array_t *linedefs,
-                                         const sidedef_array_t *sidedefs);
+static sidedef_array_t DoPack(sidedef_array_t *sidedefs);
+static void RemapLinedefs(linedef_array_t *linedefs);
+static sidedef_array_t RebuildSidedefs(linedef_array_t *linedefs,
+                                       const sidedef_array_t *sidedefs);
 
 static linedef_array_t ReadLinedefs(int lumpnum, FILE *fp);
 static sidedef_array_t ReadSidedefs(int lumpnum, FILE *fp);
@@ -117,13 +117,13 @@ void P_Pack(int sidedef_num)
     sidedefs = ReadSidedefs(sidedefnum, wadfp);
     linedefs_result = ReadLinedefs(linedefnum, wadfp);
 
-    sidedefs2 = P_RebuildSidedefs(&linedefs_result, &sidedefs);
+    sidedefs2 = RebuildSidedefs(&linedefs_result, &sidedefs);
     free(sidedefs.sides);
 
-    sidedefs_result = P_DoPack(&sidedefs2);
+    sidedefs_result = DoPack(&sidedefs2);
     free(sidedefs2.sides);
 
-    P_RemapLinedefs(&linedefs_result); /* update sidedef indexes */
+    RemapLinedefs(&linedefs_result); /* update sidedef indexes */
 }
 
 size_t P_WriteLinedefs(FILE *fstream)
@@ -154,7 +154,7 @@ void P_Unpack(int sidedef_num)
     linedefs_result = ReadLinedefs(linedefnum, wadfp);
 
     sidedefs = ReadSidedefs(sidedefnum, wadfp);
-    sidedefs_result = P_RebuildSidedefs(&linedefs_result, &sidedefs);
+    sidedefs_result = RebuildSidedefs(&linedefs_result, &sidedefs);
     free(sidedefs.sides);
 
     // TODO: We should catch the case where unpacking would exceed the
@@ -260,7 +260,7 @@ static int FindSidedef(const sidedef_array_t *sidedefs,
 }
 
 /* Actually pack the sidedefs */
-static sidedef_array_t P_DoPack(sidedef_array_t *sidedefs)
+static sidedef_array_t DoPack(sidedef_array_t *sidedefs)
 {
     sidedef_array_t result;
     int count, ns;
@@ -295,14 +295,14 @@ static sidedef_array_t P_DoPack(sidedef_array_t *sidedefs)
 }
 
 /* Update the linedefs and save sidedefs */
-static void P_RemapLinedefs(linedef_array_t *linedefs)
+static void RemapLinedefs(linedef_array_t *linedefs)
 {
     int count;
 
     /* update the linedefs with the new sidedef indexes. note that we
        do not need to perform the CheckSidedefIndex() checks here
        because they have already been checked by a previous call to
-       P_Rebuild. */
+       Rebuild. */
 
     for (count = 0; count < linedefs->len; count++)
     {
@@ -321,20 +321,20 @@ static void CheckLumpSizes(void)
 {
     if ((wadentry[linedefnum].length % LDEF_SIZE) != 0)
     {
-        ErrorExit("P_RebuildSidedefs: LINEDEFS lump (#%d) is %d bytes, "
+        ErrorExit("RebuildSidedefs: LINEDEFS lump (#%d) is %d bytes, "
                   "not a multiple of %d",
                   linedefnum, wadentry[linedefnum].length, LDEF_SIZE);
     }
     if ((wadentry[sidedefnum].length % SDEF_SIZE) != 0)
     {
-        ErrorExit("P_RebuildSidedefs: SIDEDEFS lump (#%d) is %d bytes, "
+        ErrorExit("RebuildSidedefs: SIDEDEFS lump (#%d) is %d bytes, "
                   "not a multiple of %d",
                   sidedefnum, wadentry[sidedefnum].length, SDEF_SIZE);
     }
 }
 
-static sidedef_array_t P_RebuildSidedefs(linedef_array_t *linedefs,
-                                         const sidedef_array_t *sidedefs)
+static sidedef_array_t RebuildSidedefs(linedef_array_t *linedefs,
+                                       const sidedef_array_t *sidedefs)
 {
     sidedef_array_t result;
     linedef_t *ld;

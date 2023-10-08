@@ -23,8 +23,8 @@
 #include "waddir.h"
 #include "wadptr.h"
 
-static void S_ParseLump(uint8_t *lump, size_t lump_len);
-static int S_FindColumnLength(int x, uint8_t *column, size_t len);
+static void ParseLump(uint8_t *lump, size_t lump_len);
+static int FindColumnLength(int x, const uint8_t *column, size_t len);
 
 /* Graphic squashing globals */
 static bool unsquash_mode = false; /* True when we are inside a
@@ -62,7 +62,7 @@ uint8_t *S_Squash(int entrynum)
     }
     oldlump = CacheLump(entrynum);
 
-    S_ParseLump(oldlump, wadentry[entrynum].length);
+    ParseLump(oldlump, wadentry[entrynum].length);
 
     newres_len = 8 + (width * 4);
     newres_size = 8 + (width * 4);
@@ -128,7 +128,7 @@ uint8_t *S_Unsquash(int entrynum)
     return result;
 }
 
-static void S_ParseLump(uint8_t *lump, size_t lump_len)
+static void ParseLump(uint8_t *lump, size_t lump_len)
 {
     int x;
 
@@ -149,11 +149,11 @@ static void S_ParseLump(uint8_t *lump, size_t lump_len)
                       offset, lump_len);
         }
         columns[x] = lump + offset;
-        colsize[x] = S_FindColumnLength(x, columns[x], lump_len - offset);
+        colsize[x] = FindColumnLength(x, columns[x], lump_len - offset);
     }
 }
 
-static int S_FindColumnLength(int x, uint8_t *column, size_t len)
+static int FindColumnLength(int x, const uint8_t *column, size_t len)
 {
     int i = 0;
 
@@ -180,7 +180,7 @@ bool S_IsSquashed(int entrynum)
     int x, x2;
 
     pic = CacheLump(entrynum); /* cache the lump */
-    S_ParseLump(pic, wadentry[entrynum].length);
+    ParseLump(pic, wadentry[entrynum].length);
 
     for (x = 0; !result && x < width; x++)
     {
