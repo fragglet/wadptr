@@ -621,8 +621,51 @@ static bool Uncompress(const char *wadname)
     return true;
 }
 
-/* List WAD entries */
+static const char *CompressionMethod(int lumpnum)
+{
+    if (IsSidedefs(lumpnum))
+    {
+        /* this is a level */
+        if (P_IsPacked(lumpnum))
+        {
+            return "Packed";
+        }
+        else
+        {
+            return "Unpacked";
+        }
+    }
+    else if (S_IsGraphic(lumpnum))
+    {
+        /* this is a graphic */
+        if (S_IsSquashed(lumpnum))
+        {
+            return "Squashed";
+        }
+        else
+        {
+            return "Unsquashed";
+        }
+    }
+    else if (!strncmp(wadentry[lumpnum].name, "BLOCKMAP", 8))
+    {
+        if (B_IsStacked(lumpnum))
+        {
+            return "Stacked";
+        }
+        else
+        {
+            return "Unstacked";
+        }
+    }
+    else
+    {
+        /* ordinary lump w/no compression */
+        return "Stored";
+    }
+}
 
+/* List WAD entries */
 static bool ListEntries(const char *wadname)
 {
     int count, count2;
@@ -650,42 +693,9 @@ static bool ListEntries(const char *wadname)
         /* file offset */
         printf("  0x%08lx  ", wadentry[count].offset);
 
-        /* compression method */
-        if (IsSidedefs(count))
-        {
-            /* this is a level */
-            if (P_IsPacked(count))
-                printf("Packed      ");
-            else
-                printf("Unpacked    ");
-        }
-        else if (S_IsGraphic(count))
-        {
-            /* this is a graphic */
-            if (S_IsSquashed(count))
-                printf("Squashed    ");
-            else
-                printf("Unsquashed  ");
-        }
-        else if (!strncmp(wadentry[count].name, "BLOCKMAP", 8))
-        {
-            if (B_IsStacked(count))
-            {
-                printf("Stacked     ");
-            }
-            else
-            {
-                printf("Unstacked   ");
-            }
-        }
-        else
-        {
-            /* ordinary lump w/no compression */
-            printf("Stored      ");
-        }
-
         /* resource name */
-        printf("%-8.8s    ", wadentry[count].name);
+        printf("%-11s %-8.8s    ", CompressionMethod(count),
+               wadentry[count].name);
 
         /* shared resource */
         if (wadentry[count].length == 0)
