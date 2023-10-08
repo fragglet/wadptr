@@ -1,6 +1,6 @@
 PREFIX = /usr/local
 EXECUTABLE = wadptr
-OBJECTS = main.o waddir.o errors.o wadmerge.o \
+OBJECTS = main.o waddir.o errors.o wadmerge.o sort.o \
           graphics.o sidedefs.o blockmap.o sha1.o
 DELETE = rm -f
 STRIP = strip
@@ -20,9 +20,10 @@ graphics.o: graphics.c graphics.h waddir.h errors.h wadptr.h
 main.o: main.c blockmap.h graphics.h sidedefs.h errors.h waddir.h \
         wadmerge.h wadptr.h
 sha1.o: sha1.c sha1.h
+sort.o: sort.c sort.h wadptr.h
 sidedefs.o: sidedefs.c sidedefs.h errors.h waddir.h wadptr.h
 waddir.o: waddir.c waddir.h errors.h wadptr.h
-wadmerge.o: wadmerge.c sha1.h waddir.h errors.h wadmerge.h wadptr.h
+wadmerge.o: wadmerge.c sha1.h waddir.h errors.h sort.h wadmerge.h wadptr.h
 
 install:
 	install -D wadptr $(DESTDIR)$(PREFIX)/bin/wadptr
