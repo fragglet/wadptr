@@ -25,7 +25,7 @@
 #include "waddir.h"
 #include "wadptr.h"
 
-#define NO_SIDEDEF ((unsigned short) -1)
+#define NO_SIDEDEF ((sidedef_ref_t) UINT32_MAX)
 
 /*
  * Portable structure IO
@@ -48,6 +48,12 @@
 #define LDEF_SDEF2 12
 #define LDEF_SIZE  14
 
+// On disk, these are 16-bit integers. But while processing, we unpack
+// the sidedefs first, and the unpacked sidedefs might exceed the 16-bit
+// limit. So in memory we use a 32-bit integer even though when we write
+// the linedefs out again they will of course be 16-bit.
+typedef uint32_t sidedef_ref_t;
+
 typedef struct {
     short xoffset;
     short yoffset;
@@ -68,8 +74,9 @@ typedef struct {
     unsigned short flags;
     unsigned short type;
     unsigned short tag;
-    unsigned short sidedef1;
-    unsigned short sidedef2;
+
+    sidedef_ref_t sidedef1;
+    sidedef_ref_t sidedef2;
 } linedef_t;
 
 typedef struct {
@@ -99,7 +106,7 @@ static int linedefnum; /* linedef wad entry number */
 static linedef_array_t linedefs_result;
 static sidedef_array_t sidedefs_result;
 
-static int *newsidedef_index; /* maps old sidedef number to new */
+static sidedef_ref_t *newsidedef_index; /* maps old sidedef number to new */
 
 /* Call P_Pack() with the level name eg. pack("MAP01"); P_Pack will then
    pack that level. The new sidedef and linedef lumps are pointed to by
@@ -162,7 +169,7 @@ void P_Unpack(int sidedef_num)
 }
 
 /* Sanity check a linedef's sidedef reference is valid */
-static void CheckSidedefIndex(int linedef_index, int sidedef_index,
+static void CheckSidedefIndex(int linedef_index, sidedef_ref_t sidedef_index,
                               int num_sidedefs)
 {
     if (sidedef_index != NO_SIDEDEF &&
@@ -177,7 +184,7 @@ bool P_IsPacked(int sidedef_num)
 {
     linedef_array_t linedefs;
     uint8_t *sidedef_used;
-    int num_sidedefs;
+    size_t num_sidedefs;
     bool packed = false;
     int count;
 
@@ -198,14 +205,14 @@ bool P_IsPacked(int sidedef_num)
     {
         if (linedefs.lines[count].sidedef1 != NO_SIDEDEF)
         {
-            int sdi = linedefs.lines[count].sidedef1;
+            sidedef_ref_t sdi = linedefs.lines[count].sidedef1;
             CheckSidedefIndex(count, sdi, num_sidedefs);
             packed = packed || sidedef_used[sdi];
             sidedef_used[sdi] = 1;
         }
         if (linedefs.lines[count].sidedef2 != NO_SIDEDEF)
         {
-            int sdi = linedefs.lines[count].sidedef2;
+            sidedef_ref_t sdi = linedefs.lines[count].sidedef2;
             CheckSidedefIndex(count, sdi, num_sidedefs);
             packed = packed || sidedef_used[sdi];
             sidedef_used[sdi] = 1;
@@ -217,9 +224,10 @@ bool P_IsPacked(int sidedef_num)
 }
 
 /* Append the given sidedef to the given array. */
-static int AppendNewSidedef(sidedef_array_t *sidedefs, const sidedef_t *s)
+static sidedef_ref_t AppendNewSidedef(sidedef_array_t *sidedefs,
+                                      const sidedef_t *s)
 {
-    int result;
+    sidedef_ref_t result;
 
     while (sidedefs->len >= sidedefs->size)
     {
@@ -237,14 +245,14 @@ static int AppendNewSidedef(sidedef_array_t *sidedefs, const sidedef_t *s)
 
 // Check the given array and try to find a sidedef that is the
 // same as the given sidedef. Returns -1 if none is found.
-static int FindSidedef(const sidedef_array_t *sidedefs,
-                       const sidedef_t *sidedef)
+static sidedef_ref_t FindSidedef(const sidedef_array_t *sidedefs,
+                                 const sidedef_t *sidedef)
 {
-    int i;
+    unsigned int i;
 
     if (sidedef->special)
     {
-        return -1;
+        return NO_SIDEDEF;
     }
 
     for (i = 0; i < sidedefs->len; i++)
@@ -256,19 +264,20 @@ static int FindSidedef(const sidedef_array_t *sidedefs,
         }
     }
 
-    return -1;
+    return NO_SIDEDEF;
 }
 
 /* Actually pack the sidedefs */
 static sidedef_array_t DoPack(const sidedef_array_t *sidedefs)
 {
     sidedef_array_t result;
-    int count, ns;
+    int count;
+    sidedef_ref_t ns;
 
     result.size = sidedefs->len;
     result.sides = ALLOC_ARRAY(sidedef_t, result.size);
     result.len = 0;
-    newsidedef_index = ALLOC_ARRAY(int, sidedefs->len);
+    newsidedef_index = ALLOC_ARRAY(sidedef_ref_t, sidedefs->len);
 
     for (count = 0; count < sidedefs->len; count++)
     {
@@ -279,9 +288,9 @@ static sidedef_array_t DoPack(const sidedef_array_t *sidedefs)
         }
 
         ns = FindSidedef(&result, &sidedefs->sides[count]);
-        if (ns >= 0)
+        if (ns != NO_SIDEDEF)
         {
-            newsidedef_index[count] = ns;
+            newsidedef_index[count] = (sidedef_ref_t) ns;
         }
         else
         {
@@ -390,6 +399,18 @@ static sidedef_array_t RebuildSidedefs(linedef_array_t *linedefs,
 static const int convbuffsize = 0x8000;
 static uint8_t convbuffer[0x8000];
 
+// Translation to handle the fact that our internal sidedef references
+// are 32-bit integers.
+static sidedef_ref_t MapSidedefRef(uint16_t val)
+{
+    if (val == 0xffff)
+    {
+        return NO_SIDEDEF;
+    }
+
+    return val;
+}
+
 static linedef_array_t ReadLinedefs(int lumpnum, FILE *fp)
 {
     linedef_array_t result;
@@ -417,8 +438,10 @@ static linedef_array_t ReadLinedefs(int lumpnum, FILE *fp)
         result.lines[i].flags = READ_SHORT(cptr + LDEF_FLAGS);
         result.lines[i].type = READ_SHORT(cptr + LDEF_TYPES);
         result.lines[i].tag = READ_SHORT(cptr + LDEF_TAG);
-        result.lines[i].sidedef1 = READ_SHORT(cptr + LDEF_SDEF1);
-        result.lines[i].sidedef2 = READ_SHORT(cptr + LDEF_SDEF2);
+        result.lines[i].sidedef1 =
+            MapSidedefRef(READ_SHORT(cptr + LDEF_SDEF1));
+        result.lines[i].sidedef2 =
+            MapSidedefRef(READ_SHORT(cptr + LDEF_SDEF2));
         cptr += LDEF_SIZE;
         validbytes -= LDEF_SIZE;
     }
@@ -443,8 +466,10 @@ static int WriteLinedefs(const linedef_array_t *linedefs, FILE *fp)
         WRITE_SHORT(cptr + LDEF_FLAGS, linedefs->lines[i].flags);
         WRITE_SHORT(cptr + LDEF_TYPES, linedefs->lines[i].type);
         WRITE_SHORT(cptr + LDEF_TAG, linedefs->lines[i].tag);
-        WRITE_SHORT(cptr + LDEF_SDEF1, linedefs->lines[i].sidedef1);
-        WRITE_SHORT(cptr + LDEF_SDEF2, linedefs->lines[i].sidedef2);
+        WRITE_SHORT(cptr + LDEF_SDEF1,
+                    linedefs->lines[i].sidedef1 & 0xffff);
+        WRITE_SHORT(cptr + LDEF_SDEF2,
+                    linedefs->lines[i].sidedef2 & 0xffff);
         cptr += LDEF_SIZE;
     }
     if (cptr != convbuffer)
