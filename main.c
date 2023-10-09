@@ -198,6 +198,11 @@ static void ParseCommandLine(void)
         {
             allowstack = false;
         }
+        else if (!strcmp(g_argv[i], "-version") || !strcmp(g_argv[i], "-v"))
+        {
+            printf("%s\n", VERSION);
+            exit(0);
+        }
         else if (!strcmp(g_argv[i], "-output") || !strcmp(g_argv[i], "-o"))
         {
             if (i + 1 >= g_argc)
@@ -273,7 +278,7 @@ static void Help(void)
         " -c  Compress WAD     -o <file>  Write output WAD to <file>\n"
         " -u  Uncompress WAD   -q         Quiet mode; suppress normal output\n"
         " -l  List WAD         -nomerge   Disable lump merging\n"
-        "                      -nosquash  Disable graphic squashing\n"
+        " -v  Display version  -nosquash  Disable graphic squashing\n"
         "                      -nopack    Disable sidedef packing\n"
         "                      -nostack   Disable blockmap stacking\n"
         "\n");
