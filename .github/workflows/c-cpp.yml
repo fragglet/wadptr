@@ -21,6 +21,16 @@ jobs:
     - name: quickcheck
       run: make -j quickcheck
 
+  macos_build:
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: make
+      run: make
+    - name: run tests
+      run: make check
+
   windows_crossbuild:
     runs-on: ubuntu-latest
 
