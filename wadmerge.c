@@ -29,7 +29,8 @@ typedef struct {
     uint32_t offset;
 } lump_data_t;
 
-static int CompareFunc(unsigned int index1, unsigned int index2)
+static int CompareFunc(unsigned int index1, unsigned int index2,
+                       const void *callback_data)
 {
     return strncmp(wadentry[index1].name, wadentry[index2].name, 8);
 }
@@ -79,7 +80,7 @@ void RebuildMergedWad(FILE *newwad)
     // is SIDEDEFS lumps which contain large numbers of texture names; placing
     // all within the same location in the WAD file assists the compression
     // algorithm.
-    sorted_map = MakeSortedMap(numentries, CompareFunc);
+    sorted_map = MakeSortedMap(numentries, CompareFunc, NULL);
 
     lumps = ALLOC_ARRAY(lump_data_t, numentries);
     num_lumps = 0;

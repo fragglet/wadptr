@@ -18,9 +18,11 @@
 #ifndef __SORT_H_INCLUDED__
 #define __SORT_H_INCLUDED__
 
-typedef int (*sort_compare_fn_t)(unsigned int index1, unsigned int index2);
+typedef int (*sort_compare_fn_t)(unsigned int index1, unsigned int index2,
+                                 const void *callback_data);
 
 unsigned int *MakeSortedMap(unsigned num_elements,
-                            sort_compare_fn_t compare_fn);
+                            sort_compare_fn_t compare_fn,
+                            const void *callback_data);
 
 #endif
