@@ -420,6 +420,13 @@ static bool Compress(const char *wadname)
             written = true;
         }
 
+        if (!written && wadentry[count].length == 0)
+        {
+            SPAMMY_PRINTF("\tEmpty (0%%).\n");
+            wadentry[count].offset = 0;
+            written = true;
+        }
+
         if (!written)
         {
             SPAMMY_PRINTF("\tStoring ");
@@ -579,6 +586,13 @@ static bool Uncompress(const char *wadname)
             fwrite(tempres, wadentry[count].length, 1, fstream);
             free(tempres);
             SPAMMY_PRINTF(", done\n");
+            written = true;
+        }
+
+        if (!written && wadentry[count].length == 0)
+        {
+            SPAMMY_PRINTF("\tEmpty.\n");
+            wadentry[count].offset = 0;
             written = true;
         }
 
