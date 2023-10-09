@@ -22,6 +22,7 @@
 
 #include "errors.h"
 #include "sidedefs.h"
+#include "sort.h"
 #include "waddir.h"
 #include "wadptr.h"
 
@@ -243,64 +244,97 @@ static sidedef_ref_t AppendNewSidedef(sidedef_array_t *sidedefs,
     return result;
 }
 
-// Check the given array and try to find a sidedef that is the
-// same as the given sidedef. Returns -1 if none is found.
-static sidedef_ref_t FindSidedef(const sidedef_array_t *sidedefs,
-                                 const sidedef_t *sidedef)
+static int CompareSidedefs(const sidedef_t *s1, const sidedef_t *s2)
 {
-    unsigned int i;
+#define CHECK_DIFF(expr) \
+    { int diff = expr; if (diff != 0) { return diff; } }
 
-    if (sidedef->special)
-    {
-        return NO_SIDEDEF;
-    }
+    CHECK_DIFF(strncmp(s1->middle, s2->middle, 8));
+    CHECK_DIFF(strncmp(s1->upper, s2->upper, 8));
+    CHECK_DIFF(strncmp(s1->lower, s2->lower, 8));
+    CHECK_DIFF(s2->special - s1->special);
+    CHECK_DIFF(s2->xoffset - s1->xoffset);
+    CHECK_DIFF(s2->yoffset - s1->yoffset);
+    CHECK_DIFF(s2->sector_ref - s1->sector_ref);
+#undef CHECK_DIFF
 
-    for (i = 0; i < sidedefs->len; i++)
-    {
-        if (!sidedefs->sides[i].special &&
-            !memcmp(&sidedefs->sides[i], sidedef, sizeof(sidedef_t)))
-        {
-            return i;
-        }
-    }
-
-    return NO_SIDEDEF;
+    return 0;
 }
 
-/* Actually pack the sidedefs */
+static int CompareFunc(unsigned int index1, unsigned int index2,
+                       const void *callback_data)
+{
+    const sidedef_array_t *sidedefs = callback_data;
+    return CompareSidedefs(&sidedefs->sides[index1],
+                           &sidedefs->sides[index2]);
+}
+
+#ifdef DEBUG
+static void PrintSidedef(const sidedef_t *s)
+{
+    printf("x: %5d y: %5d s: %7d m: %-8.8s l: %-8.8s: u: %-8.8s sp: %d\n",
+           s->xoffset, s->yoffset, s->sector_ref, s->middle, s->upper,
+           s->lower, s->special);
+}
+#endif
+
 static sidedef_array_t DoPack(const sidedef_array_t *sidedefs)
 {
-    sidedef_array_t result;
-    int count;
-    sidedef_ref_t ns;
+    sidedef_array_t packed;
+    const sidedef_t *sidedef, *prev_sidedef = NULL;
+    unsigned int *map;
+    unsigned int mi;
+    sidedef_ref_t sdi;
 
-    result.size = sidedefs->len;
-    result.sides = ALLOC_ARRAY(sidedef_t, result.size);
-    result.len = 0;
+    // To pack the sidedefs we first create a "sorted map": an array of
+    // all the sidedef numbers, ordered by that sidedef's contents. That
+    // is to say that `sidedefs->sides[map[0]]` <= all other sidedefs,
+    // while `sidedefs->sides[map[sidedefs->len - 1]]` >= than all other
+    // sidedefs. Producing the map is an O(n log n) process, which makes
+    // this much more efficient than earlier versions of this code that
+    // were O(n^2).
+    map = MakeSortedMap(sidedefs->len, CompareFunc, sidedefs);
+
+    packed.size = sidedefs->len;
+    packed.sides = ALLOC_ARRAY(sidedef_t, packed.size);
+    packed.len = 0;
     newsidedef_index = ALLOC_ARRAY(sidedef_ref_t, sidedefs->len);
 
-    for (count = 0; count < sidedefs->len; count++)
+    // Now we iterate over map[], ie. each sidedef in sorted order.
+    // This means that we will encounter any identical sidedefs
+    // consecutively. It is then a matter of comparing the current
+    // sidedef with the sidedef from the previous iteration
+    // (prev_sidedef) to determine whether we need to add a new sidedef
+    // to the packed array, or whether we can just reuse the previous
+    // one.
+    for (mi = 0; mi < sidedefs->len; mi++)
     {
-        if ((count % 100) == 0)
+        if ((mi % 100) == 0)
         {
-            /* time for a percent-done update */
-            PrintProgress(count, sidedefs->len);
+            PrintProgress(mi, sidedefs->len);
         }
-
-        ns = FindSidedef(&result, &sidedefs->sides[count]);
-        if (ns != NO_SIDEDEF)
+        sdi = map[mi];
+        sidedef = &sidedefs->sides[sdi];
+#ifdef DEBUG
+        PrintSidedef(sidedef);
+#endif
+        // Special sidedefs (those attached to special lines) never get merged.
+        if (!sidedef->special && prev_sidedef != NULL && !prev_sidedef->special
+         && CompareSidedefs(sidedef, prev_sidedef) == 0)
         {
-            newsidedef_index[count] = (sidedef_ref_t) ns;
+            newsidedef_index[sdi] = newsidedef_index[map[mi - 1]];
         }
         else
         {
-            /* a sidedef like this does not yet exist: add one */
-            newsidedef_index[count] =
-                AppendNewSidedef(&result, &sidedefs->sides[count]);
+            newsidedef_index[sdi] = packed.len;
+            AppendNewSidedef(&packed, sidedef);
         }
+        prev_sidedef = sidedef;
     }
 
-    return result;
+    free(map);
+
+    return packed;
 }
 
 /* Update the linedefs and save sidedefs */

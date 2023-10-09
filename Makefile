@@ -21,7 +21,7 @@ main.o: main.c blockmap.h graphics.h sidedefs.h errors.h waddir.h \
         wadmerge.h wadptr.h
 sha1.o: sha1.c sha1.h
 sort.o: sort.c sort.h wadptr.h
-sidedefs.o: sidedefs.c sidedefs.h errors.h waddir.h wadptr.h
+sidedefs.o: sidedefs.c sidedefs.h errors.h sort.h waddir.h wadptr.h
 waddir.o: waddir.c waddir.h errors.h wadptr.h
 wadmerge.o: wadmerge.c sha1.h waddir.h errors.h sort.h wadmerge.h wadptr.h
 
