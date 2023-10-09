@@ -44,6 +44,9 @@ windist:
 	rm -f wadptr-$(VERSION).zip
 	zip -X -j -r wadptr-$(VERSION).zip dist
 
+check:
+	./run_tests.sh
+
 quickcheck: $(EXECUTABLE)
 	git submodule update --checkout
 	make -C quickcheck clean
@@ -54,5 +57,5 @@ quickcheck: $(EXECUTABLE)
 	./wadptr -q -u quickcheck/extract/*.wad
 	make -C quickcheck check
 
-.PHONY: install clean dist quickcheck
+.PHONY: install clean dist quickcheck check
 

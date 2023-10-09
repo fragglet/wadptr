@@ -17,7 +17,7 @@ jobs:
     - name: make
       run: make
     - name: run tests
-      run: ./run_tests.sh
+      run: make check
     - name: quickcheck
       run: make -j quickcheck
 
