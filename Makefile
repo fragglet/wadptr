@@ -8,9 +8,6 @@ CFLAGS = -Wall -O3
 
 all: $(EXECUTABLE)
 
-$(EXECUTABLE): $(OBJECTS)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJECTS)
-
 %.o: %.c
 	$(CC) $(CFLAGS) -o $@ -c $<
 
@@ -24,6 +21,16 @@ sort.o: sort.c sort.h wadptr.h
 sidedefs.o: sidedefs.c sidedefs.h errors.h sort.h waddir.h wadptr.h
 waddir.o: waddir.c waddir.h errors.h wadptr.h
 wadmerge.o: wadmerge.c sha1.h waddir.h errors.h sort.h wadmerge.h wadptr.h
+
+ifdef WINDRES
+resource.o: resource.rc
+	$(WINDRES) $< -o $@
+
+OBJECTS += resource.o
+endif
+
+$(EXECUTABLE): $(OBJECTS)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJECTS)
 
 install:
 	install -D wadptr $(DESTDIR)$(PREFIX)/bin/wadptr
