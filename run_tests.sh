@@ -21,6 +21,9 @@ deutex_extract() {
     local dir=$2
     rm -rf "$dir"
     mkdir -p "$dir"
+    # We set up the bootstrap wad as a fake IWAD to make deutex happy.
+    cp bootstrap.wad "$dir/doom2.wad"
+    export -n DOOMWADDIR DOOMWADPATH
     pushd "$dir"
     if ! deutex $DEUTEX_OPTS -xtract "$fn"; then
         echo "deutex exited with status $? when extracting $fn"
