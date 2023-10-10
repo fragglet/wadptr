@@ -229,8 +229,8 @@ bool S_IsGraphic(int entrynum)
     height = READ_SHORT(graphic + 2);
     columns = graphic + 8;
 
-    if (width > 320 || height > 200 || width <= 0 || height <= 0
-     || 8 + width * 4 > wadentry[entrynum].length)
+    if (width > 320 || height > 200 || width <= 0 || height <= 0 ||
+        8 + width * 4 > wadentry[entrynum].length)
     {
         free(graphic);
         return false;
