@@ -86,13 +86,14 @@ uint8_t *S_Squash(int entrynum)
             suffix_ptr = columns[x2] + colsize[x2] - colsize[x];
             if (!memcmp(suffix_ptr, columns[x], colsize[x]))
             {
-                memcpy(newres + 8 + x * 4, newres + 8 + x2 * 4, 4);
+                WRITE_LONG(newres + 8 + 4 * x, READ_LONG(newres + 8 + 4 * x2) +
+                                                   colsize[x2] - colsize[x]);
                 break;
             }
         }
 
         // Not found, append new column.
-        if (x2 >= x)
+        if (unsquash_mode || x2 >= x)
         {
             WRITE_LONG(newres + 8 + 4 * x, newres_len);
             AppendBytes(&newres, &newres_len, &newres_size, columns[x],
