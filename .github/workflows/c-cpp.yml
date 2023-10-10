@@ -46,7 +46,8 @@ jobs:
         sudo apt update
         sudo apt -q install mingw-w64 zip pandoc
     - name: make
-      run: make -j8 CC=x86_64-w64-mingw32-gcc
+      run: make -j CC=x86_64-w64-mingw32-gcc \
+                   WINDRES=x86_64-w64-mingw32-windres
     - name: make package
       run: |
         make windist VERSION=${{steps.version.outputs.VERSION}} \
