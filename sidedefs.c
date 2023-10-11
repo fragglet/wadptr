@@ -380,7 +380,6 @@ static sidedef_array_t RebuildSidedefs(linedef_array_t *linedefs,
                                        const sidedef_array_t *sidedefs)
 {
     sidedef_array_t result;
-    linedef_t *ld;
     bool is_special;
     int count;
 
@@ -390,7 +389,7 @@ static sidedef_array_t RebuildSidedefs(linedef_array_t *linedefs,
 
     for (count = 0; count < linedefs->len; count++)
     {
-        ld = &linedefs->lines[count];
+        linedef_t *ld = &linedefs->lines[count];
         // Special lines always get their own dedicated sidedefs, because:
         //  * If a scrolling linedef shares a sidedef with another linedef,
         //    it will make that other linedef scroll, or if multiple
@@ -404,20 +403,18 @@ static sidedef_array_t RebuildSidedefs(linedef_array_t *linedefs,
         // own new linedef types. For simplicity we just exclude sidedef
         // packing for all special lines.
         is_special = ld->type != 0;
-        if (linedefs->lines[count].sidedef1 != NO_SIDEDEF)
+        if (ld->sidedef1 != NO_SIDEDEF)
         {
-            int sdi = linedefs->lines[count].sidedef1;
-            CheckSidedefIndex(count, sdi, sidedefs->len);
-            linedefs->lines[count].sidedef1 =
-                AppendNewSidedef(&result, &sidedefs->sides[sdi]);
+            CheckSidedefIndex(count, ld->sidedef1, sidedefs->len);
+            ld->sidedef1 =
+                AppendNewSidedef(&result, &sidedefs->sides[ld->sidedef1]);
             result.sides[sdi].special = is_special;
         }
-        if (linedefs->lines[count].sidedef2 != NO_SIDEDEF)
+        if (ld->sidedef2 != NO_SIDEDEF)
         {
-            int sdi = linedefs->lines[count].sidedef2;
-            CheckSidedefIndex(count, sdi, sidedefs->len);
-            linedefs->lines[count].sidedef2 =
-                AppendNewSidedef(&result, &sidedefs->sides[sdi]);
+            CheckSidedefIndex(count, ld->sidedef2, sidedefs->len);
+            ld->sidedef2 =
+                AppendNewSidedef(&result, &sidedefs->sides[ld->sidedef2]);
             result.sides[sdi].special = is_special;
         }
     }
