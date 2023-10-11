@@ -408,14 +408,14 @@ static sidedef_array_t RebuildSidedefs(linedef_array_t *linedefs,
             CheckSidedefIndex(count, ld->sidedef1, sidedefs->len);
             ld->sidedef1 =
                 AppendNewSidedef(&result, &sidedefs->sides[ld->sidedef1]);
-            result.sides[sdi].special = is_special;
+            result.sides[ld->sidedef1].special = is_special;
         }
         if (ld->sidedef2 != NO_SIDEDEF)
         {
             CheckSidedefIndex(count, ld->sidedef2, sidedefs->len);
             ld->sidedef2 =
                 AppendNewSidedef(&result, &sidedefs->sides[ld->sidedef2]);
-            result.sides[sdi].special = is_special;
+            result.sides[ld->sidedef2].special = is_special;
         }
     }
 
