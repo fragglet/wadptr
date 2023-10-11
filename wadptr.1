@@ -114,6 +114,19 @@ blockmap lumps further, particularly for large levels that run up
 against the blockmap size limit. If you need this, check out ZokumBSP:
 <https://github.com/zokum-no/zokumbsp>
 .PP
+When packing sidedefs, linedefs with special types always get their own
+unique sidedefs that are not shared with other linedefs. This is to
+avoid problems with animated walls (including scrolling walls and
+switches). wadptr's behavior is maybe excessively cautious in that it
+applies to any and all special lines, but since only very few linedefs
+in a typical level are special lines this is judged to be okay.
+.PP
+Some levels are so large that it is impossible to unpack their sidedefs
+or unstack their blockmap without exceeding the limits of the Doom level
+format. If this happens when uncompressing a level, "failed" will be
+shown in the program output for that lump and the original (compressed)
+lump will be copied into the output file unchanged.
+.PP
 Some level editors get confused by packed sidedefs. If your level editor
 has problems, use \fB-u\fR to uncompress the file before editing.
 .SH EXAMPLES
