@@ -35,8 +35,8 @@
 #define SDEF_XOFF   0
 #define SDEF_YOFF   2
 #define SDEF_UPPER  4
-#define SDEF_MIDDLE 12
-#define SDEF_LOWER  20
+#define SDEF_LOWER  12
+#define SDEF_MIDDLE 20
 #define SDEF_SECTOR 28
 #define SDEF_SIZE   30
 
