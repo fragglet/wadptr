@@ -5,6 +5,7 @@ OBJECTS = main.o waddir.o errors.o wadmerge.o sort.o \
 DELETE = rm -f
 STRIP = strip
 CFLAGS = -Wall -O3
+PANDOC_FLAGS = -s --template=default.html5 -H style.html
 
 all: $(EXECUTABLE)
 
@@ -45,9 +46,9 @@ windist:
 	mkdir dist
 	cp wadptr.exe dist/
 	$(STRIP) dist/wadptr.exe
-	pandoc -f gfm -o dist/NEWS.html -s NEWS.md
-	pandoc -f gfm -o dist/COPYING.html -s COPYING.md
-	pandoc --template=default.html5 -f man wadptr.1 -o dist/wadptr.html
+	pandoc $(PANDOC_FLAGS) -f gfm -o dist/NEWS.html -s NEWS.md
+	pandoc $(PANDOC_FLAGS) -f gfm -o dist/COPYING.html -s COPYING.md
+	pandoc $(PANDOC_FLAGS) -f man wadptr.1 -o dist/wadptr.html
 	rm -f wadptr-$(VERSION).zip
 	zip -X -j -r wadptr-$(VERSION).zip dist
 
