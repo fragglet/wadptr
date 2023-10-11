@@ -161,66 +161,74 @@ static void ParseCommandLine(void)
 
     for (i = 1; i < g_argc; i++)
     {
-        if (!strcmp(g_argv[i], "-help") || !strcmp(g_argv[i], "-h"))
+        const char *arg = g_argv[i];
+
+        // We allow GNU-style (eg. --list) by ignoring the first '-':
+        if (arg[0] == '-' && arg[1] == '-')
+        {
+            ++arg;
+        }
+
+        if (!strcmp(arg, "-help") || !strcmp(arg, "-h"))
         {
             action = HELP;
             break;
         }
-        else if (!strcmp(g_argv[i], "-list") || !strcmp(g_argv[i], "-l"))
+        else if (!strcmp(arg, "-list") || !strcmp(arg, "-l"))
         {
             action = LIST;
         }
-        else if (!strcmp(g_argv[i], "-compress") || !strcmp(g_argv[i], "-c"))
+        else if (!strcmp(arg, "-compress") || !strcmp(arg, "-c"))
         {
             action = COMPRESS;
         }
-        else if (!strcmp(g_argv[i], "-uncompress") || !strcmp(g_argv[i], "-u"))
+        else if (!strcmp(arg, "-uncompress") || !strcmp(arg, "-u"))
         {
             action = UNCOMPRESS;
         }
-        else if (!strcmp(g_argv[i], "-quiet") || !strcmp(g_argv[i], "-q"))
+        else if (!strcmp(arg, "-quiet") || !strcmp(arg, "-q"))
         {
             quiet_mode = true;
         }
-        else if (!strcmp(g_argv[i], "-nomerge"))
+        else if (!strcmp(arg, "-nomerge"))
         {
             allowmerge = false;
         }
-        else if (!strcmp(g_argv[i], "-nosquash"))
+        else if (!strcmp(arg, "-nosquash"))
         {
             allowsquash = false;
         }
-        else if (!strcmp(g_argv[i], "-nopack"))
+        else if (!strcmp(arg, "-nopack"))
         {
             allowpack = false;
         }
-        else if (!strcmp(g_argv[i], "-nostack"))
+        else if (!strcmp(arg, "-nostack"))
         {
             allowstack = false;
         }
-        else if (!strcmp(g_argv[i], "-version") || !strcmp(g_argv[i], "-v"))
+        else if (!strcmp(arg, "-version") || !strcmp(arg, "-v"))
         {
             printf("%s\n", VERSION);
             exit(0);
         }
-        else if (!strcmp(g_argv[i], "-output") || !strcmp(g_argv[i], "-o"))
+        else if (!strcmp(arg, "-output") || !strcmp(arg, "-o"))
         {
             if (i + 1 >= g_argc)
             {
                 ErrorExit("The -o argument requires a filename "
                           "to be specified.");
             }
-            outputwad = g_argv[i];
+            outputwad = arg;
             ++i;
         }
-        else if (g_argv[i][0] != '-')
+        else if (arg[0] != '-')
         {
             filelist_index = i;
             break;
         }
         else
         {
-            ErrorExit("Invalid command line argument '%s'.", g_argv[i]);
+            ErrorExit("Invalid command line argument '%s'.", arg);
         }
     }
 
