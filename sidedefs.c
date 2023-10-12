@@ -26,6 +26,10 @@
 #include "waddir.h"
 #include "wadptr.h"
 
+// Vanilla sidedefs count limit.
+// TODO: Support the Boom extended format.
+#define MAX_SIDEDEFS  0x7fff
+
 #define NO_SIDEDEF ((sidedef_ref_t) UINT32_MAX)
 
 /*
@@ -113,7 +117,7 @@ static sidedef_ref_t *newsidedef_index; /* maps old sidedef number to new */
    pack that level. The new sidedef and linedef lumps are pointed to by
    sidedefres and linedefres. These must be free()d by other functions
    when they are no longer needed, as P_Pack does not do this. */
-void P_Pack(int sidedef_num)
+bool P_Pack(int sidedef_num)
 {
     sidedef_array_t sidedefs, sidedefs2;
 
@@ -126,12 +130,24 @@ void P_Pack(int sidedef_num)
     linedefs_result = ReadLinedefs(linedefnum);
 
     sidedefs2 = RebuildSidedefs(&linedefs_result, &sidedefs);
-    free(sidedefs.sides);
 
     sidedefs_result = DoPack(&sidedefs2);
     free(sidedefs2.sides);
 
+    // TODO: Check that the SIDEDEFS lump is never larger than the
+    // original one?
+
+    // We never generate a corrupt (overflowed) SIDEDEFS list.
+    if (sidedefs_result.len > MAX_SIDEDEFS)
+    {
+        free(sidedefs_result.sides);
+        sidedefs_result = sidedefs;
+        return false;
+    }
+
+    free(sidedefs.sides);
     RemapLinedefs(&linedefs_result); /* update sidedef indexes */
+    return true;
 }
 
 size_t P_WriteLinedefs(FILE *fstream)
@@ -150,7 +166,7 @@ size_t P_WriteSidedefs(FILE *fstream)
 
 /* Same thing, in reverse. Saves the new sidedef and linedef lumps to
    sidedefres and linedefres. */
-void P_Unpack(int sidedef_num)
+bool P_Unpack(int sidedef_num)
 {
     sidedef_array_t sidedefs;
 
@@ -163,10 +179,21 @@ void P_Unpack(int sidedef_num)
 
     sidedefs = ReadSidedefs(sidedefnum);
     sidedefs_result = RebuildSidedefs(&linedefs_result, &sidedefs);
-    free(sidedefs.sides);
 
-    // TODO: We should catch the case where unpacking would exceed the
-    // vanilla SIDEDEFS limit.
+    // It is possible that the decompressed sidedefs list overflows the
+    // limits of the SIDEDEFS on-disk format. We never want to save a
+    // corrupted sidedefs list.
+    // TODO: Some source ports (eg. Boom compatible) support up to 64K
+    // sidedefs, and we should support this as an option.
+    if (sidedefs_result.len > MAX_SIDEDEFS)
+    {
+        free(sidedefs_result.sides);
+        sidedefs_result = sidedefs;
+        return false;
+    }
+
+    free(sidedefs.sides);
+    return true;
 }
 
 /* Sanity check a linedef's sidedef reference is valid */

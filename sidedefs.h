@@ -25,8 +25,8 @@
 
 // The sidedef packing functions take the index of a SIDEDEFS lump to pack,
 // and assume that the preceding lump is the LINEDEFS lump.
-void P_Pack(int sidedef_num);
-void P_Unpack(int sidedef_num);
+bool P_Pack(int sidedef_num);
+bool P_Unpack(int sidedef_num);
 bool P_IsPacked(int sidedef_num);
 
 size_t P_WriteLinedefs(FILE *fstream);
