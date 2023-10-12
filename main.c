@@ -366,12 +366,13 @@ static bool Compress(const char *wadname)
             }
             else if (IsSidedefs(count))
             {
+                bool success;
+
                 SPAMMY_PRINTF("\tPacking");
                 fflush(stdout);
                 findshrink = wadentry[count].length;
 
-                /* pack the level */
-                P_Pack(count);
+                success = P_Pack(count);
 
                 wadentry[count - 1].offset = ftell(fstream);
                 wadentry[count - 1].length = P_WriteLinedefs(fstream);
@@ -382,7 +383,15 @@ static bool Compress(const char *wadname)
                 written = true;
 
                 findshrink = FindPerc(findshrink, wadentry[count].length);
-                SPAMMY_PRINTF(" (%i%%), done.\n", findshrink);
+                if (success)
+                {
+                    SPAMMY_PRINTF(" (%i%%), done.\n", findshrink);
+                }
+                else
+                {
+                    // TODO: Print info message if compression failed.
+                    SPAMMY_PRINTF(" (0%%), failed.\n");
+                }
             }
         }
 
@@ -506,7 +515,7 @@ static bool Uncompress(const char *wadname)
     char tempstr[50], *tempwad_name;
     FILE *fstream;
     uint8_t *tempres;
-    bool written, blockmap_failures = false;
+    bool written, blockmap_failures = false, sidedefs_failures = false;
     long fileloc;
     int count;
 
@@ -547,10 +556,12 @@ static bool Uncompress(const char *wadname)
             }
             else if (IsSidedefs(count))
             {
+                bool success;
+
                 SPAMMY_PRINTF("\tUnpacking");
                 fflush(stdout);
 
-                P_Unpack(count);
+                success = P_Unpack(count);
 
                 wadentry[count - 1].offset = ftell(fstream);
                 wadentry[count - 1].length = P_WriteLinedefs(fstream);
@@ -558,7 +569,15 @@ static bool Uncompress(const char *wadname)
                 wadentry[count].offset = ftell(fstream);
                 wadentry[count].length = P_WriteSidedefs(fstream);
 
-                SPAMMY_PRINTF(", done.\n");
+                if (success)
+                {
+                    SPAMMY_PRINTF(", done.\n");
+                }
+                else
+                {
+                    SPAMMY_PRINTF(", failed.\n");
+                    sidedefs_failures = true;
+                }
                 written = true;
             }
         }
@@ -640,9 +659,15 @@ static bool Uncompress(const char *wadname)
 
     if (blockmap_failures)
     {
-        SPAMMY_PRINTF("Some BLOCKMAP lumps could not be unstacked because "
+        SPAMMY_PRINTF("\nSome BLOCKMAP lumps could not be unstacked because "
                       "the decompressed\nversion would exceed the vanilla "
                       "BLOCKMAP size limit.\n");
+    }
+    if (sidedefs_failures)
+    {
+        SPAMMY_PRINTF("\nSome SIDEDEFS lumps could not be unpacked because "
+                      "the decompressed\nversion would exceed the vanilla "
+                      "sidedef count limit.\n");
     }
 
     return true;
