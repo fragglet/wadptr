@@ -6,6 +6,13 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        include:
+         - makeopts: ""
+         - makeopts: "CFLAGS=-fsanitize=address"
+         - makeopts: "CFLAGS=-fsanitize=undefined"
+
     steps:
     - uses: actions/checkout@v3
       with:
@@ -15,11 +22,11 @@ jobs:
         sudo apt update
         sudo apt -q install chocolate-doom deutex
     - name: make
-      run: make
+      run: make -j ${{ matrix.makeopts }}
     - name: run tests
-      run: make check
+      run: make -j check ${{ matrix.makeopts }}
     - name: quickcheck
-      run: make -j quickcheck
+      run: make -j quickcheck ${{ matrix.makeopts }}
 
   macos_build:
     runs-on: macos-latest
