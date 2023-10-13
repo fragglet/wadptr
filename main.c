@@ -218,7 +218,11 @@ static void ParseCommandLine(void)
                 ErrorExit("The -o argument requires a filename "
                           "to be specified.");
             }
-            outputwad = arg;
+            if (outputwad != NULL)
+            {
+                ErrorExit("The -o argument can only be specified once.");
+            }
+            outputwad = g_argv[i + 1];
             ++i;
         }
         else if (arg[0] != '-')

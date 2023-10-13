@@ -41,9 +41,7 @@ test_wad_file() {
         return 1
     fi
 
-    # TODO: Fix the -o option.
-    cp $fn $wd/compr2.wad
-    if ! ./wadptr -c $wd/compr2.wad || ! diff $fn $wd/compr2.wad; then
+    if ! ./wadptr -o $wd/compr2.wad -c $fn || ! diff $fn $wd/compr2.wad; then
         echo "WAD differs after compression a second time"
         return 1
     fi
@@ -60,8 +58,8 @@ test_wad_file() {
         return 1
     fi
 
-    cp $fn $wd/uncompr2.wad
-    if ! ./wadptr -u $wd/uncompr2.wad || ! diff $fn $wd/uncompr2.wad; then
+    if ! ./wadptr -o $wd/uncompr2.wad -u $fn ||
+       ! diff $fn $wd/uncompr2.wad; then
         echo "WAD differs after decompression a second time"
         return 1
     fi
