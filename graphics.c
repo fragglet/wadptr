@@ -212,7 +212,7 @@ bool S_IsGraphic(int entrynum)
         return false;
     if (IsLevelEntry(s))
         return false;
-    if (s[0] == 'D' && (s[1] == '_' || s[1] == 'S'))
+    if (!strncmp(s, "DS", 2) || !strncmp(s, "DP", 2) || !strncmp(s, "D_", 2))
     {
         /* sfx or music */
         return false;
