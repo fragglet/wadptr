@@ -19,6 +19,7 @@
 #include <string.h>
 
 #include "blockmap.h"
+#include "sort.h"
 #include "waddir.h"
 #include "wadptr.h"
 
@@ -216,10 +217,19 @@ bool B_Unstack(int lumpnum)
     return true;
 }
 
+static int CompareBlockOffsets(unsigned int i1, unsigned int i2,
+                               const void *callback_data)
+{
+    const uint16_t *block_offsets = callback_data;
+    return (int) block_offsets[i2] - (int) block_offsets[i1];
+}
+
 bool B_IsStacked(int lumpnum)
 {
+    unsigned int *sorted_map;
     uint16_t *block_offsets;
-    int i, j;
+    bool result = false;
+    int i;
 
     blockmap_t blockmap = ReadBlockmap(lumpnum, wadfp);
     if (blockmap.len == 0)
@@ -229,21 +239,21 @@ bool B_IsStacked(int lumpnum)
     }
 
     block_offsets = &blockmap.elements[4];
+    sorted_map = MakeSortedMap(blockmap.num_blocks, CompareBlockOffsets,
+                               block_offsets);
 
-    for (i = 0; i < blockmap.num_blocks; i++)
+    for (i = 1; i < blockmap.num_blocks; i++)
     {
-        for (j = 0; j < i; j++)
+        if (block_offsets[sorted_map[i]] == block_offsets[sorted_map[i - 1]])
         {
-            if (block_offsets[i] == block_offsets[j])
-            {
-                free(blockmap.elements);
-                return true;
-            }
+            result = true;
+            break;
         }
     }
 
+    free(sorted_map);
     free(blockmap.elements);
-    return false;
+    return result;
 }
 
 size_t B_WriteBlockmap(FILE *fstream)
