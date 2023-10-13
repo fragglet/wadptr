@@ -97,8 +97,10 @@ typedef struct {
 static void CheckLumpSizes(void);
 static sidedef_array_t DoPack(const sidedef_array_t *sidedefs);
 static void RemapLinedefs(linedef_array_t *linedefs);
-static sidedef_array_t RebuildSidedefs(linedef_array_t *linedefs,
-                                       const sidedef_array_t *sidedefs);
+static void RebuildSidedefs(const linedef_array_t *linedefs,
+                            const sidedef_array_t *sidedefs,
+                            linedef_array_t *ldresult,
+                            sidedef_array_t *sdresult);
 
 static linedef_array_t ReadLinedefs(int lumpnum);
 static sidedef_array_t ReadSidedefs(int lumpnum);
@@ -119,20 +121,22 @@ static sidedef_ref_t *newsidedef_index; /* maps old sidedef number to new */
    when they are no longer needed, as P_Pack does not do this. */
 bool P_Pack(int sidedef_num)
 {
-    sidedef_array_t sidedefs, sidedefs2;
+    sidedef_array_t orig_sidedefs, unpacked_sidedefs;
+    linedef_array_t orig_linedefs;
 
     linedefnum = sidedef_num - 1;
     sidedefnum = sidedef_num;
 
     CheckLumpSizes();
 
-    sidedefs = ReadSidedefs(sidedefnum);
-    linedefs_result = ReadLinedefs(linedefnum);
+    orig_sidedefs = ReadSidedefs(sidedefnum);
+    orig_linedefs = ReadLinedefs(linedefnum);
 
-    sidedefs2 = RebuildSidedefs(&linedefs_result, &sidedefs);
+    RebuildSidedefs(&orig_linedefs, &orig_sidedefs,
+                    &linedefs_result, &unpacked_sidedefs);
 
-    sidedefs_result = DoPack(&sidedefs2);
-    free(sidedefs2.sides);
+    sidedefs_result = DoPack(&unpacked_sidedefs);
+    free(unpacked_sidedefs.sides);
 
     // TODO: Check that the SIDEDEFS lump is never larger than the
     // original one?
@@ -141,11 +145,14 @@ bool P_Pack(int sidedef_num)
     if (sidedefs_result.len > MAX_SIDEDEFS)
     {
         free(sidedefs_result.sides);
-        sidedefs_result = sidedefs;
+        sidedefs_result = orig_sidedefs;
+        free(linedefs_result.lines);
+        linedefs_result = orig_linedefs;
         return false;
     }
 
-    free(sidedefs.sides);
+    free(orig_sidedefs.sides);
+    free(orig_linedefs.lines);
     RemapLinedefs(&linedefs_result); /* update sidedef indexes */
     return true;
 }
@@ -168,17 +175,19 @@ size_t P_WriteSidedefs(FILE *fstream)
    sidedefres and linedefres. */
 bool P_Unpack(int sidedef_num)
 {
-    sidedef_array_t sidedefs;
+    linedef_array_t orig_linedefs;
+    sidedef_array_t orig_sidedefs;
 
     linedefnum = sidedef_num - 1;
     sidedefnum = sidedef_num;
 
     CheckLumpSizes();
 
-    linedefs_result = ReadLinedefs(linedefnum);
+    orig_linedefs = ReadLinedefs(linedefnum);
+    orig_sidedefs = ReadSidedefs(sidedefnum);
 
-    sidedefs = ReadSidedefs(sidedefnum);
-    sidedefs_result = RebuildSidedefs(&linedefs_result, &sidedefs);
+    RebuildSidedefs(&orig_linedefs, &orig_sidedefs,
+                    &linedefs_result, &sidedefs_result);
 
     // It is possible that the decompressed sidedefs list overflows the
     // limits of the SIDEDEFS on-disk format. We never want to save a
@@ -188,11 +197,14 @@ bool P_Unpack(int sidedef_num)
     if (sidedefs_result.len > MAX_SIDEDEFS)
     {
         free(sidedefs_result.sides);
-        sidedefs_result = sidedefs;
+        sidedefs_result = orig_sidedefs;
+        free(linedefs_result.lines);
+        linedefs_result = orig_linedefs;
         return false;
     }
 
-    free(sidedefs.sides);
+    free(orig_sidedefs.sides);
+    free(orig_linedefs.lines);
     return true;
 }
 
@@ -403,20 +415,26 @@ static void CheckLumpSizes(void)
     }
 }
 
-static sidedef_array_t RebuildSidedefs(linedef_array_t *linedefs,
-                                       const sidedef_array_t *sidedefs)
+static void RebuildSidedefs(const linedef_array_t *linedefs,
+                            const sidedef_array_t *sidedefs,
+                            linedef_array_t *ldresult,
+                            sidedef_array_t *sdresult)
 {
-    sidedef_array_t result;
     bool is_special;
     int count;
 
-    result.size = sidedefs->len;
-    result.sides = ALLOC_ARRAY(sidedef_t, result.size);
-    result.len = 0;
+    ldresult->len = linedefs->len;
+    ldresult->lines = ALLOC_ARRAY(linedef_t, ldresult->len);
+    memcpy(ldresult->lines, linedefs->lines,
+           sizeof(linedef_t) * linedefs->len);
+
+    sdresult->size = sidedefs->len;
+    sdresult->sides = ALLOC_ARRAY(sidedef_t, sdresult->size);
+    sdresult->len = 0;
 
     for (count = 0; count < linedefs->len; count++)
     {
-        linedef_t *ld = &linedefs->lines[count];
+        linedef_t *ld = &ldresult->lines[count];
         // Special lines always get their own dedicated sidedefs, because:
         //  * If a scrolling linedef shares a sidedef with another linedef,
         //    it will make that other linedef scroll, or if multiple
@@ -434,19 +452,17 @@ static sidedef_array_t RebuildSidedefs(linedef_array_t *linedefs,
         {
             CheckSidedefIndex(count, ld->sidedef1, sidedefs->len);
             ld->sidedef1 =
-                AppendNewSidedef(&result, &sidedefs->sides[ld->sidedef1]);
-            result.sides[ld->sidedef1].special = is_special;
+                AppendNewSidedef(sdresult, &sidedefs->sides[ld->sidedef1]);
+            sdresult->sides[ld->sidedef1].special = is_special;
         }
         if (ld->sidedef2 != NO_SIDEDEF)
         {
             CheckSidedefIndex(count, ld->sidedef2, sidedefs->len);
             ld->sidedef2 =
-                AppendNewSidedef(&result, &sidedefs->sides[ld->sidedef2]);
-            result.sides[ld->sidedef2].special = is_special;
+                AppendNewSidedef(sdresult, &sidedefs->sides[ld->sidedef2]);
+            sdresult->sides[ld->sidedef2].special = is_special;
         }
     }
-
-    return result;
 }
 
 /*

@@ -7,3 +7,5 @@ run tests. Included here are:
   which checks that we handle such WADs appropriately.
 * Eternal Doom,  which is similarly notorious for having very large
   levels.
+* `evimap32.wad` is MAP32 from [Eviternity](https://doomwiki.org/wiki/Eviternity),
+  an exceedingly large level.
