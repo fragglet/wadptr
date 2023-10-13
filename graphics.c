@@ -20,6 +20,7 @@
 #include <string.h>
 
 #include "graphics.h"
+#include "sort.h"
 #include "waddir.h"
 #include "wadptr.h"
 
@@ -47,6 +48,12 @@ static void AppendBytes(uint8_t **ptr, size_t *len, size_t *sz,
     *len += newdata_len;
 }
 
+static int LargestColumnCompare(unsigned int index1, unsigned int index2,
+                                const void *callback_data)
+{
+    return colsize[index2] - colsize[index1];
+}
+
 /* Squashes a graphic. Call with the lump name - eg. S_Squash("TITLEPIC");
    returns a pointer to the new(compressed) lump. This must be free()d when
    it is no longer needed, as S_Squash() does not do this itself. */
@@ -54,7 +61,8 @@ uint8_t *S_Squash(int entrynum)
 {
     uint8_t *oldlump, *newres;
     size_t newres_len, newres_size;
-    int x, x2;
+    unsigned int *sorted_map;
+    int i, i2;
 
     if (!S_IsGraphic(entrynum))
     {
@@ -64,6 +72,11 @@ uint8_t *S_Squash(int entrynum)
 
     ParseLump(oldlump, wadentry[entrynum].length);
 
+    // We build the sorted map so that we iterate over columns by order of
+    // decreasing size; this maximizes the chance of being able to make a
+    // prefix match against previous (larger) columns.
+    sorted_map = MakeSortedMap(width, LargestColumnCompare, NULL);
+
     newres_len = 8 + (width * 4);
     newres_size = 8 + (width * 4);
     newres = ALLOC_ARRAY(uint8_t, newres_size);
@@ -71,11 +84,16 @@ uint8_t *S_Squash(int entrynum)
     // Copy header
     memcpy(newres, oldlump, 8);
 
-    for (x = 0; x < width; x++)
+    for (i = 0; i < width; i++)
     {
-        for (x2 = 0; !unsquash_mode && x2 < x; x2++)
+        int x = sorted_map[i];
+#ifdef DEBUG
+        printf("column: %4d len: %4d\n", sorted_map[i], colsize[sorted_map[i]]);
+#endif
+        for (i2 = 0; !unsquash_mode && i2 < i; i2++)
         {
             uint8_t *suffix_ptr;
+            int x2 = sorted_map[i2];
 
             if (colsize[x2] < colsize[x])
             {
@@ -86,6 +104,9 @@ uint8_t *S_Squash(int entrynum)
             suffix_ptr = columns[x2] + colsize[x2] - colsize[x];
             if (!memcmp(suffix_ptr, columns[x], colsize[x]))
             {
+#ifdef DEBUG
+                printf("\tmatches %4d\n", x2);
+#endif
                 WRITE_LONG(newres + 8 + 4 * x, READ_LONG(newres + 8 + 4 * x2) +
                                                    colsize[x2] - colsize[x]);
                 break;
@@ -93,13 +114,15 @@ uint8_t *S_Squash(int entrynum)
         }
 
         // Not found, append new column.
-        if (unsquash_mode || x2 >= x)
+        if (unsquash_mode || i2 >= i)
         {
             WRITE_LONG(newres + 8 + 4 * x, newres_len);
             AppendBytes(&newres, &newres_len, &newres_size, columns[x],
                         colsize[x]);
         }
     }
+
+    free(sorted_map);
 
     if (!unsquash_mode && newres_len > wadentry[entrynum].length)
     {
