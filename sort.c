@@ -15,6 +15,7 @@
  * Generic code for sorting data.
  */
 
+#include <stdbool.h>
 #include <stdlib.h>
 
 #include "sort.h"
@@ -26,6 +27,7 @@ static void SortMapElements(unsigned int *elements, size_t num_elements,
 {
     unsigned int pivot, pivot_index;
     size_t arr1_len;
+    bool all_equal = true;
     int i;
 
     if (num_elements <= 1)
@@ -42,17 +44,26 @@ static void SortMapElements(unsigned int *elements, size_t num_elements,
 
     for (i = 0, arr1_len = 0; i < num_elements - 1; i++)
     {
-        if (compare_fn(elements[i], pivot, callback_data) < 0)
+        int cmp = compare_fn(elements[i], pivot, callback_data);
+        if (cmp < 0)
         {
             unsigned int tmp = elements[i];
             elements[i] = elements[arr1_len];
             elements[arr1_len] = tmp;
             ++arr1_len;
         }
+        all_equal = all_equal && cmp == 0;
     }
 
     elements[num_elements - 1] = elements[arr1_len];
     elements[arr1_len] = pivot;
+
+    // We catch the corner case where every element is exactly equal to
+    // the pivot, in which case no recursion is necessary.
+    if (all_equal)
+    {
+        return;
+    }
 
     SortMapElements(elements, arr1_len, compare_fn, callback_data);
     SortMapElements(&elements[arr1_len + 1], num_elements - arr1_len - 1,
