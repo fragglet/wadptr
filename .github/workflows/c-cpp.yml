@@ -44,7 +44,7 @@ jobs:
     #  - name: run tests
     #      run: make check
     - name: quickcheck
-      run: make -j quickcheck
+      run: make -j quick check SOURCE_PORT=chocolate-doom
 
   windows_crossbuild:
     runs-on: ubuntu-latest
