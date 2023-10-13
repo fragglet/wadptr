@@ -33,11 +33,18 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+      with:
+        submodules: true
+    - name: Install dependencies
+      run: |
+        brew install chocolate-doom
     - name: make
       run: make
-# needs deutex
-# - name: run tests
-#     run: make check
+    #  needs deutex
+    #  - name: run tests
+    #      run: make check
+    - name: quickcheck
+      run: make -j quickcheck
 
   windows_crossbuild:
     runs-on: ubuntu-latest
