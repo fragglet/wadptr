@@ -28,7 +28,7 @@
 
 // Vanilla sidedefs count limit.
 // TODO: Support the Boom extended format.
-#define MAX_SIDEDEFS  0x7fff
+#define MAX_SIDEDEFS 0x7fff
 
 #define NO_SIDEDEF ((sidedef_ref_t) UINT32_MAX)
 
@@ -132,8 +132,8 @@ bool P_Pack(int sidedef_num)
     orig_sidedefs = ReadSidedefs(sidedefnum);
     orig_linedefs = ReadLinedefs(linedefnum);
 
-    RebuildSidedefs(&orig_linedefs, &orig_sidedefs,
-                    &linedefs_result, &unpacked_sidedefs);
+    RebuildSidedefs(&orig_linedefs, &orig_sidedefs, &linedefs_result,
+                    &unpacked_sidedefs);
 
     sidedefs_result = DoPack(&unpacked_sidedefs);
     free(unpacked_sidedefs.sides);
@@ -186,8 +186,8 @@ bool P_Unpack(int sidedef_num)
     orig_linedefs = ReadLinedefs(linedefnum);
     orig_sidedefs = ReadSidedefs(sidedefnum);
 
-    RebuildSidedefs(&orig_linedefs, &orig_sidedefs,
-                    &linedefs_result, &sidedefs_result);
+    RebuildSidedefs(&orig_linedefs, &orig_sidedefs, &linedefs_result,
+                    &sidedefs_result);
 
     // It is possible that the decompressed sidedefs list overflows the
     // limits of the SIDEDEFS on-disk format. We never want to save a
@@ -286,7 +286,13 @@ static sidedef_ref_t AppendNewSidedef(sidedef_array_t *sidedefs,
 static int CompareSidedefs(const sidedef_t *s1, const sidedef_t *s2)
 {
 #define CHECK_DIFF(expr) \
-    { int diff = expr; if (diff != 0) { return diff; } }
+    {                    \
+        int diff = expr; \
+        if (diff != 0)   \
+        {                \
+            return diff; \
+        }                \
+    }
 
     CHECK_DIFF(strncmp(s1->middle, s2->middle, 8));
     CHECK_DIFF(strncmp(s1->upper, s2->upper, 8));
@@ -304,16 +310,15 @@ static int CompareFunc(unsigned int index1, unsigned int index2,
                        const void *callback_data)
 {
     const sidedef_array_t *sidedefs = callback_data;
-    return CompareSidedefs(&sidedefs->sides[index1],
-                           &sidedefs->sides[index2]);
+    return CompareSidedefs(&sidedefs->sides[index1], &sidedefs->sides[index2]);
 }
 
 #ifdef DEBUG
 static void PrintSidedef(const sidedef_t *s)
 {
     printf("x: %5d y: %5d s: %7d m: %-8.8s l: %-8.8s: u: %-8.8s sp: %d\n",
-           s->xoffset, s->yoffset, s->sector_ref, s->middle, s->upper,
-           s->lower, s->special);
+           s->xoffset, s->yoffset, s->sector_ref, s->middle, s->upper, s->lower,
+           s->special);
 }
 #endif
 
@@ -358,8 +363,9 @@ static sidedef_array_t DoPack(const sidedef_array_t *sidedefs)
         PrintSidedef(sidedef);
 #endif
         // Special sidedefs (those attached to special lines) never get merged.
-        if (!sidedef->special && prev_sidedef != NULL && !prev_sidedef->special
-         && CompareSidedefs(sidedef, prev_sidedef) == 0)
+        if (!sidedef->special && prev_sidedef != NULL &&
+            !prev_sidedef->special &&
+            CompareSidedefs(sidedef, prev_sidedef) == 0)
         {
             newsidedef_index[sdi] = newsidedef_index[map[mi - 1]];
         }
@@ -425,8 +431,7 @@ static void RebuildSidedefs(const linedef_array_t *linedefs,
 
     ldresult->len = linedefs->len;
     ldresult->lines = ALLOC_ARRAY(linedef_t, ldresult->len);
-    memcpy(ldresult->lines, linedefs->lines,
-           sizeof(linedef_t) * linedefs->len);
+    memcpy(ldresult->lines, linedefs->lines, sizeof(linedef_t) * linedefs->len);
 
     sdresult->size = sidedefs->len;
     sdresult->sides = ALLOC_ARRAY(sidedef_t, sdresult->size);

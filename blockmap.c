@@ -239,8 +239,8 @@ bool B_IsStacked(int lumpnum)
     }
 
     block_offsets = &blockmap.elements[4];
-    sorted_map = MakeSortedMap(blockmap.num_blocks, CompareBlockOffsets,
-                               block_offsets);
+    sorted_map =
+        MakeSortedMap(blockmap.num_blocks, CompareBlockOffsets, block_offsets);
 
     for (i = 1; i < blockmap.num_blocks; i++)
     {
