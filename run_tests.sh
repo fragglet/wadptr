@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# We extract everything except levels, since SIDEDEFS and BLOCKMAP lumps
+# will not be exactly the same after decompression.
 DEUTEX_OPTS="
     -v0 -overwrite -png -rgb 0 255 255
     -flats -graphics -lumps -musics -patches -sounds -sprites -textures
@@ -39,6 +41,13 @@ test_wad_file() {
         return 1
     fi
 
+    # TODO: Fix the -o option.
+    cp $fn $wd/compr2.wad
+    if ! ./wadptr -c $wd/compr2.wad || ! diff $fn $wd/compr2.wad; then
+        echo "WAD differs after compression a second time"
+        return 1
+    fi
+
     deutex_extract $fn $wd/deutex-compressed
     local new_size=$(file_size "$fn")
     if ! [ $new_size -lt $orig_size ]; then
@@ -48,6 +57,12 @@ test_wad_file() {
     fi
 
     if ! ./wadptr -u $fn; then
+        return 1
+    fi
+
+    cp $fn $wd/uncompr2.wad
+    if ! ./wadptr -u $wd/uncompr2.wad || ! diff $fn $wd/uncompr2.wad; then
+        echo "WAD differs after decompression a second time"
         return 1
     fi
 
