@@ -12,7 +12,7 @@ all: $(EXECUTABLE)
 %.o: %.c
 	$(CC) $(CFLAGS) -o $@ -c $<
 
-blockmap.o: blockmap.c blockmap.h waddir.h errors.h wadptr.h
+blockmap.o: blockmap.c blockmap.h waddir.h errors.h sort.h wadptr.h
 errors.o: errors.c errors.h
 graphics.o: graphics.c graphics.h waddir.h errors.h wadptr.h
 main.o: main.c blockmap.h graphics.h sidedefs.h errors.h waddir.h \
