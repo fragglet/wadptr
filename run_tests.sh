@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # We extract everything except levels, since SIDEDEFS and BLOCKMAP lumps
 # will not be exactly the same after decompression.
