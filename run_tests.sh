@@ -67,7 +67,7 @@ test_wad_file() {
     # Decompressed WAD contents (apart from levels) should exactly match
     # the original WAD.
     deutex_extract $fn $wd/deutex-decompressed
-    if ! diff -q -ur $wd/deutex-orig $wd/deutex-decompressed; then
+    if ! diff -q -r $wd/deutex-orig $wd/deutex-decompressed; then
         echo "Decompressed WAD contents do not match original."
         return 1
     fi
