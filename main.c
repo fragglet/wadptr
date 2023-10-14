@@ -742,6 +742,7 @@ static bool ListEntries(const char *wadname)
     {
         return false;
     }
+    CheckHexenFormat(wadname);
 
     SPAMMY_PRINTF(
         " Number  Length  Offset      Method      Name        Shared\n"
