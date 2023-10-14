@@ -815,7 +815,9 @@ static char ReadResponse(void)
 static bool IwadWarning(const char *wadname)
 {
     int response;
-    if (quiet_mode)
+    // In quiet mode we silently proceed; if an output WAD is specified
+    // then we are not modifying the original file.
+    if (quiet_mode || outputwad != NULL)
     {
         return true;
     }
