@@ -1,3 +1,5 @@
 [submodule "quickcheck"]
 	path = quickcheck
 	url = https://github.com/chocolate-doom/quickcheck
+	update = merge
+	branch = master
