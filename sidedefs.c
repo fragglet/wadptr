@@ -88,9 +88,12 @@ typedef struct {
     unsigned short vertex2;
     unsigned short flags;
     unsigned short type;
-    unsigned short tag;
 
-    uint8_t args[5];  // Hexen format only
+    // These fields depend on the level format:
+    union {
+        unsigned short tag; // Only in Doom format
+        uint8_t args[5];    // Only in Hexen format
+    } x;
 
     sidedef_ref_t sidedef1;
     sidedef_ref_t sidedef2;
@@ -537,7 +540,7 @@ static linedef_array_t ReadDoomLinedefs(int lumpnum)
         result.lines[i].vertex2 = READ_SHORT(cptr + LDEF_VERT2);
         result.lines[i].flags = READ_SHORT(cptr + LDEF_FLAGS);
         result.lines[i].type = READ_SHORT(cptr + LDEF_TYPES);
-        result.lines[i].tag = READ_SHORT(cptr + LDEF_TAG);
+        result.lines[i].x.tag = READ_SHORT(cptr + LDEF_TAG);
         result.lines[i].sidedef1 = MapSidedefRef(READ_SHORT(cptr + LDEF_SDEF1));
         result.lines[i].sidedef2 = MapSidedefRef(READ_SHORT(cptr + LDEF_SDEF2));
         cptr += LDEF_SIZE;
@@ -557,7 +560,7 @@ static void WriteDoomLinedefs(const linedef_array_t *linedefs, FILE *fp)
         WRITE_SHORT(convbuffer + LDEF_VERT2, linedefs->lines[i].vertex2);
         WRITE_SHORT(convbuffer + LDEF_FLAGS, linedefs->lines[i].flags);
         WRITE_SHORT(convbuffer + LDEF_TYPES, linedefs->lines[i].type);
-        WRITE_SHORT(convbuffer + LDEF_TAG, linedefs->lines[i].tag);
+        WRITE_SHORT(convbuffer + LDEF_TAG, linedefs->lines[i].x.tag);
         WRITE_SHORT(convbuffer + LDEF_SDEF1,
                     linedefs->lines[i].sidedef1 & 0xffff);
         WRITE_SHORT(convbuffer + LDEF_SDEF2,
@@ -587,7 +590,7 @@ static linedef_array_t ReadHexenLinedefs(int lumpnum)
         result.lines[i].vertex2 = READ_SHORT(cptr + HX_LDEF_VERT2);
         result.lines[i].flags = READ_SHORT(cptr + HX_LDEF_FLAGS);
         result.lines[i].type = cptr[HX_LDEF_TYPES];
-        memcpy(&result.lines[i].args, cptr + HX_LDEF_ARGS, 5);
+        memcpy(&result.lines[i].x.args, cptr + HX_LDEF_ARGS, 5);
         result.lines[i].sidedef1 =
             MapSidedefRef(READ_SHORT(cptr + HX_LDEF_SDEF1));
         result.lines[i].sidedef2 =
@@ -609,7 +612,7 @@ static void WriteHexenLinedefs(const linedef_array_t *linedefs, FILE *fp)
         WRITE_SHORT(convbuffer + HX_LDEF_VERT2, linedefs->lines[i].vertex2);
         WRITE_SHORT(convbuffer + HX_LDEF_FLAGS, linedefs->lines[i].flags);
         convbuffer[HX_LDEF_TYPES] = linedefs->lines[i].type;
-        memcpy(convbuffer + HX_LDEF_ARGS, linedefs->lines[i].args, 5);
+        memcpy(convbuffer + HX_LDEF_ARGS, linedefs->lines[i].x.args, 5);
         WRITE_SHORT(convbuffer + HX_LDEF_SDEF1,
                     linedefs->lines[i].sidedef1 & 0xffff);
         WRITE_SHORT(convbuffer + HX_LDEF_SDEF2,
