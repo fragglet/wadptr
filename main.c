@@ -506,8 +506,9 @@ static bool Compress(const char *wadname)
     free(tempwad_name);
 
     findshrink = FindPerc(wadsize, diroffset + (numentries * ENTRY_SIZE));
-    SPAMMY_PRINTF("*** %s is %i%% smaller ***\n",
-                  outputwad != NULL ? outputwad : wadname, findshrink);
+    SPAMMY_PRINTF("*** %s is %ld bytes smaller (%d%%) ***\n",
+                  outputwad != NULL ? outputwad : wadname,
+                  wadsize - (diroffset + numentries * ENTRY_SIZE), findshrink);
     wadfp = NULL;
 
     return true;
