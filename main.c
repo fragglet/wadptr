@@ -780,24 +780,55 @@ static int FindPerc(int before, int after)
     return (int) (100 * perc);
 }
 
+// ReadResponse reads a line from standard input containing a single character
+// and returns that character. Any other response (eg. >1 char) returns 0.
+static char ReadResponse(void)
+{
+    int nchars = 0;
+    int last_char = 0;
+
+    for (;;)
+    {
+        int c = fgetc(stdin);
+        if (c == EOF)
+        {
+            ErrorExit("EOF on reading response from user");
+        }
+        if (c == '\n')
+        {
+            break;
+        }
+        ++nchars;
+        last_char = c;
+    }
+
+    if (nchars != 1)
+    {
+        return 0;
+    }
+
+    return (char) last_char;
+}
+
 static bool IwadWarning(const char *wadname)
 {
-    char tempchar;
+    int response;
     if (quiet_mode)
     {
         return true;
     }
-    printf("%s is an IWAD file; are you sure you want to change it? ", wadname);
-    fflush(stdout);
     while (1)
     {
-        tempchar = tolower(fgetc(stdin));
-        if (tempchar == 'y')
+        printf("%s is an IWAD file; are you sure you want to change it? ",
+               wadname);
+        fflush(stdout);
+        response = tolower(ReadResponse());
+        if (response == 'y')
         {
             printf("\n");
             return true;
         }
-        if (tempchar == 'n')
+        if (response == 'n')
         {
             printf("\n");
             return false;
