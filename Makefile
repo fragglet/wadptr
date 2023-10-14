@@ -52,7 +52,7 @@ windist:
 	rm -f wadptr-$(VERSION).zip
 	zip -X -j -r wadptr-$(VERSION).zip dist
 
-check:
+check: $(EXECUTABLE)
 	./run_tests.sh
 
 quickcheck: $(EXECUTABLE)
