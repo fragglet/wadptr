@@ -114,9 +114,9 @@ static void RebuildSidedefs(const linedef_array_t *linedefs,
                             linedef_array_t *ldresult,
                             sidedef_array_t *sdresult);
 
-static linedef_array_t ReadLinedefs(int lumpnum);
+static linedef_array_t ReadDoomLinedefs(int lumpnum);
 static sidedef_array_t ReadSidedefs(int lumpnum);
-static void WriteLinedefs(const linedef_array_t *linedefs, FILE *fp);
+static void WriteDoomLinedefs(const linedef_array_t *linedefs, FILE *fp);
 static void WriteSidedefs(const sidedef_array_t *sidedefs, FILE *fp);
 
 static int sidedefnum; /* sidedef wad entry number */
@@ -142,7 +142,7 @@ bool P_Pack(int sidedef_num)
     CheckLumpSizes();
 
     orig_sidedefs = ReadSidedefs(sidedefnum);
-    orig_linedefs = ReadLinedefs(linedefnum);
+    orig_linedefs = ReadDoomLinedefs(linedefnum);
 
     RebuildSidedefs(&orig_linedefs, &orig_sidedefs, &linedefs_result,
                     &unpacked_sidedefs);
@@ -171,7 +171,7 @@ bool P_Pack(int sidedef_num)
 
 size_t P_WriteLinedefs(FILE *fstream)
 {
-    WriteLinedefs(&linedefs_result, fstream);
+    WriteDoomLinedefs(&linedefs_result, fstream);
     free(linedefs_result.lines);
     return linedefs_result.len * LDEF_SIZE;
 }
@@ -195,7 +195,7 @@ bool P_Unpack(int sidedef_num)
 
     CheckLumpSizes();
 
-    orig_linedefs = ReadLinedefs(linedefnum);
+    orig_linedefs = ReadDoomLinedefs(linedefnum);
     orig_sidedefs = ReadSidedefs(sidedefnum);
 
     RebuildSidedefs(&orig_linedefs, &orig_sidedefs, &linedefs_result,
@@ -244,7 +244,7 @@ bool P_IsPacked(int sidedef_num)
     linedefnum = sidedef_num - 1;
     sidedefnum = sidedef_num;
 
-    linedefs = ReadLinedefs(linedefnum);
+    linedefs = ReadDoomLinedefs(linedefnum);
 
     num_sidedefs = wadentry[sidedefnum].length / SDEF_SIZE;
     sidedef_used = ALLOC_ARRAY(uint8_t, num_sidedefs);
@@ -499,7 +499,7 @@ static sidedef_ref_t MapSidedefRef(uint16_t val)
     return val;
 }
 
-static linedef_array_t ReadLinedefs(int lumpnum)
+static linedef_array_t ReadDoomLinedefs(int lumpnum)
 {
     linedef_array_t result;
     uint8_t *cptr, *lump;
@@ -524,7 +524,7 @@ static linedef_array_t ReadLinedefs(int lumpnum)
     return result;
 }
 
-static void WriteLinedefs(const linedef_array_t *linedefs, FILE *fp)
+static void WriteDoomLinedefs(const linedef_array_t *linedefs, FILE *fp)
 {
     uint8_t convbuffer[LDEF_SIZE];
     int i;
