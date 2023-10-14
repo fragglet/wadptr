@@ -104,8 +104,8 @@ static void RebuildSidedefs(const linedef_array_t *linedefs,
 
 static linedef_array_t ReadLinedefs(int lumpnum);
 static sidedef_array_t ReadSidedefs(int lumpnum);
-static int WriteLinedefs(const linedef_array_t *linedefs, FILE *fp);
-static int WriteSidedefs(const sidedef_array_t *sidedefs, FILE *fp);
+static void WriteLinedefs(const linedef_array_t *linedefs, FILE *fp);
+static void WriteSidedefs(const sidedef_array_t *sidedefs, FILE *fp);
 
 static int sidedefnum; /* sidedef wad entry number */
 static int linedefnum; /* linedef wad entry number */
@@ -512,7 +512,7 @@ static linedef_array_t ReadLinedefs(int lumpnum)
     return result;
 }
 
-static int WriteLinedefs(const linedef_array_t *linedefs, FILE *fp)
+static void WriteLinedefs(const linedef_array_t *linedefs, FILE *fp)
 {
     uint8_t convbuffer[LDEF_SIZE];
     int i;
@@ -528,9 +528,12 @@ static int WriteLinedefs(const linedef_array_t *linedefs, FILE *fp)
                     linedefs->lines[i].sidedef1 & 0xffff);
         WRITE_SHORT(convbuffer + LDEF_SDEF2,
                     linedefs->lines[i].sidedef2 & 0xffff);
-        fwrite(convbuffer, LDEF_SIZE, 1, fp);
+        if (fwrite(convbuffer, LDEF_SIZE, 1, fp) != 1)
+        {
+            perror("fwrite");
+            ErrorExit("Failed writing linedef #%d to output file", i);
+        }
     }
-    return 0;
 }
 
 static sidedef_array_t ReadSidedefs(int lumpnum)
@@ -561,7 +564,7 @@ static sidedef_array_t ReadSidedefs(int lumpnum)
     return result;
 }
 
-static int WriteSidedefs(const sidedef_array_t *sidedefs, FILE *fp)
+static void WriteSidedefs(const sidedef_array_t *sidedefs, FILE *fp)
 {
     uint8_t convbuffer[SDEF_SIZE];
     int i;
@@ -576,7 +579,10 @@ static int WriteSidedefs(const sidedef_array_t *sidedefs, FILE *fp)
                 8);
         strncpy((char *) convbuffer + SDEF_LOWER, sidedefs->sides[i].lower, 8);
         WRITE_SHORT(convbuffer + SDEF_SECTOR, sidedefs->sides[i].sector_ref);
-        fwrite(convbuffer, SDEF_SIZE, 1, fp);
+        if (fwrite(convbuffer, SDEF_SIZE, 1, fp) != 1)
+        {
+            perror("fwrite");
+            ErrorExit("Failed writing sidedef #%d to output file", i);
+        }
     }
-    return 0;
 }
