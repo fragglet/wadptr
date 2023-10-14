@@ -129,6 +129,15 @@ static sidedef_array_t sidedefs_result;
 
 static sidedef_ref_t *newsidedef_index; /* maps old sidedef number to new */
 
+static size_t LinedefSize(void)
+{
+    if (hexen_format_wad)
+    {
+        return HX_LDEF_SIZE;
+    }
+    return LDEF_SIZE;
+}
+
 /* Call P_Pack() with the level name eg. pack("MAP01"); P_Pack will then
    pack that level. The new sidedef and linedef lumps are pointed to by
    sidedefres and linedefres. These must be free()d by other functions
@@ -175,7 +184,7 @@ size_t P_WriteLinedefs(FILE *fstream)
 {
     WriteDoomLinedefs(&linedefs_result, fstream);
     free(linedefs_result.lines);
-    return linedefs_result.len * LDEF_SIZE;
+    return linedefs_result.len * LinedefSize();
 }
 
 size_t P_WriteSidedefs(FILE *fstream)
@@ -421,11 +430,12 @@ static void RemapLinedefs(linedef_array_t *linedefs)
 
 static void CheckLumpSizes(void)
 {
-    if ((wadentry[linedefnum].length % LDEF_SIZE) != 0)
+    unsigned int linedef_size = LinedefSize();
+    if ((wadentry[linedefnum].length % linedef_size) != 0)
     {
         ErrorExit("RebuildSidedefs: LINEDEFS lump (#%d) is %d bytes, "
                   "not a multiple of %d",
-                  linedefnum, wadentry[linedefnum].length, LDEF_SIZE);
+                  linedefnum, wadentry[linedefnum].length, linedef_size);
     }
     if ((wadentry[sidedefnum].length % SDEF_SIZE) != 0)
     {
