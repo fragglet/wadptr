@@ -24,6 +24,7 @@
 extern bool allowpack;   /* level packing on */
 extern bool allowsquash; /* picture squashing on */
 extern bool allowmerge;  /* lump merging on */
+extern bool hexen_format_wad;
 
 extern const char *pwad_name;
 extern const char *iwad_name;
