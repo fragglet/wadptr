@@ -141,6 +141,18 @@ static size_t LinedefSize(void)
     return LDEF_SIZE;
 }
 
+static linedef_array_t ReadLinedefs(int lumpnum)
+{
+    if (hexen_format_wad)
+    {
+        return ReadHexenLinedefs(lumpnum);
+    }
+    else
+    {
+        return ReadDoomLinedefs(lumpnum);
+    }
+}
+
 /* Call P_Pack() with the level name eg. pack("MAP01"); P_Pack will then
    pack that level. The new sidedef and linedef lumps are pointed to by
    sidedefres and linedefres. These must be free()d by other functions
@@ -156,7 +168,7 @@ bool P_Pack(int sidedef_num)
     CheckLumpSizes();
 
     orig_sidedefs = ReadSidedefs(sidedefnum);
-    orig_linedefs = ReadDoomLinedefs(linedefnum);
+    orig_linedefs = ReadLinedefs(linedefnum);
 
     RebuildSidedefs(&orig_linedefs, &orig_sidedefs, &linedefs_result,
                     &unpacked_sidedefs);
@@ -185,7 +197,14 @@ bool P_Pack(int sidedef_num)
 
 size_t P_WriteLinedefs(FILE *fstream)
 {
-    WriteDoomLinedefs(&linedefs_result, fstream);
+    if (hexen_format_wad)
+    {
+        WriteHexenLinedefs(&linedefs_result, fstream);
+    }
+    else
+    {
+        WriteDoomLinedefs(&linedefs_result, fstream);
+    }
     free(linedefs_result.lines);
     return linedefs_result.len * LinedefSize();
 }
@@ -209,7 +228,7 @@ bool P_Unpack(int sidedef_num)
 
     CheckLumpSizes();
 
-    orig_linedefs = ReadDoomLinedefs(linedefnum);
+    orig_linedefs = ReadLinedefs(linedefnum);
     orig_sidedefs = ReadSidedefs(sidedefnum);
 
     RebuildSidedefs(&orig_linedefs, &orig_sidedefs, &linedefs_result,
@@ -258,7 +277,7 @@ bool P_IsPacked(int sidedef_num)
     linedefnum = sidedef_num - 1;
     sidedefnum = sidedef_num;
 
-    linedefs = ReadDoomLinedefs(linedefnum);
+    linedefs = ReadLinedefs(linedefnum);
 
     num_sidedefs = wadentry[sidedefnum].length / SDEF_SIZE;
     sidedef_used = ALLOC_ARRAY(uint8_t, num_sidedefs);
