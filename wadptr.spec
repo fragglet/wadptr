@@ -1,6 +1,6 @@
 
 Name:		wadptr
-Version:	3.1
+Version:	3.2
 Release:	0
 Group:		Development/Tools/Building
 Summary:	Redundancy compressor for Doom WAD files

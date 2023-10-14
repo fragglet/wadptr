@@ -1,5 +1,23 @@
 # wadptr revision history
 
+## 3.2 (2023-10-14)
+
+ * The sidedef packing code is now considerably more efficient,
+   allowing some levels to be processed in a fraction of the time it
+   took for previous versions.
+ * Very large levels are now safely handled, and the vanilla sidedefs
+   limit will never be overflowed.
+ * The graphics squashing code was rewritten entirely, and is now
+   slightly more effective than before.
+ * The `-o` command line argument was fixed.
+ * A bug with handling of special linedefs was fixed.
+ * Empty lumps are now described as "empty", instead of "stored".
+ * Style for the HTML documentation files was made nicer.
+ * There is now a `-v` command line argument to show the version.
+ * When showing the summary of a newly-compressed file, the number of
+   bytes smaller is now shown as well as the percentage reduction.
+ * The Windows .exe now has an icon.
+
 ## 3.1 (2023-10-07)
 
  * This release adds support for BLOCKMAP lump compression. For
