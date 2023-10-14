@@ -57,13 +57,13 @@ check:
 
 quickcheck: $(EXECUTABLE)
 	git submodule update --checkout
-	make -C quickcheck clean
-	make -C quickcheck wads
+	$(MAKE) -C quickcheck clean
+	$(MAKE) -C quickcheck wads
 	./wadptr -q -c quickcheck/extract/*.wad
-	make -C quickcheck check
+	$(MAKE) -C quickcheck check
 	# We check the demos play back if we uncompress the WADs again.
 	./wadptr -q -u quickcheck/extract/*.wad
-	make -C quickcheck check
+	$(MAKE) -C quickcheck check
 
 .PHONY: install clean dist quickcheck check
 
