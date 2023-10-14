@@ -181,7 +181,7 @@ bool B_Stack(int lumpnum)
     // Check the rebuilt blockmap really is smaller. If it was built
     // using eg. ZokumBSP, the original is probably better than what
     // we've produced.
-    if (blockmap_result.len < blockmap.len)
+    if (blockmap_result.len > blockmap.len)
     {
         free(blockmap_result.elements);
         blockmap_result = blockmap;
@@ -256,7 +256,8 @@ static blockmap_t ReadBlockmap(int lumpnum, FILE *fp)
     result.len = wadentry[lumpnum].length / sizeof(uint16_t);
     if (result.len < 4)
     {
-        ErrorExit("BLOCKMAP lump too short: %d < %d header size", result.len, 4);
+        ErrorExit("BLOCKMAP lump too short: %d < %d header size", result.len,
+                  4);
     }
     result.elements = CacheLump(lumpnum);
 
