@@ -296,18 +296,11 @@ static void Help(void)
         "\n");
 }
 
-// Temporary workaround for the fact that we don't support Hexen format
-// levels yet.
+// Hexen levels have a slightly different format, and we can detect this by
+// looking for the presence of a BEHAVIOR lump, which is unique to this format.
 static void CheckHexenFormat(const char *filename)
 {
     hexen_format_wad = EntryExists("BEHAVIOR") >= 0;
-    if (hexen_format_wad && allowpack)
-    {
-        fprintf(stderr,
-                "%s: Hexen format WAD; disabling sidedef "
-                "packing for this WAD.\n",
-                filename);
-    }
 }
 
 // LINEDEFS and SIDEDEFS lumps follow each other in Doom WADs. This is
@@ -359,7 +352,7 @@ static bool Compress(const char *wadname)
         fflush(stdout);
         written = false;
 
-        if (allowpack && !hexen_format_wad)
+        if (allowpack)
         {
             if (count + 1 < numentries && IsSidedefs(count + 1))
             {
@@ -552,7 +545,7 @@ static bool Uncompress(const char *wadname)
         SPAMMY_PRINTF("Adding: %.8s       ", wadentry[count].name);
         fflush(stdout);
 
-        if (allowpack && !hexen_format_wad)
+        if (allowpack)
         {
             if (count + 1 < numentries && IsSidedefs(count + 1))
             {
