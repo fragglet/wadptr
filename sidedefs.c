@@ -532,6 +532,7 @@ static linedef_array_t ReadDoomLinedefs(int lumpnum)
     cptr = lump;
     for (i = 0; i < result.len; i++)
     {
+        memset(&result.lines[i], 0, sizeof(linedef_t));
         result.lines[i].vertex1 = READ_SHORT(cptr + LDEF_VERT1);
         result.lines[i].vertex2 = READ_SHORT(cptr + LDEF_VERT2);
         result.lines[i].flags = READ_SHORT(cptr + LDEF_FLAGS);
@@ -581,13 +582,16 @@ static linedef_array_t ReadHexenLinedefs(int lumpnum)
     cptr = lump;
     for (i = 0; i < result.len; i++)
     {
+        memset(&result.lines[i], 0, sizeof(linedef_t));
         result.lines[i].vertex1 = READ_SHORT(cptr + HX_LDEF_VERT1);
         result.lines[i].vertex2 = READ_SHORT(cptr + HX_LDEF_VERT2);
         result.lines[i].flags = READ_SHORT(cptr + HX_LDEF_FLAGS);
         result.lines[i].type = cptr[HX_LDEF_TYPES];
         memcpy(&result.lines[i].args, cptr + HX_LDEF_ARGS, 5);
-        result.lines[i].sidedef1 = MapSidedefRef(READ_SHORT(cptr + HX_LDEF_SDEF1));
-        result.lines[i].sidedef2 = MapSidedefRef(READ_SHORT(cptr + HX_LDEF_SDEF2));
+        result.lines[i].sidedef1 =
+            MapSidedefRef(READ_SHORT(cptr + HX_LDEF_SDEF1));
+        result.lines[i].sidedef2 =
+            MapSidedefRef(READ_SHORT(cptr + HX_LDEF_SDEF2));
         cptr += HX_LDEF_SIZE;
     }
     free(lump);
