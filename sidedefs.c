@@ -53,6 +53,16 @@
 #define LDEF_SDEF2 12
 #define LDEF_SIZE  14
 
+// Hexen linedef format:
+#define HX_LDEF_VERT1 0
+#define HX_LDEF_VERT2 2
+#define HX_LDEF_FLAGS 4
+#define HX_LDEF_TYPES 6
+#define HX_LDEF_ARGS  7
+#define HX_LDEF_SDEF1 12
+#define HX_LDEF_SDEF2 14
+#define HX_LDEF_SIZE  16
+
 // On disk, these are 16-bit integers. But while processing, we unpack
 // the sidedefs first, and the unpacked sidedefs might exceed the 16-bit
 // limit. So in memory we use a 32-bit integer even though when we write
@@ -79,6 +89,8 @@ typedef struct {
     unsigned short flags;
     unsigned short type;
     unsigned short tag;
+
+    uint8_t args[5];  // Hexen format only
 
     sidedef_ref_t sidedef1;
     sidedef_ref_t sidedef2;
