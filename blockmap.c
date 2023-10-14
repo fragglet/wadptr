@@ -86,14 +86,16 @@ static void AppendBlockmapElements(blockmap_t *blockmap, uint16_t *elements,
     blockmap->len += count;
 }
 
-static int FindIdenticalBlock(const block_t *blocklist, size_t num_blocks,
+static int FindIdenticalBlock(const block_t *blocklist,
+                              unsigned int *sorted_map, size_t num_blocks,
                               const block_t *block)
 {
     int i;
 
     for (i = 0; i < num_blocks; i++)
     {
-        const block_t *ib = &blocklist[i];
+        unsigned int bi = sorted_map[i];
+        const block_t *ib = &blocklist[bi];
 
         // We allow suffixes, but unless the blockmap is in "engine
         // format" it probably won't make a difference.
@@ -105,11 +107,19 @@ static int FindIdenticalBlock(const block_t *blocklist, size_t num_blocks,
         if (!memcmp(block->elements, ib->elements + ib->len - block->len,
                     block->len * 2))
         {
-            return i;
+            return bi;
         }
     }
 
     return -1;
+}
+
+static int LargestBlockCompare(unsigned int i1, unsigned int i2,
+                               const void *callback_data)
+{
+    const block_t *blocklist = callback_data;
+
+    return (int) blocklist[i2].len - (int) blocklist[i1].len;
 }
 
 static blockmap_t RebuildBlockmap(const blockmap_t *blockmap, bool compress)
@@ -117,6 +127,7 @@ static blockmap_t RebuildBlockmap(const blockmap_t *blockmap, bool compress)
     blockmap_t result;
     block_t *blocklist;
     uint16_t *block_offsets;
+    unsigned int *sorted_map;
     int i;
 
     blocklist = MakeBlocklist(blockmap);
@@ -130,22 +141,47 @@ static blockmap_t RebuildBlockmap(const blockmap_t *blockmap, bool compress)
     // Header is identical:
     memcpy(result.elements, blockmap->elements, 4 * sizeof(uint16_t));
 
+    // We process blocks in order of decreasing size (ie. largest first), This
+    // allows us to do suffix matching more effectively where it is possible.
+    sorted_map =
+        MakeSortedMap(blockmap->num_blocks, LargestBlockCompare, blocklist);
+
+    // NOTE: There is one corner case with this approach. Marginal levels that
+    // are just on the edge of overflowing the block limit may still fit if the
+    // very largest block is at the very end of the lump. So we place the
+    // largest block at the very end in case this helps.
+    if (blockmap->num_blocks > 1)
+    {
+        unsigned int largest = sorted_map[0];
+        memmove(sorted_map, sorted_map + 1,
+                sizeof(unsigned int) * (blockmap->num_blocks - 1));
+        sorted_map[blockmap->num_blocks - 1] = largest;
+    }
+
     for (i = 0; i < blockmap->num_blocks; i++)
     {
-        const block_t *block = &blocklist[i];
+        unsigned int bi = sorted_map[i];
+        const block_t *block = &blocklist[bi];
         int match_index = -1;
 
+#ifdef DEBUG
+        printf("block %5d: len=%d\n", bi, block->len);
+#endif
         if (compress)
         {
-            match_index = FindIdenticalBlock(blocklist, i, block);
+            match_index = FindIdenticalBlock(blocklist, sorted_map, i, block);
         }
 
         if (match_index >= 0)
         {
             // Copy the offset of the other block, but if it's a suffix
             // match then we need to offset.
-            block_offsets[i] = block_offsets[match_index] +
-                               blocklist[match_index].len - block->len;
+            block_offsets[bi] = block_offsets[match_index] +
+                                blocklist[match_index].len - block->len;
+#ifdef DEBUG
+            printf("\tmatches block %d (+%d offset)\n", match_index,
+                   blocklist[match_index].len - block->len);
+#endif
         }
         else if (result.len > MAX_BLOCKMAP_OFFSET)
         {
@@ -156,13 +192,18 @@ static blockmap_t RebuildBlockmap(const blockmap_t *blockmap, bool compress)
         }
         else
         {
-            block_offsets[i] = result.len;
+            block_offsets[bi] = result.len;
             AppendBlockmapElements(&result, block->elements, block->len);
             block_offsets = &result.elements[4];
         }
     }
 
     free(blocklist);
+    free(sorted_map);
+#ifdef DEBUG
+    printf("total blockmap length=%d elements (%d bytes)\n", result.len,
+           result.len * 2);
+#endif
 
     return result;
 }
