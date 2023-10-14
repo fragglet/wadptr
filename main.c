@@ -819,7 +819,8 @@ static bool IwadWarning(const char *wadname)
     }
     while (1)
     {
-        printf("%s is an IWAD file; are you sure you want to change it? ",
+        printf("%s is an IWAD file; are you sure you want to "
+               "change it (y/n)? ",
                wadname);
         fflush(stdout);
         response = tolower(ReadResponse());
