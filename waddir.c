@@ -161,9 +161,21 @@ int EntryExists(char *entrytofind)
 void *CacheLump(int entrynum)
 {
     uint8_t *working = ALLOC_ARRAY(uint8_t, wadentry[entrynum].length);
+    size_t read;
 
-    fseek(wadfp, wadentry[entrynum].offset, SEEK_SET);
-    fread(working, wadentry[entrynum].length, 1, wadfp);
+    if (fseek(wadfp, wadentry[entrynum].offset, SEEK_SET) != 0)
+    {
+        perror("fseek");
+        ErrorExit("Error during seek to read %.8s lump, offset 0x%08x",
+                  wadentry[entrynum].name, wadentry[entrynum].offset);
+    }
+    read = fread(working, 1, wadentry[entrynum].length, wadfp);
+    if (read < wadentry[entrynum].length)
+    {
+        perror("fread");
+        ErrorExit("Error reading %.8s lump: %d of %d bytes read",
+                  wadentry[entrynum].name, read, wadentry[entrynum].length);
+    }
 
     return working;
 }
