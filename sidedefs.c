@@ -115,8 +115,10 @@ static void RebuildSidedefs(const linedef_array_t *linedefs,
                             sidedef_array_t *sdresult);
 
 static linedef_array_t ReadDoomLinedefs(int lumpnum);
+static linedef_array_t ReadHexenLinedefs(int lumpnum);
 static sidedef_array_t ReadSidedefs(int lumpnum);
 static void WriteDoomLinedefs(const linedef_array_t *linedefs, FILE *fp);
+static void WriteHexenLinedefs(const linedef_array_t *linedefs, FILE *fp);
 static void WriteSidedefs(const sidedef_array_t *sidedefs, FILE *fp);
 
 static int sidedefnum; /* sidedef wad entry number */
@@ -541,6 +543,55 @@ static void WriteDoomLinedefs(const linedef_array_t *linedefs, FILE *fp)
         WRITE_SHORT(convbuffer + LDEF_SDEF2,
                     linedefs->lines[i].sidedef2 & 0xffff);
         if (fwrite(convbuffer, LDEF_SIZE, 1, fp) != 1)
+        {
+            perror("fwrite");
+            ErrorExit("Failed writing linedef #%d to output file", i);
+        }
+    }
+}
+
+static linedef_array_t ReadHexenLinedefs(int lumpnum)
+{
+    linedef_array_t result;
+    uint8_t *cptr, *lump;
+    int i;
+
+    result.len = wadentry[lumpnum].length / HX_LDEF_SIZE;
+    result.lines = ALLOC_ARRAY(linedef_t, result.len);
+    lump = CacheLump(lumpnum);
+    cptr = lump;
+    for (i = 0; i < result.len; i++)
+    {
+        result.lines[i].vertex1 = READ_SHORT(cptr + HX_LDEF_VERT1);
+        result.lines[i].vertex2 = READ_SHORT(cptr + HX_LDEF_VERT2);
+        result.lines[i].flags = READ_SHORT(cptr + HX_LDEF_FLAGS);
+        result.lines[i].type = cptr[HX_LDEF_TYPES];
+        memcpy(&result.lines[i].args, cptr + HX_LDEF_ARGS, 5);
+        result.lines[i].sidedef1 = MapSidedefRef(READ_SHORT(cptr + HX_LDEF_SDEF1));
+        result.lines[i].sidedef2 = MapSidedefRef(READ_SHORT(cptr + HX_LDEF_SDEF2));
+        cptr += HX_LDEF_SIZE;
+    }
+    free(lump);
+    return result;
+}
+
+static void WriteHexenLinedefs(const linedef_array_t *linedefs, FILE *fp)
+{
+    uint8_t convbuffer[HX_LDEF_SIZE];
+    int i;
+
+    for (i = 0; i < linedefs->len; i++)
+    {
+        WRITE_SHORT(convbuffer + HX_LDEF_VERT1, linedefs->lines[i].vertex1);
+        WRITE_SHORT(convbuffer + HX_LDEF_VERT2, linedefs->lines[i].vertex2);
+        WRITE_SHORT(convbuffer + HX_LDEF_FLAGS, linedefs->lines[i].flags);
+        convbuffer[HX_LDEF_TYPES] = linedefs->lines[i].type;
+        memcpy(convbuffer + HX_LDEF_ARGS, linedefs->lines[i].args, 5);
+        WRITE_SHORT(convbuffer + HX_LDEF_SDEF1,
+                    linedefs->lines[i].sidedef1 & 0xffff);
+        WRITE_SHORT(convbuffer + HX_LDEF_SDEF2,
+                    linedefs->lines[i].sidedef2 & 0xffff);
+        if (fwrite(convbuffer, HX_LDEF_SIZE, 1, fp) != 1)
         {
             perror("fwrite");
             ErrorExit("Failed writing linedef #%d to output file", i);
