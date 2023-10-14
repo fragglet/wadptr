@@ -39,7 +39,7 @@ typedef struct {
 } blockmap_t;
 
 static blockmap_t ReadBlockmap(int lumpnum, FILE *fp);
-static bool WriteBlockmap(const blockmap_t *blockmap, FILE *fp);
+static void WriteBlockmap(const blockmap_t *blockmap, FILE *fp);
 
 static blockmap_t blockmap_result;
 
@@ -170,11 +170,6 @@ static blockmap_t RebuildBlockmap(const blockmap_t *blockmap, bool compress)
 bool B_Stack(int lumpnum)
 {
     blockmap_t blockmap = ReadBlockmap(lumpnum, wadfp);
-    if (blockmap.len == 0)
-    {
-        // TODO: Need some better error handling.
-        ErrorExit("failed to read blockmap?");
-    }
 
     blockmap_result = RebuildBlockmap(&blockmap, true);
     if (blockmap_result.len == 0)
@@ -200,11 +195,6 @@ bool B_Stack(int lumpnum)
 bool B_Unstack(int lumpnum)
 {
     blockmap_t blockmap = ReadBlockmap(lumpnum, wadfp);
-    if (blockmap.len == 0)
-    {
-        // TODO: Need some better error handling.
-        ErrorExit("failed to read blockmap?");
-    }
 
     blockmap_result = RebuildBlockmap(&blockmap, false);
     if (blockmap_result.len == 0)
@@ -232,11 +222,6 @@ bool B_IsStacked(int lumpnum)
     int i;
 
     blockmap_t blockmap = ReadBlockmap(lumpnum, wadfp);
-    if (blockmap.len == 0)
-    {
-        // TODO: Need some better error handling.
-        ErrorExit("failed to read blockmap?");
-    }
 
     block_offsets = &blockmap.elements[4];
     sorted_map =
@@ -258,10 +243,7 @@ bool B_IsStacked(int lumpnum)
 
 size_t B_WriteBlockmap(FILE *fstream)
 {
-    if (!WriteBlockmap(&blockmap_result, fstream))
-    {
-        ErrorExit("Error writing blockmap");
-    }
+    WriteBlockmap(&blockmap_result, fstream);
     free(blockmap_result.elements);
     return blockmap_result.len * 2;
 }
@@ -274,9 +256,7 @@ static blockmap_t ReadBlockmap(int lumpnum, FILE *fp)
     result.len = wadentry[lumpnum].length / sizeof(uint16_t);
     if (result.len < 4)
     {
-        result.elements = NULL;
-        result.len = 0;
-        return result;
+        ErrorExit("BLOCKMAP lump too short: %d < %d header size", result.len, 4);
     }
     result.elements = CacheLump(lumpnum);
 
@@ -288,18 +268,19 @@ static blockmap_t ReadBlockmap(int lumpnum, FILE *fp)
     result.num_blocks = result.elements[2] * result.elements[3];
     if (result.len < result.num_blocks + 4)
     {
-        free(result.elements);
-        result.elements = NULL;
-        result.len = 0;
+        ErrorExit("BLOCKMAP lump too short: %d blocks < %d "
+                  "(%d x %d = %d blocks, + 4 for header",
+                  result.len, result.num_blocks + 4, result.elements[2],
+                  result.elements[3], result.num_blocks);
     }
 
     return result;
 }
 
-static bool WriteBlockmap(const blockmap_t *blockmap, FILE *fp)
+static void WriteBlockmap(const blockmap_t *blockmap, FILE *fp)
 {
     uint8_t *buffer;
-    bool result;
+    size_t written;
     int i;
 
     buffer = ALLOC_ARRAY(uint8_t, blockmap->len * 2);
@@ -309,9 +290,12 @@ static bool WriteBlockmap(const blockmap_t *blockmap, FILE *fp)
         WRITE_SHORT(&buffer[i * 2], blockmap->elements[i]);
     }
 
-    result = fwrite(buffer, 2, blockmap->len, fp) == blockmap->len;
+    written = fwrite(buffer, 2, blockmap->len, fp);
+    if (written < blockmap->len)
+    {
+        ErrorExit("Failed writing BLOCKMAP lump: wrote only %d / %d elements",
+                  written, blockmap->len);
+    }
 
     free(buffer);
-
-    return result;
 }
