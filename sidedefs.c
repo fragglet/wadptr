@@ -337,6 +337,12 @@ static int CompareFunc(unsigned int index1, unsigned int index2,
 }
 
 #ifdef DEBUG
+static void PrintLinedef(const linedef_t *l)
+{
+    printf("v1: %5d v2: %5d f: %5x t: %5d s1: %5d s2: %5d\n", l->vertex1,
+           l->vertex2, l->flags, l->type, l->sidedef1, l->sidedef2);
+}
+
 static void PrintSidedef(const sidedef_t *s)
 {
     printf("x: %5d y: %5d s: %7d m: %-8.8s l: %-8.8s: u: %-8.8s sp: %d\n",
@@ -417,6 +423,9 @@ static void RemapLinedefs(linedef_array_t *linedefs)
 
     for (count = 0; count < linedefs->len; count++)
     {
+#ifdef DEBUG
+        PrintLinedef(&linedefs->lines[count]);
+#endif
         if (linedefs->lines[count].sidedef1 != NO_SIDEDEF)
             linedefs->lines[count].sidedef1 =
                 newsidedef_index[linedefs->lines[count].sidedef1];
