@@ -9,3 +9,9 @@ run tests. Included here are:
   levels.
 * `evimap32.wad` is MAP32 from [Eviternity](https://doomwiki.org/wiki/Eviternity),
   an exceedingly large level.
+* `btsx2m20.wad` is MAP20 from [BTSX E2](https://doomwiki.org/wiki/Back_to_Saturn_X),
+  which is a very large level close to the vanilla BLOCKMAP limit and
+  that has been built with ZokumBSP to make it fit within the limit. So
+  we check that we can at least process that BLOCKMAP without making it
+  any larger. The WAD has a single redundant byte at the end so that
+  wadptr will successfully reduce its size.
