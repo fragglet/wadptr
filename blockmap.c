@@ -221,6 +221,11 @@ static bool IsOverflowedBlockmap(const blockmap_t *blockmap)
 {
     int i, sentinel_count = 0;
 
+    if (blockmap->len < EXTENDED_MAX_BLOCKMAP_OFFSET)
+    {
+        return false;
+    }
+
     for (i = EXTENDED_MAX_BLOCKMAP_OFFSET; i < blockmap->len; i++)
     {
         if (blockmap->elements[i] == 0xffff)
@@ -233,7 +238,7 @@ static bool IsOverflowedBlockmap(const blockmap_t *blockmap)
         }
     }
 
-    return blockmap->elements[blockmap->len - 1] == 0xffff;
+    return blockmap->elements[blockmap->len - 1] != 0xffff;
 }
 
 bool B_Stack(int lumpnum)
