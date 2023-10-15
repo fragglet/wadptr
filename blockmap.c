@@ -27,6 +27,11 @@
 // are interpreted by the engine as signed integers.
 #define MAX_BLOCKMAP_OFFSET 0x7fff /* 16-bit ints */
 
+// Extended limit, if we treat the blockmap elements as unsigned 16-bit
+// integers. Note that we cannot include 0xffff because it is used as
+// the sentinel value to end a block list.
+#define EXTENDED_MAX_BLOCKMAP_OFFSET 0xfffe
+
 typedef struct {
     uint16_t *elements;
     size_t len;
@@ -208,9 +213,45 @@ static blockmap_t RebuildBlockmap(const blockmap_t *blockmap, bool compress)
     return result;
 }
 
+// Bad node builders can generate invalid BLOCKMAP lumps for very large
+// levels. We can detect this case by looking for sentinel values beyond
+// the 16-bit offset range; it is okay to go a little bit beyond the
+// range so long as it is only a single block list.
+static bool IsOverflowedBlockmap(const blockmap_t *blockmap)
+{
+    int i, sentinel_count = 0;
+
+    for (i = EXTENDED_MAX_BLOCKMAP_OFFSET; i < blockmap->len; i++)
+    {
+        if (blockmap->elements[i] == 0xffff)
+        {
+            ++sentinel_count;
+            if (sentinel_count > 1)
+            {
+                return true;
+            }
+        }
+    }
+
+    return blockmap->elements[blockmap->len - 1] == 0xffff;
+}
+
 bool B_Stack(int lumpnum)
 {
     blockmap_t blockmap = ReadBlockmap(lumpnum, wadfp);
+
+    if (IsOverflowedBlockmap(&blockmap))
+    {
+        fprintf(stderr,
+                "BLOCKMAP with lump #%d overflows the 16-bit offset "
+                "limit and is invalid; not trying to stack this "
+                "BLOCKMAP. You should maybe try using a tool like "
+                "ZokumBSP to fit this level within the vanilla "
+                "limit.\n",
+                lumpnum);
+        blockmap_result = blockmap;
+        return false;
+    }
 
     blockmap_result = RebuildBlockmap(&blockmap, true);
     if (blockmap_result.len == 0)
