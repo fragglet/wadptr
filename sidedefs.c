@@ -124,6 +124,7 @@ static void WriteDoomLinedefs(const linedef_array_t *linedefs, FILE *fp);
 static void WriteHexenLinedefs(const linedef_array_t *linedefs, FILE *fp);
 static void WriteSidedefs(const sidedef_array_t *sidedefs, FILE *fp);
 
+// TODO: Eliminate these two globals:
 static int sidedefnum; /* sidedef wad entry number */
 static int linedefnum; /* linedef wad entry number */
 
