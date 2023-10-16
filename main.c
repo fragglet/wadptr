@@ -508,7 +508,6 @@ static bool Compress(const char *wadname)
 }
 
 /* Uncompress a WAD */
-/* TODO: This can probably be merged with Compress() above. */
 static bool Uncompress(const char *wadname)
 {
     char tempstr[50], *tempwad_name;
