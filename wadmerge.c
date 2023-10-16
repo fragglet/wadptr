@@ -117,7 +117,7 @@ void RebuildMergedWad(FILE *newwad)
         free(cached);
     }
 
-    /* write the wad directory */
+    // Write the wad directory for the new WAD:
     diroffset = ftell(newwad);
     WriteWadDirectory(newwad);
     WriteWadHeader(newwad);

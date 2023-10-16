@@ -32,7 +32,7 @@ typedef struct {
     char name[8];
 } entry_t;
 
-/* portable structure IO */
+// Portable structure I/O:
 #define ENTRY_OFF  0
 #define ENTRY_LEN  4
 #define ENTRY_NAME 8

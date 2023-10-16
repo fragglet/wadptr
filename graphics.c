@@ -27,13 +27,15 @@
 static void ParseLump(uint8_t *lump, size_t lump_len);
 static int FindColumnLength(int x, const uint8_t *column, size_t len);
 
-/* Graphic squashing globals */
-static bool unsquash_mode = false; /* True when we are inside a
-                                      S_Unsquash() call. */
-static short height, width;        /* picture width, height etc. */
+// True when we are inside an S_Unsquash call.
+static bool unsquash_mode = false;
+
+// Picture width, height, etc. from header.
+static short height, width;
 static short loffset, toffset;
-static uint8_t **columns = NULL; /* the location of each column in the lump */
-static int *colsize = NULL;      /* the length(in bytes) of each column */
+
+static uint8_t **columns = NULL;
+static int *colsize = NULL;
 
 static void AppendBytes(uint8_t **ptr, size_t *len, size_t *sz,
                         const uint8_t *newdata, const size_t newdata_len)
@@ -54,9 +56,9 @@ static int LargestColumnCompare(unsigned int index1, unsigned int index2,
     return colsize[index2] - colsize[index1];
 }
 
-/* Squashes a graphic. Call with the lump name - eg. S_Squash("TITLEPIC");
-   returns a pointer to the new(compressed) lump. This must be free()d when
-   it is no longer needed, as S_Squash() does not do this itself. */
+// Squashes a graphic. Call with the lump name - eg. S_Squash("TITLEPIC");
+// returns a pointer to the new(compressed) lump. This must be free()d when
+// it is no longer needed, as S_Squash() does not do this itself.
 uint8_t *S_Squash(int entrynum)
 {
     uint8_t *oldlump, *newres;
@@ -126,7 +128,7 @@ uint8_t *S_Squash(int entrynum)
 
     if (!unsquash_mode && newres_len > wadentry[entrynum].length)
     {
-        /* the new resource was bigger than the old one! */
+        // The new resource was bigger than the old one!
         free(newres);
         return oldlump;
     }
@@ -138,9 +140,9 @@ uint8_t *S_Squash(int entrynum)
     }
 }
 
-/* Unsquash a picture. Unsquashing rebuilds the image, just like when we
- * do the squashing, except that we set a special flag that skips
- * searching for identical columns. */
+// Unsquash a picture. Unsquashing rebuilds the image, just like when we
+// do the squashing, except that we set a special flag that skips
+// searching for identical columns.
 uint8_t *S_Unsquash(int entrynum)
 {
     uint8_t *result;
@@ -187,7 +189,7 @@ static int FindColumnLength(int x, const uint8_t *column, size_t len)
         {
             return i + 1;
         }
-        /* jump to the beginning of the next post */
+        // jump to the beginning of the next post
         i += column[i + 1] + 4;
         if (i > len)
         {
@@ -236,7 +238,7 @@ bool S_IsGraphic(int entrynum)
         return false;
     if (!strncmp(s, "DS", 2) || !strncmp(s, "DP", 2) || !strncmp(s, "D_", 2))
     {
-        /* sfx or music */
+        // sfx or music
         return false;
     }
 
@@ -258,10 +260,10 @@ bool S_IsGraphic(int entrynum)
         return false;
     }
 
-    /* it could be a graphic, but better safe than sorry */
-    if (wadentry[entrynum].length == 4096 || /* flat; */
-        wadentry[entrynum].length == 4000)   /* endoom */
+    if (wadentry[entrynum].length == 4096 || // flat
+        wadentry[entrynum].length == 4000)   // endoom
     {
+        // It could be a graphic, but better safe than sorry
         free(graphic);
         return false;
     }
@@ -270,12 +272,13 @@ bool S_IsGraphic(int entrynum)
     {
         if (READ_LONG(columns + 4 * count) > wadentry[entrynum].length)
         {
-            /* cant be a graphic resource then -offset outside lump */
+            // Can't be a graphic resource; offset outside lump
             free(graphic);
             return false;
         }
     }
     free(graphic);
-    /* if its passed all these checks it must be (well probably) */
+
+    // If it has passed all these checks, it must be a graphic (well, probably)
     return true;
 }

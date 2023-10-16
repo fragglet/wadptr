@@ -37,15 +37,18 @@ static void Help(void);
 static bool IwadWarning(const char *);
 static void ParseCommandLine(void);
 
-static int g_argc; /* global cmd-line list */
+// Global command line list, copied in main().
+static int g_argc;
 static char **g_argv;
+
 static int filelist_index;
 static const char *outputwad = NULL;
 static enum { HELP, COMPRESS, UNCOMPRESS, LIST } action;
-bool allowpack = true;   /* level packing on */
-bool allowsquash = true; /* picture squashing on */
-bool allowmerge = true;  /* lump merging on */
-bool allowstack = true;  /* blockmap stacking */
+
+bool allowpack = true;   // level packing on
+bool allowsquash = true; // picture squashing on
+bool allowmerge = true;  // lump merging on
+bool allowstack = true;  // blockmap stacking
 bool hexen_format_wad;
 static bool quiet_mode = false;
 
@@ -135,7 +138,7 @@ int main(int argc, char *argv[])
     int index;
     bool success = true;
 
-    g_argc = argc; /* Set global cmd-line list */
+    g_argc = argc; // Set global cmd-line list
     g_argv = argv;
 
     ParseCommandLine();
@@ -155,7 +158,7 @@ static void ParseCommandLine(void)
 {
     int i;
 
-    action = HELP; /* default to Help if not told what to do */
+    action = HELP; // default if not told what to do
 
     filelist_index = -1;
 
@@ -312,7 +315,7 @@ static bool IsSidedefs(int count)
 static bool Compress(const char *wadname)
 {
     int count, findshrink;
-    long wadsize; /* wad size(to find % smaller) */
+    long wadsize; // previous wad size (to find % smaller)
     FILE *fstream;
     bool written;
     uint8_t *temp;
@@ -340,7 +343,7 @@ static bool Compress(const char *wadname)
         OpenTempFile(outputwad != NULL ? outputwad : wadname, &tempwad_name);
 
     memset(a, 0, 12);
-    fwrite(a, 12, 1, fstream); /* temp header. */
+    fwrite(a, 12, 1, fstream); // temp header
 
     for (count = 0; count < numentries; count++)
     {
@@ -449,7 +452,7 @@ static bool Compress(const char *wadname)
         }
     }
 
-    /* write new directory */
+    // Write new directory:
     diroffset = ftell(fstream);
     WriteWadDirectory(fstream);
     WriteWadHeader(fstream);
@@ -530,7 +533,7 @@ static bool Uncompress(const char *wadname)
 
     fstream = OpenTempFile(wadname, &tempwad_name);
     memset(tempstr, 0, 12);
-    fwrite(tempstr, 12, 1, fstream); /* temp header */
+    fwrite(tempstr, 12, 1, fstream); // temp header
 
     for (count = 0; count < numentries; count++)
     {
@@ -628,7 +631,7 @@ static bool Uncompress(const char *wadname)
             SPAMMY_PRINTF(", done.\n");
         }
     }
-    /* update the directory location */
+    // update the directory location
     diroffset = ftell(fstream);
     WriteWadDirectory(fstream);
     WriteWadHeader(fstream);
@@ -638,7 +641,7 @@ static bool Uncompress(const char *wadname)
 
     if (outputwad == NULL)
     {
-        /* replace the original wad with the new one */
+        // Replace the original wad with the new one:
         remove(wadname);
         rename(tempwad_name, wadname);
     }
@@ -674,7 +677,7 @@ static const char *CompressionMethod(int lumpnum)
     }
     else if (IsSidedefs(lumpnum))
     {
-        /* this is a level */
+        // This is a level:
         if (P_IsPacked(lumpnum))
         {
             return "Packed";
@@ -686,7 +689,7 @@ static const char *CompressionMethod(int lumpnum)
     }
     else if (S_IsGraphic(lumpnum))
     {
-        /* this is a graphic */
+        // This is a graphic:
         if (S_IsSquashed(lumpnum))
         {
             return "Squashed";
@@ -709,7 +712,7 @@ static const char *CompressionMethod(int lumpnum)
     }
     else
     {
-        /* ordinary lump w/no compression */
+        // Ordinary lump w/no compression.
         return "Stored";
     }
 }
@@ -758,8 +761,7 @@ static bool ListEntries(const char *wadname)
     return true;
 }
 
-/* Find how much smaller something is: returns a percentage */
-
+// Find how much smaller something is: returns a percentage.
 static int FindPerc(int before, int after)
 {
     double perc;

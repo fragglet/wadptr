@@ -156,8 +156,8 @@ int EntryExists(char *entrytofind)
     return -1;
 }
 
-/* Load a lump to memory */
-
+// Load a lump into memory.
+// The name is misleading; nothing is being cached.
 void *CacheLump(int entrynum)
 {
     uint8_t *working = ALLOC_ARRAY(uint8_t, wadentry[entrynum].length);
