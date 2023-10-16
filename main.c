@@ -314,6 +314,7 @@ static bool IsSidedefs(wad_file_t *wf, int count)
 
 static bool Compress(const char *wadname)
 {
+    wad_file_t wf;
     int count, findshrink;
     long wadsize; // previous wad size (to find % smaller)
     FILE *fstream;
@@ -321,23 +322,26 @@ static bool Compress(const char *wadname)
     uint8_t *temp;
     char *tempwad_name, a[50];
 
-    wadglobal.fp = fopen(wadname, "rb");
-    if (wadglobal.fp == NULL)
+    // TODO: This should be unnecessary:
+    memset(&wf, 0, sizeof(wad_file_t));
+
+    wf.fp = fopen(wadname, "rb");
+    if (wf.fp == NULL)
     {
         perror("fopen");
         return false;
     }
-    if (!ReadWad(&wadglobal))
+    if (!ReadWad(&wf))
     {
         return false;
     }
-    if (wadglobal.type == IWAD && !IwadWarning(wadname))
+    if (wf.type == IWAD && !IwadWarning(wadname))
     {
         return false;
     }
-    CheckHexenFormat(&wadglobal, wadname);
+    CheckHexenFormat(&wf, wadname);
 
-    wadsize = wadglobal.diroffset + (ENTRY_SIZE * wadglobal.num_entries);
+    wadsize = wf.diroffset + (ENTRY_SIZE * wf.num_entries);
 
     fstream =
         OpenTempFile(outputwad != NULL ? outputwad : wadname, &tempwad_name);
@@ -345,42 +349,40 @@ static bool Compress(const char *wadname)
     memset(a, 0, 12);
     fwrite(a, 12, 1, fstream); // temp header
 
-    for (count = 0; count < wadglobal.num_entries; count++)
+    for (count = 0; count < wf.num_entries; count++)
     {
-        SPAMMY_PRINTF("Adding: %.8s       ", wadglobal.entries[count].name);
+        SPAMMY_PRINTF("Adding: %.8s       ", wf.entries[count].name);
         fflush(stdout);
         written = false;
 
         if (allowpack)
         {
-            if (count + 1 < wadglobal.num_entries &&
-                IsSidedefs(&wadglobal, count + 1))
+            if (count + 1 < wf.num_entries && IsSidedefs(&wf, count + 1))
             {
                 // We will write both LINEDEFS and SIDEDEFS when we reach
                 // the next lump.
                 SPAMMY_PRINTF("\tDeferred... (0%%)\n");
                 written = true;
             }
-            else if (IsSidedefs(&wadglobal, count))
+            else if (IsSidedefs(&wf, count))
             {
                 bool success;
 
                 SPAMMY_PRINTF("\tPacking");
                 fflush(stdout);
-                findshrink = wadglobal.entries[count].length;
+                findshrink = wf.entries[count].length;
 
-                success = P_Pack(&wadglobal, count);
+                success = P_Pack(&wf, count);
 
-                wadglobal.entries[count - 1].offset = ftell(fstream);
-                wadglobal.entries[count - 1].length = P_WriteLinedefs(fstream);
+                wf.entries[count - 1].offset = ftell(fstream);
+                wf.entries[count - 1].length = P_WriteLinedefs(fstream);
 
-                wadglobal.entries[count].offset = ftell(fstream);
-                wadglobal.entries[count].length = P_WriteSidedefs(fstream);
+                wf.entries[count].offset = ftell(fstream);
+                wf.entries[count].length = P_WriteSidedefs(fstream);
 
                 written = true;
 
-                findshrink =
-                    FindPerc(findshrink, wadglobal.entries[count].length);
+                findshrink = FindPerc(findshrink, wf.entries[count].length);
                 if (success)
                 {
                     SPAMMY_PRINTF(" (%i%%), done.\n", findshrink);
@@ -393,19 +395,18 @@ static bool Compress(const char *wadname)
             }
         }
 
-        if (allowstack &&
-            !strncmp(wadglobal.entries[count].name, "BLOCKMAP", 8))
+        if (allowstack && !strncmp(wf.entries[count].name, "BLOCKMAP", 8))
         {
             bool success;
 
             SPAMMY_PRINTF("\tStacking ");
-            findshrink = wadglobal.entries[count].length;
+            findshrink = wf.entries[count].length;
 
-            success = B_Stack(&wadglobal, count);
-            wadglobal.entries[count].offset = ftell(fstream);
-            wadglobal.entries[count].length = B_WriteBlockmap(fstream);
+            success = B_Stack(&wf, count);
+            wf.entries[count].offset = ftell(fstream);
+            wf.entries[count].length = B_WriteBlockmap(fstream);
 
-            findshrink = FindPerc(findshrink, wadglobal.entries[count].length);
+            findshrink = FindPerc(findshrink, wf.entries[count].length);
             if (success)
             {
                 SPAMMY_PRINTF("(%i%%), done.\n", findshrink);
@@ -420,26 +421,26 @@ static bool Compress(const char *wadname)
             written = true;
         }
 
-        if (allowsquash && S_IsGraphic(&wadglobal, count))
+        if (allowsquash && S_IsGraphic(&wf, count))
         {
             SPAMMY_PRINTF("\tSquashing ");
             fflush(stdout);
-            findshrink = wadglobal.entries[count].length;
+            findshrink = wf.entries[count].length;
 
-            temp = S_Squash(&wadglobal, count);
-            wadglobal.entries[count].offset = ftell(fstream);
-            fwrite(temp, wadglobal.entries[count].length, 1, fstream);
+            temp = S_Squash(&wf, count);
+            wf.entries[count].offset = ftell(fstream);
+            fwrite(temp, wf.entries[count].length, 1, fstream);
 
             free(temp);
-            findshrink = FindPerc(findshrink, wadglobal.entries[count].length);
+            findshrink = FindPerc(findshrink, wf.entries[count].length);
             SPAMMY_PRINTF("(%i%%), done.\n", findshrink);
             written = true;
         }
 
-        if (!written && wadglobal.entries[count].length == 0)
+        if (!written && wf.entries[count].length == 0)
         {
             SPAMMY_PRINTF("\tEmpty (0%%).\n");
-            wadglobal.entries[count].offset = 0;
+            wf.entries[count].offset = 0;
             written = true;
         }
 
@@ -447,37 +448,37 @@ static bool Compress(const char *wadname)
         {
             SPAMMY_PRINTF("\tStoring ");
             fflush(stdout);
-            temp = CacheLump(&wadglobal, count);
-            wadglobal.entries[count].offset = ftell(fstream);
-            fwrite(temp, wadglobal.entries[count].length, 1, fstream);
+            temp = CacheLump(&wf, count);
+            wf.entries[count].offset = ftell(fstream);
+            fwrite(temp, wf.entries[count].length, 1, fstream);
             free(temp);
             SPAMMY_PRINTF("(0%%), done.\n");
         }
     }
 
     // Write new directory:
-    wadglobal.diroffset = ftell(fstream);
-    WriteWadDirectory(&wadglobal, fstream);
-    WriteWadHeader(&wadglobal, fstream);
+    wf.diroffset = ftell(fstream);
+    WriteWadDirectory(&wf, fstream);
+    WriteWadHeader(&wf, fstream);
 
     fclose(fstream);
-    fclose(wadglobal.fp);
+    fclose(wf.fp);
 
     if (allowmerge)
     {
         char *tempwad2_name;
 
-        wadglobal.fp = fopen(tempwad_name, "rb+");
+        wf.fp = fopen(tempwad_name, "rb+");
         fstream = OpenTempFile(outputwad != NULL ? outputwad : wadname,
                                &tempwad2_name);
 
         SPAMMY_PRINTF("\nMerging identical lumps...");
         fflush(stdout);
-        RebuildMergedWad(&wadglobal, fstream);
+        RebuildMergedWad(&wf, fstream);
         SPAMMY_PRINTF(" done.\n");
 
         fclose(fstream);
-        fclose(wadglobal.fp);
+        fclose(wf.fp);
 
         remove(tempwad_name);
         free(tempwad_name);
@@ -500,20 +501,21 @@ static bool Compress(const char *wadname)
 
     free(tempwad_name);
 
-    findshrink = FindPerc(wadsize, wadglobal.diroffset +
-                                       (wadglobal.num_entries * ENTRY_SIZE));
-    SPAMMY_PRINTF(
-        "*** %s is %ld bytes smaller (%d%%) ***\n",
-        outputwad != NULL ? outputwad : wadname,
-        wadsize - (wadglobal.diroffset + wadglobal.num_entries * ENTRY_SIZE),
-        findshrink);
-    wadglobal.fp = NULL;
+    findshrink =
+        FindPerc(wadsize, wf.diroffset + (wf.num_entries * ENTRY_SIZE));
+    SPAMMY_PRINTF("*** %s is %ld bytes smaller (%d%%) ***\n",
+                  outputwad != NULL ? outputwad : wadname,
+                  wadsize - (wf.diroffset + wf.num_entries * ENTRY_SIZE),
+                  findshrink);
+
+    free(wf.entries);
 
     return true;
 }
 
 static bool Uncompress(const char *wadname)
 {
+    wad_file_t wf;
     char tempstr[50], *tempwad_name;
     FILE *fstream;
     uint8_t *tempres;
@@ -521,56 +523,57 @@ static bool Uncompress(const char *wadname)
     long fileloc;
     int count;
 
-    wadglobal.fp = fopen(wadname, "rb");
-    if (wadglobal.fp == NULL)
+    memset(&wf, 0, sizeof(wad_file_t));
+
+    wf.fp = fopen(wadname, "rb");
+    if (wf.fp == NULL)
     {
         perror("fopen");
         return false;
     }
-    if (!ReadWad(&wadglobal))
+    if (!ReadWad(&wf))
     {
         return false;
     }
-    if (wadglobal.type == IWAD && !IwadWarning(wadname))
+    if (wf.type == IWAD && !IwadWarning(wadname))
     {
         return false;
     }
-    CheckHexenFormat(&wadglobal, wadname);
+    CheckHexenFormat(&wf, wadname);
 
     fstream = OpenTempFile(wadname, &tempwad_name);
     memset(tempstr, 0, 12);
     fwrite(tempstr, 12, 1, fstream); // temp header
 
-    for (count = 0; count < wadglobal.num_entries; count++)
+    for (count = 0; count < wf.num_entries; count++)
     {
         written = false;
 
-        SPAMMY_PRINTF("Adding: %.8s       ", wadglobal.entries[count].name);
+        SPAMMY_PRINTF("Adding: %.8s       ", wf.entries[count].name);
         fflush(stdout);
 
         if (allowpack)
         {
-            if (count + 1 < wadglobal.num_entries &&
-                IsSidedefs(&wadglobal, count + 1))
+            if (count + 1 < wf.num_entries && IsSidedefs(&wf, count + 1))
             {
                 // Write on next loop.
                 SPAMMY_PRINTF("\tDeferred...\n");
                 written = true;
             }
-            else if (IsSidedefs(&wadglobal, count))
+            else if (IsSidedefs(&wf, count))
             {
                 bool success;
 
                 SPAMMY_PRINTF("\tUnpacking");
                 fflush(stdout);
 
-                success = P_Unpack(&wadglobal, count);
+                success = P_Unpack(&wf, count);
 
-                wadglobal.entries[count - 1].offset = ftell(fstream);
-                wadglobal.entries[count - 1].length = P_WriteLinedefs(fstream);
+                wf.entries[count - 1].offset = ftell(fstream);
+                wf.entries[count - 1].length = P_WriteLinedefs(fstream);
 
-                wadglobal.entries[count].offset = ftell(fstream);
-                wadglobal.entries[count].length = P_WriteSidedefs(fstream);
+                wf.entries[count].offset = ftell(fstream);
+                wf.entries[count].length = P_WriteSidedefs(fstream);
 
                 if (success)
                 {
@@ -584,17 +587,16 @@ static bool Uncompress(const char *wadname)
                 written = true;
             }
         }
-        if (allowstack &&
-            !strncmp(wadglobal.entries[count].name, "BLOCKMAP", 8))
+        if (allowstack && !strncmp(wf.entries[count].name, "BLOCKMAP", 8))
         {
             bool success;
 
             SPAMMY_PRINTF("\tUnstacking");
             fflush(stdout);
 
-            success = B_Unstack(&wadglobal, count);
-            wadglobal.entries[count].offset = ftell(fstream);
-            wadglobal.entries[count].length = B_WriteBlockmap(fstream);
+            success = B_Unstack(&wf, count);
+            wf.entries[count].offset = ftell(fstream);
+            wf.entries[count].length = B_WriteBlockmap(fstream);
 
             if (success)
             {
@@ -608,22 +610,22 @@ static bool Uncompress(const char *wadname)
             written = true;
         }
 
-        if (allowsquash && S_IsGraphic(&wadglobal, count))
+        if (allowsquash && S_IsGraphic(&wf, count))
         {
             SPAMMY_PRINTF("\tUnsquashing");
             fflush(stdout);
-            tempres = S_Unsquash(&wadglobal, count);
-            wadglobal.entries[count].offset = ftell(fstream);
-            fwrite(tempres, wadglobal.entries[count].length, 1, fstream);
+            tempres = S_Unsquash(&wf, count);
+            wf.entries[count].offset = ftell(fstream);
+            fwrite(tempres, wf.entries[count].length, 1, fstream);
             free(tempres);
             SPAMMY_PRINTF(", done\n");
             written = true;
         }
 
-        if (!written && wadglobal.entries[count].length == 0)
+        if (!written && wf.entries[count].length == 0)
         {
             SPAMMY_PRINTF("\tEmpty.\n");
-            wadglobal.entries[count].offset = 0;
+            wf.entries[count].offset = 0;
             written = true;
         }
 
@@ -631,21 +633,22 @@ static bool Uncompress(const char *wadname)
         {
             SPAMMY_PRINTF("\tStoring");
             fflush(stdout);
-            tempres = CacheLump(&wadglobal, count);
+            tempres = CacheLump(&wf, count);
             fileloc = ftell(fstream);
-            fwrite(tempres, wadglobal.entries[count].length, 1, fstream);
+            fwrite(tempres, wf.entries[count].length, 1, fstream);
             free(tempres);
-            wadglobal.entries[count].offset = fileloc;
+            wf.entries[count].offset = fileloc;
             SPAMMY_PRINTF(", done.\n");
         }
     }
     // update the directory location
-    wadglobal.diroffset = ftell(fstream);
-    WriteWadDirectory(&wadglobal, fstream);
-    WriteWadHeader(&wadglobal, fstream);
+    wf.diroffset = ftell(fstream);
+    WriteWadDirectory(&wf, fstream);
+    WriteWadHeader(&wf, fstream);
 
     fclose(fstream);
-    fclose(wadglobal.fp);
+    fclose(wf.fp);
+    free(wf.entries);
 
     if (outputwad == NULL)
     {
@@ -659,7 +662,6 @@ static bool Uncompress(const char *wadname)
     }
 
     free(tempwad_name);
-    wadglobal.fp = NULL;
 
     if (blockmap_failures)
     {
@@ -727,45 +729,51 @@ static const char *CompressionMethod(wad_file_t *wf, int lumpnum)
 
 static bool ListEntries(const char *wadname)
 {
+    wad_file_t wf;
     int i, j;
 
-    wadglobal.fp = fopen(wadname, "rb");
-    if (wadglobal.fp == NULL)
+    memset(&wf, 0, sizeof(wad_file_t));
+
+    wf.fp = fopen(wadname, "rb");
+    if (wf.fp == NULL)
     {
         perror("fopen");
         return false;
     }
-    if (!ReadWad(&wadglobal))
+    if (!ReadWad(&wf))
     {
         return false;
     }
-    CheckHexenFormat(&wadglobal, wadname);
+    CheckHexenFormat(&wf, wadname);
 
     SPAMMY_PRINTF(
         " Number  Length  Offset      Method      Name        Shared\n"
         " ------  ------  ------      ------      ----        ------\n");
 
-    for (i = 0; i < wadglobal.num_entries; i++)
+    for (i = 0; i < wf.num_entries; i++)
     {
         printf("%7d %7ld  0x%08lx  %-11s %-8.8s    ", i + 1,
-               wadglobal.entries[i].length, wadglobal.entries[i].offset,
-               CompressionMethod(&wadglobal, i), wadglobal.entries[i].name);
+               wf.entries[i].length, wf.entries[i].offset,
+               CompressionMethod(&wf, i), wf.entries[i].name);
 
         // shared resource?
-        for (j = 0; wadglobal.entries[i].length > 0 && j < i; j++)
+        for (j = 0; wf.entries[i].length > 0 && j < i; j++)
         {
-            if (wadglobal.entries[j].offset == wadglobal.entries[i].offset &&
-                wadglobal.entries[j].length == wadglobal.entries[i].length)
+            if (wf.entries[j].offset == wf.entries[i].offset &&
+                wf.entries[j].length == wf.entries[i].length)
             {
-                printf("%.8s\n", wadglobal.entries[j].name);
+                printf("%.8s\n", wf.entries[j].name);
                 break;
             }
         }
-        if (wadglobal.entries[i].length == 0 || j >= i)
+        if (wf.entries[i].length == 0 || j >= i)
         {
             printf("No\n");
         }
     }
+
+    fclose(wf.fp);
+    free(wf.entries);
 
     return true;
 }
