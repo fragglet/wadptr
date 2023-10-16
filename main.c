@@ -420,13 +420,13 @@ static bool Compress(const char *wadname)
             written = true;
         }
 
-        if (allowsquash && S_IsGraphic(count))
+        if (allowsquash && S_IsGraphic(&wadglobal, count))
         {
             SPAMMY_PRINTF("\tSquashing ");
             fflush(stdout);
             findshrink = wadglobal.entries[count].length;
 
-            temp = S_Squash(count);
+            temp = S_Squash(&wadglobal, count);
             wadglobal.entries[count].offset = ftell(fstream);
             fwrite(temp, wadglobal.entries[count].length, 1, fstream);
 
@@ -607,11 +607,11 @@ static bool Uncompress(const char *wadname)
             written = true;
         }
 
-        if (allowsquash && S_IsGraphic(count))
+        if (allowsquash && S_IsGraphic(&wadglobal, count))
         {
             SPAMMY_PRINTF("\tUnsquashing");
             fflush(stdout);
-            tempres = S_Unsquash(count);
+            tempres = S_Unsquash(&wadglobal, count);
             wadglobal.entries[count].offset = ftell(fstream);
             fwrite(tempres, wadglobal.entries[count].length, 1, fstream);
             free(tempres);
@@ -694,10 +694,10 @@ static const char *CompressionMethod(int lumpnum)
             return "Unpacked";
         }
     }
-    else if (S_IsGraphic(lumpnum))
+    else if (S_IsGraphic(&wadglobal, lumpnum))
     {
         // This is a graphic:
-        if (S_IsSquashed(lumpnum))
+        if (S_IsSquashed(&wadglobal, lumpnum))
         {
             return "Squashed";
         }

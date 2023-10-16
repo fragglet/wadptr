@@ -22,9 +22,11 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-uint8_t *S_Squash(int entrynum);
-uint8_t *S_Unsquash(int entrynum);
-bool S_IsSquashed(int entrynum);
-bool S_IsGraphic(int entrynum);
+#include "waddir.h"
+
+uint8_t *S_Squash(wad_file_t *wf, int entrynum);
+uint8_t *S_Unsquash(wad_file_t *wf, int entrynum);
+bool S_IsSquashed(wad_file_t *wf, int entrynum);
+bool S_IsGraphic(wad_file_t *wf, int entrynum);
 
 #endif

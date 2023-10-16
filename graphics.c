@@ -56,23 +56,23 @@ static int LargestColumnCompare(unsigned int index1, unsigned int index2,
     return colsize[index2] - colsize[index1];
 }
 
-// Squashes a graphic. Call with the lump name - eg. S_Squash("TITLEPIC");
-// returns a pointer to the new(compressed) lump. This must be free()d when
-// it is no longer needed, as S_Squash() does not do this itself.
-uint8_t *S_Squash(int entrynum)
+// Squashes a graphic. Call with the lump number, returns a pointer to the
+// new(compressed) lump. This must be free()d when it is no longer needed, as
+// S_Squash() does not do this itself.
+uint8_t *S_Squash(wad_file_t *wf, int entrynum)
 {
     uint8_t *oldlump, *newres;
     size_t newres_len, newres_size;
     unsigned int *sorted_map;
     int i, i2;
 
-    if (!S_IsGraphic(entrynum))
+    if (!S_IsGraphic(wf, entrynum))
     {
         return NULL;
     }
-    oldlump = CacheLump(&wadglobal, entrynum);
+    oldlump = CacheLump(wf, entrynum);
 
-    ParseLump(oldlump, wadglobal.entries[entrynum].length);
+    ParseLump(oldlump, wf->entries[entrynum].length);
 
     // We build the sorted map so that we iterate over columns by order of
     // decreasing size; this maximizes the chance of being able to make a
@@ -126,7 +126,7 @@ uint8_t *S_Squash(int entrynum)
 
     free(sorted_map);
 
-    if (!unsquash_mode && newres_len > wadglobal.entries[entrynum].length)
+    if (!unsquash_mode && newres_len > wf->entries[entrynum].length)
     {
         // The new resource was bigger than the old one!
         free(newres);
@@ -134,7 +134,7 @@ uint8_t *S_Squash(int entrynum)
     }
     else
     {
-        wadglobal.entries[entrynum].length = newres_len;
+        wf->entries[entrynum].length = newres_len;
         free(oldlump);
         return newres;
     }
@@ -143,12 +143,12 @@ uint8_t *S_Squash(int entrynum)
 // Unsquash a picture. Unsquashing rebuilds the image, just like when we
 // do the squashing, except that we set a special flag that skips
 // searching for identical columns.
-uint8_t *S_Unsquash(int entrynum)
+uint8_t *S_Unsquash(wad_file_t *wf, int entrynum)
 {
     uint8_t *result;
 
     unsquash_mode = true;
-    result = S_Squash(entrynum);
+    result = S_Squash(wf, entrynum);
     unsquash_mode = false;
 
     return result;
@@ -200,14 +200,14 @@ static int FindColumnLength(int x, const uint8_t *column, size_t len)
     }
 }
 
-bool S_IsSquashed(int entrynum)
+bool S_IsSquashed(wad_file_t *wf, int entrynum)
 {
     bool result = false;
     uint8_t *pic;
     int x, x2;
 
-    pic = CacheLump(&wadglobal, entrynum);
-    ParseLump(pic, wadglobal.entries[entrynum].length);
+    pic = CacheLump(wf, entrynum);
+    ParseLump(pic, wf->entries[entrynum].length);
 
     for (x = 0; !result && x < width; x++)
     {
@@ -225,10 +225,10 @@ bool S_IsSquashed(int entrynum)
     return result;
 }
 
-bool S_IsGraphic(int entrynum)
+bool S_IsGraphic(wad_file_t *wf, int entrynum)
 {
     uint8_t *graphic, *columns;
-    char *s = wadglobal.entries[entrynum].name;
+    char *s = wf->entries[entrynum].name;
     int count;
     short width, height;
 
@@ -242,26 +242,26 @@ bool S_IsGraphic(int entrynum)
         return false;
     }
 
-    if (wadglobal.entries[entrynum].length < 8)
+    if (wf->entries[entrynum].length < 8)
     {
         // too short
         return false;
     }
-    graphic = CacheLump(&wadglobal, entrynum);
+    graphic = CacheLump(wf, entrynum);
 
     width = READ_SHORT(graphic);
     height = READ_SHORT(graphic + 2);
     columns = graphic + 8;
 
     if (width > 320 || height > 200 || width <= 0 || height <= 0 ||
-        8 + width * 4 > wadglobal.entries[entrynum].length)
+        8 + width * 4 > wf->entries[entrynum].length)
     {
         free(graphic);
         return false;
     }
 
-    if (wadglobal.entries[entrynum].length == 4096 || // flat
-        wadglobal.entries[entrynum].length == 4000)   // endoom
+    if (wf->entries[entrynum].length == 4096 || // flat
+        wf->entries[entrynum].length == 4000)   // endoom
     {
         // It could be a graphic, but better safe than sorry
         free(graphic);
@@ -270,7 +270,7 @@ bool S_IsGraphic(int entrynum)
 
     for (count = 0; count < width; count++)
     {
-        if (READ_LONG(columns + 4 * count) > wadglobal.entries[entrynum].length)
+        if (READ_LONG(columns + 4 * count) > wf->entries[entrynum].length)
         {
             // Can't be a graphic resource; offset outside lump
             free(graphic);
