@@ -282,7 +282,7 @@ bool P_IsPacked(int sidedef_num)
 
     linedefs = ReadLinedefs(linedefnum);
 
-    num_sidedefs = wadentry[sidedefnum].length / SDEF_SIZE;
+    num_sidedefs = wadglobal.entries[sidedefnum].length / SDEF_SIZE;
     sidedef_used = ALLOC_ARRAY(uint8_t, num_sidedefs);
     for (count = 0; count < num_sidedefs; count++)
     {
@@ -465,17 +465,18 @@ static void RemapLinedefs(linedef_array_t *linedefs)
 static void CheckLumpSizes(void)
 {
     unsigned int linedef_size = LinedefSize();
-    if ((wadentry[linedefnum].length % linedef_size) != 0)
+    if ((wadglobal.entries[linedefnum].length % linedef_size) != 0)
     {
         ErrorExit("RebuildSidedefs: LINEDEFS lump (#%d) is %d bytes, "
                   "not a multiple of %d",
-                  linedefnum, wadentry[linedefnum].length, linedef_size);
+                  linedefnum, wadglobal.entries[linedefnum].length,
+                  linedef_size);
     }
-    if ((wadentry[sidedefnum].length % SDEF_SIZE) != 0)
+    if ((wadglobal.entries[sidedefnum].length % SDEF_SIZE) != 0)
     {
         ErrorExit("RebuildSidedefs: SIDEDEFS lump (#%d) is %d bytes, "
                   "not a multiple of %d",
-                  sidedefnum, wadentry[sidedefnum].length, SDEF_SIZE);
+                  sidedefnum, wadglobal.entries[sidedefnum].length, SDEF_SIZE);
     }
 }
 
@@ -549,7 +550,7 @@ static linedef_array_t ReadDoomLinedefs(int lumpnum)
     uint8_t *cptr, *lump;
     int i;
 
-    result.len = wadentry[lumpnum].length / LDEF_SIZE;
+    result.len = wadglobal.entries[lumpnum].length / LDEF_SIZE;
     result.lines = ALLOC_ARRAY(linedef_t, result.len);
     lump = CacheLump(lumpnum);
     cptr = lump;
@@ -599,7 +600,7 @@ static linedef_array_t ReadHexenLinedefs(int lumpnum)
     uint8_t *cptr, *lump;
     int i;
 
-    result.len = wadentry[lumpnum].length / HX_LDEF_SIZE;
+    result.len = wadglobal.entries[lumpnum].length / HX_LDEF_SIZE;
     result.lines = ALLOC_ARRAY(linedef_t, result.len);
     lump = CacheLump(lumpnum);
     cptr = lump;
@@ -651,7 +652,7 @@ static sidedef_array_t ReadSidedefs(int lumpnum)
     uint8_t *cptr, *lump;
     int i;
 
-    result.len = wadentry[lumpnum].length / SDEF_SIZE;
+    result.len = wadglobal.entries[lumpnum].length / SDEF_SIZE;
     result.sides = ALLOC_ARRAY(sidedef_t, result.len);
     lump = CacheLump(lumpnum);
     cptr = lump;

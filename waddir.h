@@ -32,6 +32,13 @@ typedef struct {
     char name[8];
 } entry_t;
 
+typedef struct {
+    FILE *fp;
+    wadtype type;
+    long num_entries, diroffset;
+    entry_t *entries;
+} wad_file_t;
+
 // Portable structure I/O:
 #define ENTRY_OFF  0
 #define ENTRY_LEN  4
@@ -47,9 +54,6 @@ int WriteWadDirectory(FILE *fp);
 
 bool IsLevelEntry(char *s);
 
-extern FILE *wadfp;
-extern long numentries, diroffset;
-extern entry_t *wadentry;
-extern wadtype wad;
+extern wad_file_t wadglobal;
 
 #endif

@@ -243,7 +243,7 @@ static bool IsOverflowedBlockmap(const blockmap_t *blockmap)
 
 bool B_Stack(int lumpnum)
 {
-    blockmap_t blockmap = ReadBlockmap(lumpnum, wadfp);
+    blockmap_t blockmap = ReadBlockmap(lumpnum, wadglobal.fp);
 
     if (IsOverflowedBlockmap(&blockmap))
     {
@@ -281,7 +281,7 @@ bool B_Stack(int lumpnum)
 
 bool B_Unstack(int lumpnum)
 {
-    blockmap_t blockmap = ReadBlockmap(lumpnum, wadfp);
+    blockmap_t blockmap = ReadBlockmap(lumpnum, wadglobal.fp);
 
     blockmap_result = RebuildBlockmap(&blockmap, false);
     if (blockmap_result.len == 0)
@@ -308,7 +308,7 @@ bool B_IsStacked(int lumpnum)
     bool result = false;
     int i;
 
-    blockmap_t blockmap = ReadBlockmap(lumpnum, wadfp);
+    blockmap_t blockmap = ReadBlockmap(lumpnum, wadglobal.fp);
 
     block_offsets = &blockmap.elements[4];
     sorted_map =
@@ -340,7 +340,7 @@ static blockmap_t ReadBlockmap(int lumpnum, FILE *fp)
     blockmap_t result;
     int i;
 
-    result.len = wadentry[lumpnum].length / sizeof(uint16_t);
+    result.len = wadglobal.entries[lumpnum].length / sizeof(uint16_t);
     if (result.len < 4)
     {
         ErrorExit("BLOCKMAP lump too short: %d < %d header size", result.len,

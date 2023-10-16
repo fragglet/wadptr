@@ -32,7 +32,8 @@ typedef struct {
 static int CompareFunc(unsigned int index1, unsigned int index2,
                        const void *callback_data)
 {
-    return strncmp(wadentry[index1].name, wadentry[index2].name, 8);
+    return strncmp(wadglobal.entries[index1].name,
+                   wadglobal.entries[index2].name, 8);
 }
 
 static void HashData(uint8_t *data, size_t data_len, sha1_digest_t hash)
@@ -80,16 +81,16 @@ void RebuildMergedWad(FILE *newwad)
     // is SIDEDEFS lumps which contain large numbers of texture names; placing
     // all within the same location in the WAD file assists the compression
     // algorithm.
-    sorted_map = MakeSortedMap(numentries, CompareFunc, NULL);
+    sorted_map = MakeSortedMap(wadglobal.num_entries, CompareFunc, NULL);
 
-    lumps = ALLOC_ARRAY(lump_data_t, numentries);
+    lumps = ALLOC_ARRAY(lump_data_t, wadglobal.num_entries);
     num_lumps = 0;
 
     fwrite(iwad_name, 1, 4, newwad);
     fwrite(&along, 4, 1, newwad);
     fwrite(&along, 4, 1, newwad);
 
-    for (i = 0; i < numentries; i++)
+    for (i = 0; i < wadglobal.num_entries; i++)
     {
         sha1_digest_t hash;
         const lump_data_t *ld;
@@ -97,28 +98,28 @@ void RebuildMergedWad(FILE *newwad)
 
         if ((i % 100) == 0)
         {
-            PrintProgress(i, numentries);
+            PrintProgress(i, wadglobal.num_entries);
         }
 
         cached = CacheLump(lumpnum);
-        HashData(cached, wadentry[lumpnum].length, hash);
+        HashData(cached, wadglobal.entries[lumpnum].length, hash);
         ld = FindExistingLump(lumps, num_lumps, hash);
 
         if (ld == NULL)
         {
             memcpy(lumps[num_lumps].hash, hash, sizeof(sha1_digest_t));
             lumps[num_lumps].offset = ftell(newwad);
-            fwrite(cached, 1, wadentry[lumpnum].length, newwad);
+            fwrite(cached, 1, wadglobal.entries[lumpnum].length, newwad);
             ld = &lumps[num_lumps];
             ++num_lumps;
         }
 
-        wadentry[lumpnum].offset = ld->offset;
+        wadglobal.entries[lumpnum].offset = ld->offset;
         free(cached);
     }
 
     // Write the wad directory for the new WAD:
-    diroffset = ftell(newwad);
+    wadglobal.diroffset = ftell(newwad);
     WriteWadDirectory(newwad);
     WriteWadHeader(newwad);
 

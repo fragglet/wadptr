@@ -72,7 +72,7 @@ uint8_t *S_Squash(int entrynum)
     }
     oldlump = CacheLump(entrynum);
 
-    ParseLump(oldlump, wadentry[entrynum].length);
+    ParseLump(oldlump, wadglobal.entries[entrynum].length);
 
     // We build the sorted map so that we iterate over columns by order of
     // decreasing size; this maximizes the chance of being able to make a
@@ -126,7 +126,7 @@ uint8_t *S_Squash(int entrynum)
 
     free(sorted_map);
 
-    if (!unsquash_mode && newres_len > wadentry[entrynum].length)
+    if (!unsquash_mode && newres_len > wadglobal.entries[entrynum].length)
     {
         // The new resource was bigger than the old one!
         free(newres);
@@ -134,7 +134,7 @@ uint8_t *S_Squash(int entrynum)
     }
     else
     {
-        wadentry[entrynum].length = newres_len;
+        wadglobal.entries[entrynum].length = newres_len;
         free(oldlump);
         return newres;
     }
@@ -207,7 +207,7 @@ bool S_IsSquashed(int entrynum)
     int x, x2;
 
     pic = CacheLump(entrynum);
-    ParseLump(pic, wadentry[entrynum].length);
+    ParseLump(pic, wadglobal.entries[entrynum].length);
 
     for (x = 0; !result && x < width; x++)
     {
@@ -228,7 +228,7 @@ bool S_IsSquashed(int entrynum)
 bool S_IsGraphic(int entrynum)
 {
     uint8_t *graphic, *columns;
-    char *s = wadentry[entrynum].name;
+    char *s = wadglobal.entries[entrynum].name;
     int count;
     short width, height;
 
@@ -242,7 +242,7 @@ bool S_IsGraphic(int entrynum)
         return false;
     }
 
-    if (wadentry[entrynum].length < 8)
+    if (wadglobal.entries[entrynum].length < 8)
     {
         // too short
         return false;
@@ -254,14 +254,14 @@ bool S_IsGraphic(int entrynum)
     columns = graphic + 8;
 
     if (width > 320 || height > 200 || width <= 0 || height <= 0 ||
-        8 + width * 4 > wadentry[entrynum].length)
+        8 + width * 4 > wadglobal.entries[entrynum].length)
     {
         free(graphic);
         return false;
     }
 
-    if (wadentry[entrynum].length == 4096 || // flat
-        wadentry[entrynum].length == 4000)   // endoom
+    if (wadglobal.entries[entrynum].length == 4096 || // flat
+        wadglobal.entries[entrynum].length == 4000)   // endoom
     {
         // It could be a graphic, but better safe than sorry
         free(graphic);
@@ -270,7 +270,7 @@ bool S_IsGraphic(int entrynum)
 
     for (count = 0; count < width; count++)
     {
-        if (READ_LONG(columns + 4 * count) > wadentry[entrynum].length)
+        if (READ_LONG(columns + 4 * count) > wadglobal.entries[entrynum].length)
         {
             // Can't be a graphic resource; offset outside lump
             free(graphic);
