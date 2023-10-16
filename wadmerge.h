@@ -21,6 +21,8 @@
 
 #include <stdio.h>
 
-void RebuildMergedWad(FILE *outwad);
+#include "waddir.h"
+
+void RebuildMergedWad(wad_file_t *wf, FILE *outwad);
 
 #endif

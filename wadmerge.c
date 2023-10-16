@@ -32,8 +32,8 @@ typedef struct {
 static int CompareFunc(unsigned int index1, unsigned int index2,
                        const void *callback_data)
 {
-    return strncmp(wadglobal.entries[index1].name,
-                   wadglobal.entries[index2].name, 8);
+    const wad_file_t *wf = callback_data;
+    return strncmp(wf->entries[index1].name, wf->entries[index2].name, 8);
 }
 
 static void HashData(uint8_t *data, size_t data_len, sha1_digest_t hash)
@@ -64,7 +64,9 @@ static const lump_data_t *FindExistingLump(lump_data_t *lumps, int num_lumps,
     return NULL;
 }
 
-void RebuildMergedWad(FILE *newwad)
+// TODO: This function mutates the directory of the passed wad_file_t, and
+// it should not.
+void RebuildMergedWad(wad_file_t *wf, FILE *newwad)
 {
     unsigned int *sorted_map;
     lump_data_t *lumps;
@@ -81,16 +83,16 @@ void RebuildMergedWad(FILE *newwad)
     // is SIDEDEFS lumps which contain large numbers of texture names; placing
     // all within the same location in the WAD file assists the compression
     // algorithm.
-    sorted_map = MakeSortedMap(wadglobal.num_entries, CompareFunc, NULL);
+    sorted_map = MakeSortedMap(wf->num_entries, CompareFunc, wf);
 
-    lumps = ALLOC_ARRAY(lump_data_t, wadglobal.num_entries);
+    lumps = ALLOC_ARRAY(lump_data_t, wf->num_entries);
     num_lumps = 0;
 
     fwrite(iwad_name, 1, 4, newwad);
     fwrite(&along, 4, 1, newwad);
     fwrite(&along, 4, 1, newwad);
 
-    for (i = 0; i < wadglobal.num_entries; i++)
+    for (i = 0; i < wf->num_entries; i++)
     {
         sha1_digest_t hash;
         const lump_data_t *ld;
@@ -98,30 +100,30 @@ void RebuildMergedWad(FILE *newwad)
 
         if ((i % 100) == 0)
         {
-            PrintProgress(i, wadglobal.num_entries);
+            PrintProgress(i, wf->num_entries);
         }
 
-        cached = CacheLump(&wadglobal, lumpnum);
-        HashData(cached, wadglobal.entries[lumpnum].length, hash);
+        cached = CacheLump(wf, lumpnum);
+        HashData(cached, wf->entries[lumpnum].length, hash);
         ld = FindExistingLump(lumps, num_lumps, hash);
 
         if (ld == NULL)
         {
             memcpy(lumps[num_lumps].hash, hash, sizeof(sha1_digest_t));
             lumps[num_lumps].offset = ftell(newwad);
-            fwrite(cached, 1, wadglobal.entries[lumpnum].length, newwad);
+            fwrite(cached, 1, wf->entries[lumpnum].length, newwad);
             ld = &lumps[num_lumps];
             ++num_lumps;
         }
 
-        wadglobal.entries[lumpnum].offset = ld->offset;
+        wf->entries[lumpnum].offset = ld->offset;
         free(cached);
     }
 
     // Write the wad directory for the new WAD:
-    wadglobal.diroffset = ftell(newwad);
-    WriteWadDirectory(&wadglobal, newwad);
-    WriteWadHeader(&wadglobal, newwad);
+    wf->diroffset = ftell(newwad);
+    WriteWadDirectory(wf, newwad);
+    WriteWadHeader(wf, newwad);
 
     free(lumps);
     free(sorted_map);
