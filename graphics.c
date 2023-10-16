@@ -70,7 +70,7 @@ uint8_t *S_Squash(int entrynum)
     {
         return NULL;
     }
-    oldlump = CacheLump(entrynum);
+    oldlump = CacheLump(&wadglobal, entrynum);
 
     ParseLump(oldlump, wadglobal.entries[entrynum].length);
 
@@ -206,7 +206,7 @@ bool S_IsSquashed(int entrynum)
     uint8_t *pic;
     int x, x2;
 
-    pic = CacheLump(entrynum);
+    pic = CacheLump(&wadglobal, entrynum);
     ParseLump(pic, wadglobal.entries[entrynum].length);
 
     for (x = 0; !result && x < width; x++)
@@ -247,7 +247,7 @@ bool S_IsGraphic(int entrynum)
         // too short
         return false;
     }
-    graphic = CacheLump(entrynum);
+    graphic = CacheLump(&wadglobal, entrynum);
 
     width = READ_SHORT(graphic);
     height = READ_SHORT(graphic + 2);

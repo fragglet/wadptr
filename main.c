@@ -301,7 +301,7 @@ static void Help(void)
 // looking for the presence of a BEHAVIOR lump, which is unique to this format.
 static void CheckHexenFormat(const char *filename)
 {
-    hexen_format_wad = EntryExists("BEHAVIOR") >= 0;
+    hexen_format_wad = EntryExists(&wadglobal, "BEHAVIOR") >= 0;
 }
 
 // LINEDEFS and SIDEDEFS lumps follow each other in Doom WADs. This is
@@ -328,7 +328,7 @@ static bool Compress(const char *wadname)
         perror("fopen");
         return false;
     }
-    if (!ReadWad())
+    if (!ReadWad(&wadglobal))
     {
         return false;
     }
@@ -447,7 +447,7 @@ static bool Compress(const char *wadname)
         {
             SPAMMY_PRINTF("\tStoring ");
             fflush(stdout);
-            temp = CacheLump(count);
+            temp = CacheLump(&wadglobal, count);
             wadglobal.entries[count].offset = ftell(fstream);
             fwrite(temp, wadglobal.entries[count].length, 1, fstream);
             free(temp);
@@ -457,8 +457,8 @@ static bool Compress(const char *wadname)
 
     // Write new directory:
     wadglobal.diroffset = ftell(fstream);
-    WriteWadDirectory(fstream);
-    WriteWadHeader(fstream);
+    WriteWadDirectory(&wadglobal, fstream);
+    WriteWadHeader(&wadglobal, fstream);
 
     fclose(fstream);
     fclose(wadglobal.fp);
@@ -527,7 +527,7 @@ static bool Uncompress(const char *wadname)
         perror("fopen");
         return false;
     }
-    if (!ReadWad())
+    if (!ReadWad(&wadglobal))
     {
         return false;
     }
@@ -630,7 +630,7 @@ static bool Uncompress(const char *wadname)
         {
             SPAMMY_PRINTF("\tStoring");
             fflush(stdout);
-            tempres = CacheLump(count);
+            tempres = CacheLump(&wadglobal, count);
             fileloc = ftell(fstream);
             fwrite(tempres, wadglobal.entries[count].length, 1, fstream);
             free(tempres);
@@ -640,8 +640,8 @@ static bool Uncompress(const char *wadname)
     }
     // update the directory location
     wadglobal.diroffset = ftell(fstream);
-    WriteWadDirectory(fstream);
-    WriteWadHeader(fstream);
+    WriteWadDirectory(&wadglobal, fstream);
+    WriteWadHeader(&wadglobal, fstream);
 
     fclose(fstream);
     fclose(wadglobal.fp);
@@ -734,7 +734,7 @@ static bool ListEntries(const char *wadname)
         perror("fopen");
         return false;
     }
-    if (!ReadWad())
+    if (!ReadWad(&wadglobal))
     {
         return false;
     }

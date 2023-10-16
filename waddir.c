@@ -26,7 +26,7 @@
 // should be eliminated.
 wad_file_t wadglobal;
 
-static int ReadWadHeader(FILE *fp)
+static int ReadWadHeader(wad_file_t *wf, FILE *fp)
 {
     unsigned char buff[5];
     int wadType;
@@ -34,8 +34,8 @@ static int ReadWadHeader(FILE *fp)
     rewind(fp);
     buff[4] = 0;
     fread(buff, 4, 1, fp);
-    wadglobal.num_entries = 0;
-    wadglobal.diroffset = 0;
+    wf->num_entries = 0;
+    wf->diroffset = 0;
 
     if (strcmp((char *) buff, pwad_name) == 0)
     {
@@ -51,13 +51,13 @@ static int ReadWadHeader(FILE *fp)
         return NONWAD;
     }
     fread(buff, 4, 1, fp);
-    wadglobal.num_entries = READ_LONG(buff);
+    wf->num_entries = READ_LONG(buff);
     fread(buff, 4, 1, fp);
-    wadglobal.diroffset = READ_LONG(buff);
+    wf->diroffset = READ_LONG(buff);
     return wadType;
 }
 
-static int ReadWadEntry(FILE *fp, entry_t *entry)
+static int ReadWadEntry(wad_file_t *wf, FILE *fp, entry_t *entry)
 {
     unsigned char buff[ENTRY_SIZE];
 
@@ -70,54 +70,53 @@ static int ReadWadEntry(FILE *fp, entry_t *entry)
     return 0;
 }
 
-static int ReadWadDirectory(FILE *fp)
+static int ReadWadDirectory(wad_file_t *wf, FILE *fp)
 {
     long i;
 
-    wadglobal.entries =
-        REALLOC_ARRAY(entry_t, wadglobal.entries, wadglobal.num_entries);
-    for (i = 0; i < wadglobal.num_entries; i++)
+    wf->entries = REALLOC_ARRAY(entry_t, wf->entries, wf->num_entries);
+    for (i = 0; i < wf->num_entries; i++)
     {
-        if (ReadWadEntry(fp, wadglobal.entries + i) != 0)
+        if (ReadWadEntry(wf, fp, wf->entries + i) != 0)
             return -1;
     }
     return 0;
 }
 
-bool ReadWad(void)
+bool ReadWad(wad_file_t *wf)
 {
-    if ((wadglobal.type = ReadWadHeader(wadglobal.fp)) == NONWAD)
+    if ((wf->type = ReadWadHeader(wf, wf->fp)) == NONWAD)
     {
         return false;
     }
 
-    fseek(wadglobal.fp, wadglobal.diroffset, SEEK_SET);
-    ReadWadDirectory(wadglobal.fp);
+    fseek(wf->fp, wf->diroffset, SEEK_SET);
+    ReadWadDirectory(wf, wf->fp);
 
     return true;
 }
 
-int WriteWadHeader(FILE *fp)
+int WriteWadHeader(wad_file_t *wf, FILE *fp)
 {
     char buff[5];
 
     rewind(fp);
-    if (wadglobal.type == PWAD)
+    if (wf->type == PWAD)
     {
         strncpy(buff, pwad_name, 4);
     }
-    else if (wadglobal.type == IWAD)
+    else if (wf->type == IWAD)
     {
         strncpy(buff, iwad_name, 4);
     }
     else
     {
-        ErrorExit("Trying to write a WAD of type %d?", wadglobal.type);
+        ErrorExit("Trying to write a WAD of type %d?", wf->type);
     }
     fwrite(buff, 1, 4, fp);
-    WRITE_LONG(buff, wadglobal.num_entries);
+    WRITE_LONG(buff, wf->num_entries);
     fwrite(buff, 1, 4, fp);
-    WRITE_LONG(buff, wadglobal.diroffset);
+    WRITE_LONG(buff, wf->diroffset);
     fwrite(buff, 1, 4, fp);
     return 0;
 }
@@ -133,24 +132,24 @@ static int WriteWadEntry(FILE *fp, entry_t *entry)
     return (fwrite(buff, 1, ENTRY_SIZE, fp) == ENTRY_SIZE) ? 0 : -1;
 }
 
-int WriteWadDirectory(FILE *fp)
+int WriteWadDirectory(wad_file_t *wf, FILE *fp)
 {
     long i;
 
-    for (i = 0; i < wadglobal.num_entries; i++)
+    for (i = 0; i < wf->num_entries; i++)
     {
-        if (WriteWadEntry(fp, wadglobal.entries + i) != 0)
+        if (WriteWadEntry(fp, wf->entries + i) != 0)
             return -1;
     }
     return 0;
 }
 
-int EntryExists(char *entrytofind)
+int EntryExists(wad_file_t *wf, char *entrytofind)
 {
     int count;
-    for (count = 0; count < wadglobal.num_entries; count++)
+    for (count = 0; count < wf->num_entries; count++)
     {
-        if (!strncmp(wadglobal.entries[count].name, entrytofind, 8))
+        if (!strncmp(wf->entries[count].name, entrytofind, 8))
             return count;
     }
     return -1;
@@ -158,25 +157,24 @@ int EntryExists(char *entrytofind)
 
 // Load a lump into memory.
 // The name is misleading; nothing is being cached.
-void *CacheLump(int entrynum)
+void *CacheLump(wad_file_t *wf, int entrynum)
 {
-    uint8_t *working = ALLOC_ARRAY(uint8_t, wadglobal.entries[entrynum].length);
+    uint8_t *working = ALLOC_ARRAY(uint8_t, wf->entries[entrynum].length);
     size_t read;
 
-    if (fseek(wadglobal.fp, wadglobal.entries[entrynum].offset, SEEK_SET) != 0)
+    if (fseek(wf->fp, wf->entries[entrynum].offset, SEEK_SET) != 0)
     {
         perror("fseek");
         ErrorExit("Error during seek to read %.8s lump, offset 0x%08x",
-                  wadglobal.entries[entrynum].name,
-                  wadglobal.entries[entrynum].offset);
+                  wf->entries[entrynum].name, wf->entries[entrynum].offset);
     }
-    read = fread(working, 1, wadglobal.entries[entrynum].length, wadglobal.fp);
-    if (read < wadglobal.entries[entrynum].length)
+    read = fread(working, 1, wf->entries[entrynum].length, wf->fp);
+    if (read < wf->entries[entrynum].length)
     {
         perror("fread");
         ErrorExit("Error reading %.8s lump: %d of %d bytes read",
-                  wadglobal.entries[entrynum].name, read,
-                  wadglobal.entries[entrynum].length);
+                  wf->entries[entrynum].name, read,
+                  wf->entries[entrynum].length);
     }
 
     return working;

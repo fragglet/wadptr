@@ -346,7 +346,7 @@ static blockmap_t ReadBlockmap(int lumpnum, FILE *fp)
         ErrorExit("BLOCKMAP lump too short: %d < %d header size", result.len,
                   4);
     }
-    result.elements = CacheLump(lumpnum);
+    result.elements = CacheLump(&wadglobal, lumpnum);
 
     for (i = 0; i < result.len; i++)
     {

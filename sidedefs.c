@@ -552,7 +552,7 @@ static linedef_array_t ReadDoomLinedefs(int lumpnum)
 
     result.len = wadglobal.entries[lumpnum].length / LDEF_SIZE;
     result.lines = ALLOC_ARRAY(linedef_t, result.len);
-    lump = CacheLump(lumpnum);
+    lump = CacheLump(&wadglobal, lumpnum);
     cptr = lump;
     for (i = 0; i < result.len; i++)
     {
@@ -602,7 +602,7 @@ static linedef_array_t ReadHexenLinedefs(int lumpnum)
 
     result.len = wadglobal.entries[lumpnum].length / HX_LDEF_SIZE;
     result.lines = ALLOC_ARRAY(linedef_t, result.len);
-    lump = CacheLump(lumpnum);
+    lump = CacheLump(&wadglobal, lumpnum);
     cptr = lump;
     for (i = 0; i < result.len; i++)
     {
@@ -654,7 +654,7 @@ static sidedef_array_t ReadSidedefs(int lumpnum)
 
     result.len = wadglobal.entries[lumpnum].length / SDEF_SIZE;
     result.sides = ALLOC_ARRAY(sidedef_t, result.len);
-    lump = CacheLump(lumpnum);
+    lump = CacheLump(&wadglobal, lumpnum);
     cptr = lump;
     for (i = 0; i < result.len; i++)
     {

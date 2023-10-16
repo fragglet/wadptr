@@ -45,12 +45,14 @@ typedef struct {
 #define ENTRY_NAME 8
 #define ENTRY_SIZE 16
 
-bool ReadWad(void);
-int EntryExists(char *entrytofind);
-void *CacheLump(int entrynum);
+// TODO: The API here for opening and closing WAD files is terrible and
+// ought to be completely reworked.
+bool ReadWad(wad_file_t *wf);
+int EntryExists(wad_file_t *wf, char *entrytofind);
+void *CacheLump(wad_file_t *wf, int entrynum);
 
-int WriteWadHeader(FILE *fp);
-int WriteWadDirectory(FILE *fp);
+int WriteWadHeader(wad_file_t *wf, FILE *fp);
+int WriteWadDirectory(wad_file_t *wf, FILE *fp);
 
 bool IsLevelEntry(char *s);
 

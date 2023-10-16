@@ -101,7 +101,7 @@ void RebuildMergedWad(FILE *newwad)
             PrintProgress(i, wadglobal.num_entries);
         }
 
-        cached = CacheLump(lumpnum);
+        cached = CacheLump(&wadglobal, lumpnum);
         HashData(cached, wadglobal.entries[lumpnum].length, hash);
         ld = FindExistingLump(lumps, num_lumps, hash);
 
@@ -120,8 +120,8 @@ void RebuildMergedWad(FILE *newwad)
 
     // Write the wad directory for the new WAD:
     wadglobal.diroffset = ftell(newwad);
-    WriteWadDirectory(newwad);
-    WriteWadHeader(newwad);
+    WriteWadDirectory(&wadglobal, newwad);
+    WriteWadHeader(&wadglobal, newwad);
 
     free(lumps);
     free(sorted_map);
