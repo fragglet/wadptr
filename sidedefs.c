@@ -107,7 +107,7 @@ typedef struct {
     size_t len, size;
 } sidedef_array_t;
 
-static void CheckLumpSizes(void);
+static void CheckLumpSizes(wad_file_t *wf);
 static sidedef_array_t DoPack(const sidedef_array_t *sidedefs);
 static void RemapLinedefs(linedef_array_t *linedefs);
 static void RebuildSidedefs(const linedef_array_t *linedefs,
@@ -115,9 +115,9 @@ static void RebuildSidedefs(const linedef_array_t *linedefs,
                             linedef_array_t *ldresult,
                             sidedef_array_t *sdresult);
 
-static linedef_array_t ReadDoomLinedefs(int lumpnum);
-static linedef_array_t ReadHexenLinedefs(int lumpnum);
-static sidedef_array_t ReadSidedefs(int lumpnum);
+static linedef_array_t ReadDoomLinedefs(wad_file_t *wf, int lumpnum);
+static linedef_array_t ReadHexenLinedefs(wad_file_t *wf, int lumpnum);
+static sidedef_array_t ReadSidedefs(wad_file_t *wf, int lumpnum);
 static void WriteDoomLinedefs(const linedef_array_t *linedefs, FILE *fp);
 static void WriteHexenLinedefs(const linedef_array_t *linedefs, FILE *fp);
 static void WriteSidedefs(const sidedef_array_t *sidedefs, FILE *fp);
@@ -142,15 +142,15 @@ static size_t LinedefSize(void)
     return LDEF_SIZE;
 }
 
-static linedef_array_t ReadLinedefs(int lumpnum)
+static linedef_array_t ReadLinedefs(wad_file_t *wf, int lumpnum)
 {
     if (hexen_format_wad)
     {
-        return ReadHexenLinedefs(lumpnum);
+        return ReadHexenLinedefs(wf, lumpnum);
     }
     else
     {
-        return ReadDoomLinedefs(lumpnum);
+        return ReadDoomLinedefs(wf, lumpnum);
     }
 }
 
@@ -160,7 +160,7 @@ static linedef_array_t ReadLinedefs(int lumpnum)
 // P_WriteSidedefs().
 // Returns true for success; false if sidedef packing failed (likely
 // because the result would overflow the limits of the format).
-bool P_Pack(int sidedef_num)
+bool P_Pack(wad_file_t *wf, int sidedef_num)
 {
     sidedef_array_t orig_sidedefs, unpacked_sidedefs;
     linedef_array_t orig_linedefs;
@@ -168,10 +168,10 @@ bool P_Pack(int sidedef_num)
     linedefnum = sidedef_num - 1;
     sidedefnum = sidedef_num;
 
-    CheckLumpSizes();
+    CheckLumpSizes(wf);
 
-    orig_sidedefs = ReadSidedefs(sidedefnum);
-    orig_linedefs = ReadLinedefs(linedefnum);
+    orig_sidedefs = ReadSidedefs(wf, sidedefnum);
+    orig_linedefs = ReadLinedefs(wf, linedefnum);
 
     RebuildSidedefs(&orig_linedefs, &orig_sidedefs, &linedefs_result,
                     &unpacked_sidedefs);
@@ -221,7 +221,7 @@ size_t P_WriteSidedefs(FILE *fstream)
 
 // Performs the reverse of P_Pack(). Again, the result must be written
 // using P_WriteSidedefs() and P_WriteLinedefs().
-bool P_Unpack(int sidedef_num)
+bool P_Unpack(wad_file_t *wf, int sidedef_num)
 {
     linedef_array_t orig_linedefs;
     sidedef_array_t orig_sidedefs;
@@ -229,10 +229,10 @@ bool P_Unpack(int sidedef_num)
     linedefnum = sidedef_num - 1;
     sidedefnum = sidedef_num;
 
-    CheckLumpSizes();
+    CheckLumpSizes(wf);
 
-    orig_linedefs = ReadLinedefs(linedefnum);
-    orig_sidedefs = ReadSidedefs(sidedefnum);
+    orig_linedefs = ReadLinedefs(wf, linedefnum);
+    orig_sidedefs = ReadSidedefs(wf, sidedefnum);
 
     RebuildSidedefs(&orig_linedefs, &orig_sidedefs, &linedefs_result,
                     &sidedefs_result);
@@ -268,7 +268,7 @@ static void CheckSidedefIndex(int linedef_index, sidedef_ref_t sidedef_index,
     }
 }
 
-bool P_IsPacked(int sidedef_num)
+bool P_IsPacked(wad_file_t *wf, int sidedef_num)
 {
     linedef_array_t linedefs;
     uint8_t *sidedef_used;
@@ -280,9 +280,9 @@ bool P_IsPacked(int sidedef_num)
     linedefnum = sidedef_num - 1;
     sidedefnum = sidedef_num;
 
-    linedefs = ReadLinedefs(linedefnum);
+    linedefs = ReadLinedefs(wf, linedefnum);
 
-    num_sidedefs = wadglobal.entries[sidedefnum].length / SDEF_SIZE;
+    num_sidedefs = wf->entries[sidedefnum].length / SDEF_SIZE;
     sidedef_used = ALLOC_ARRAY(uint8_t, num_sidedefs);
     for (count = 0; count < num_sidedefs; count++)
     {
@@ -462,21 +462,20 @@ static void RemapLinedefs(linedef_array_t *linedefs)
     free(newsidedef_index);
 }
 
-static void CheckLumpSizes(void)
+static void CheckLumpSizes(wad_file_t *wf)
 {
     unsigned int linedef_size = LinedefSize();
-    if ((wadglobal.entries[linedefnum].length % linedef_size) != 0)
+    if ((wf->entries[linedefnum].length % linedef_size) != 0)
     {
         ErrorExit("RebuildSidedefs: LINEDEFS lump (#%d) is %d bytes, "
                   "not a multiple of %d",
-                  linedefnum, wadglobal.entries[linedefnum].length,
-                  linedef_size);
+                  linedefnum, wf->entries[linedefnum].length, linedef_size);
     }
-    if ((wadglobal.entries[sidedefnum].length % SDEF_SIZE) != 0)
+    if ((wf->entries[sidedefnum].length % SDEF_SIZE) != 0)
     {
         ErrorExit("RebuildSidedefs: SIDEDEFS lump (#%d) is %d bytes, "
                   "not a multiple of %d",
-                  sidedefnum, wadglobal.entries[sidedefnum].length, SDEF_SIZE);
+                  sidedefnum, wf->entries[sidedefnum].length, SDEF_SIZE);
     }
 }
 
@@ -544,15 +543,15 @@ static sidedef_ref_t MapSidedefRef(uint16_t val)
     return val;
 }
 
-static linedef_array_t ReadDoomLinedefs(int lumpnum)
+static linedef_array_t ReadDoomLinedefs(wad_file_t *wf, int lumpnum)
 {
     linedef_array_t result;
     uint8_t *cptr, *lump;
     int i;
 
-    result.len = wadglobal.entries[lumpnum].length / LDEF_SIZE;
+    result.len = wf->entries[lumpnum].length / LDEF_SIZE;
     result.lines = ALLOC_ARRAY(linedef_t, result.len);
-    lump = CacheLump(&wadglobal, lumpnum);
+    lump = CacheLump(wf, lumpnum);
     cptr = lump;
     for (i = 0; i < result.len; i++)
     {
@@ -594,15 +593,15 @@ static void WriteDoomLinedefs(const linedef_array_t *linedefs, FILE *fp)
     }
 }
 
-static linedef_array_t ReadHexenLinedefs(int lumpnum)
+static linedef_array_t ReadHexenLinedefs(wad_file_t *wf, int lumpnum)
 {
     linedef_array_t result;
     uint8_t *cptr, *lump;
     int i;
 
-    result.len = wadglobal.entries[lumpnum].length / HX_LDEF_SIZE;
+    result.len = wf->entries[lumpnum].length / HX_LDEF_SIZE;
     result.lines = ALLOC_ARRAY(linedef_t, result.len);
-    lump = CacheLump(&wadglobal, lumpnum);
+    lump = CacheLump(wf, lumpnum);
     cptr = lump;
     for (i = 0; i < result.len; i++)
     {
@@ -646,15 +645,15 @@ static void WriteHexenLinedefs(const linedef_array_t *linedefs, FILE *fp)
     }
 }
 
-static sidedef_array_t ReadSidedefs(int lumpnum)
+static sidedef_array_t ReadSidedefs(wad_file_t *wf, int lumpnum)
 {
     sidedef_array_t result;
     uint8_t *cptr, *lump;
     int i;
 
-    result.len = wadglobal.entries[lumpnum].length / SDEF_SIZE;
+    result.len = wf->entries[lumpnum].length / SDEF_SIZE;
     result.sides = ALLOC_ARRAY(sidedef_t, result.len);
-    lump = CacheLump(&wadglobal, lumpnum);
+    lump = CacheLump(wf, lumpnum);
     cptr = lump;
     for (i = 0; i < result.len; i++)
     {

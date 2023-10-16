@@ -369,7 +369,7 @@ static bool Compress(const char *wadname)
                 fflush(stdout);
                 findshrink = wadglobal.entries[count].length;
 
-                success = P_Pack(count);
+                success = P_Pack(&wadglobal, count);
 
                 wadglobal.entries[count - 1].offset = ftell(fstream);
                 wadglobal.entries[count - 1].length = P_WriteLinedefs(fstream);
@@ -563,7 +563,7 @@ static bool Uncompress(const char *wadname)
                 SPAMMY_PRINTF("\tUnpacking");
                 fflush(stdout);
 
-                success = P_Unpack(count);
+                success = P_Unpack(&wadglobal, count);
 
                 wadglobal.entries[count - 1].offset = ftell(fstream);
                 wadglobal.entries[count - 1].length = P_WriteLinedefs(fstream);
@@ -685,7 +685,7 @@ static const char *CompressionMethod(int lumpnum)
     else if (IsSidedefs(lumpnum))
     {
         // This is a level:
-        if (P_IsPacked(lumpnum))
+        if (P_IsPacked(&wadglobal, lumpnum))
         {
             return "Packed";
         }
