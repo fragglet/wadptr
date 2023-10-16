@@ -299,18 +299,17 @@ static void Help(void)
 
 // Hexen levels have a slightly different format, and we can detect this by
 // looking for the presence of a BEHAVIOR lump, which is unique to this format.
-static void CheckHexenFormat(const char *filename)
+static void CheckHexenFormat(wad_file_t *wf, const char *filename)
 {
-    hexen_format_wad = EntryExists(&wadglobal, "BEHAVIOR") >= 0;
+    hexen_format_wad = EntryExists(wf, "BEHAVIOR") >= 0;
 }
 
 // LINEDEFS and SIDEDEFS lumps follow each other in Doom WADs. This is
 // baked into the engine - Doom doesn't actually even look at the names.
-static bool IsSidedefs(int count)
+static bool IsSidedefs(wad_file_t *wf, int count)
 {
-    return !strncmp(wadglobal.entries[count].name, "SIDEDEFS", 8) &&
-           count > 0 &&
-           !strncmp(wadglobal.entries[count - 1].name, "LINEDEFS", 8);
+    return !strncmp(wf->entries[count].name, "SIDEDEFS", 8) && count > 0 &&
+           !strncmp(wf->entries[count - 1].name, "LINEDEFS", 8);
 }
 
 static bool Compress(const char *wadname)
@@ -336,7 +335,7 @@ static bool Compress(const char *wadname)
     {
         return false;
     }
-    CheckHexenFormat(wadname);
+    CheckHexenFormat(&wadglobal, wadname);
 
     wadsize = wadglobal.diroffset + (ENTRY_SIZE * wadglobal.num_entries);
 
@@ -354,14 +353,15 @@ static bool Compress(const char *wadname)
 
         if (allowpack)
         {
-            if (count + 1 < wadglobal.num_entries && IsSidedefs(count + 1))
+            if (count + 1 < wadglobal.num_entries &&
+                IsSidedefs(&wadglobal, count + 1))
             {
                 // We will write both LINEDEFS and SIDEDEFS when we reach
                 // the next lump.
                 SPAMMY_PRINTF("\tDeferred... (0%%)\n");
                 written = true;
             }
-            else if (IsSidedefs(count))
+            else if (IsSidedefs(&wadglobal, count))
             {
                 bool success;
 
@@ -535,7 +535,7 @@ static bool Uncompress(const char *wadname)
     {
         return false;
     }
-    CheckHexenFormat(wadname);
+    CheckHexenFormat(&wadglobal, wadname);
 
     fstream = OpenTempFile(wadname, &tempwad_name);
     memset(tempstr, 0, 12);
@@ -550,13 +550,14 @@ static bool Uncompress(const char *wadname)
 
         if (allowpack)
         {
-            if (count + 1 < wadglobal.num_entries && IsSidedefs(count + 1))
+            if (count + 1 < wadglobal.num_entries &&
+                IsSidedefs(&wadglobal, count + 1))
             {
                 // Write on next loop.
                 SPAMMY_PRINTF("\tDeferred...\n");
                 written = true;
             }
-            else if (IsSidedefs(count))
+            else if (IsSidedefs(&wadglobal, count))
             {
                 bool success;
 
@@ -676,16 +677,16 @@ static bool Uncompress(const char *wadname)
     return true;
 }
 
-static const char *CompressionMethod(int lumpnum)
+static const char *CompressionMethod(wad_file_t *wf, int lumpnum)
 {
-    if (wadglobal.entries[lumpnum].length == 0)
+    if (wf->entries[lumpnum].length == 0)
     {
         return "Empty";
     }
-    else if (IsSidedefs(lumpnum))
+    else if (IsSidedefs(wf, lumpnum))
     {
         // This is a level:
-        if (P_IsPacked(&wadglobal, lumpnum))
+        if (P_IsPacked(wf, lumpnum))
         {
             return "Packed";
         }
@@ -694,10 +695,10 @@ static const char *CompressionMethod(int lumpnum)
             return "Unpacked";
         }
     }
-    else if (S_IsGraphic(&wadglobal, lumpnum))
+    else if (S_IsGraphic(wf, lumpnum))
     {
         // This is a graphic:
-        if (S_IsSquashed(&wadglobal, lumpnum))
+        if (S_IsSquashed(wf, lumpnum))
         {
             return "Squashed";
         }
@@ -706,9 +707,9 @@ static const char *CompressionMethod(int lumpnum)
             return "Unsquashed";
         }
     }
-    else if (!strncmp(wadglobal.entries[lumpnum].name, "BLOCKMAP", 8))
+    else if (!strncmp(wf->entries[lumpnum].name, "BLOCKMAP", 8))
     {
-        if (B_IsStacked(&wadglobal, lumpnum))
+        if (B_IsStacked(wf, lumpnum))
         {
             return "Stacked";
         }
@@ -738,7 +739,7 @@ static bool ListEntries(const char *wadname)
     {
         return false;
     }
-    CheckHexenFormat(wadname);
+    CheckHexenFormat(&wadglobal, wadname);
 
     SPAMMY_PRINTF(
         " Number  Length  Offset      Method      Name        Shared\n"
@@ -748,7 +749,7 @@ static bool ListEntries(const char *wadname)
     {
         printf("%7d %7ld  0x%08lx  %-11s %-8.8s    ", i + 1,
                wadglobal.entries[i].length, wadglobal.entries[i].offset,
-               CompressionMethod(i), wadglobal.entries[i].name);
+               CompressionMethod(&wadglobal, i), wadglobal.entries[i].name);
 
         // shared resource?
         for (j = 0; wadglobal.entries[i].length > 0 && j < i; j++)
