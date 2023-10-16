@@ -56,6 +56,4 @@ int WriteWadDirectory(wad_file_t *wf, FILE *fp);
 
 bool IsLevelEntry(char *s);
 
-extern wad_file_t wadglobal;
-
 #endif

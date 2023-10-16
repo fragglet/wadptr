@@ -22,10 +22,6 @@
 #include "waddir.h"
 #include "wadptr.h"
 
-// TODO: Lots of existing code depends on this; eventually this global
-// should be eliminated.
-wad_file_t wadglobal;
-
 static int ReadWadHeader(wad_file_t *wf, FILE *fp)
 {
     unsigned char buff[5];
