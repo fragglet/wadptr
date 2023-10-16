@@ -191,7 +191,7 @@ bool P_Pack(int sidedef_num)
 
     free(orig_sidedefs.sides);
     free(orig_linedefs.lines);
-    RemapLinedefs(&linedefs_result); /* update sidedef indexes */
+    RemapLinedefs(&linedefs_result);
     return true;
 }
 
@@ -286,7 +286,7 @@ bool P_IsPacked(int sidedef_num)
         sidedef_used[count] = 0;
     }
 
-    for (count = 0; count < linedefs.len; count++) /* now check */
+    for (count = 0; count < linedefs.len; count++)
     {
         if (linedefs.lines[count].sidedef1 != NO_SIDEDEF)
         {

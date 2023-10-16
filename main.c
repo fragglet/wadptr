@@ -138,7 +138,7 @@ int main(int argc, char *argv[])
     g_argc = argc; /* Set global cmd-line list */
     g_argv = argv;
 
-    ParseCommandLine(); /* Check cmd-lines */
+    ParseCommandLine();
 
     for (index = filelist_index; index < g_argc; ++index)
     {
@@ -259,8 +259,6 @@ static void ParseCommandLine(void)
     }
 }
 
-/* Does an action based on command line */
-
 static bool DoAction(const char *wadname)
 {
     switch (action)
@@ -310,8 +308,6 @@ static bool IsSidedefs(int count)
     return !strncmp(wadentry[count].name, "SIDEDEFS", 8) && count > 0 &&
            !strncmp(wadentry[count - 1].name, "LINEDEFS", 8);
 }
-
-/* Compress a WAD */
 
 static bool Compress(const char *wadname)
 {
@@ -425,7 +421,7 @@ static bool Compress(const char *wadname)
             findshrink = wadentry[count].length;
 
             temp = S_Squash(count);
-            wadentry[count].offset = ftell(fstream); /*update dir */
+            wadentry[count].offset = ftell(fstream);
             fwrite(temp, wadentry[count].length, 1, fstream);
 
             free(temp);
@@ -446,7 +442,7 @@ static bool Compress(const char *wadname)
             SPAMMY_PRINTF("\tStoring ");
             fflush(stdout);
             temp = CacheLump(count);
-            wadentry[count].offset = ftell(fstream); /*update dir */
+            wadentry[count].offset = ftell(fstream);
             fwrite(temp, wadentry[count].length, 1, fstream);
             free(temp);
             SPAMMY_PRINTF("(0%%), done.\n");
@@ -507,7 +503,6 @@ static bool Compress(const char *wadname)
     return true;
 }
 
-/* Uncompress a WAD */
 static bool Uncompress(const char *wadname)
 {
     char tempstr[50], *tempwad_name;
@@ -719,7 +714,6 @@ static const char *CompressionMethod(int lumpnum)
     }
 }
 
-/* List WAD entries */
 static bool ListEntries(const char *wadname)
 {
     int i, j;

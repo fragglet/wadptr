@@ -204,12 +204,11 @@ bool S_IsSquashed(int entrynum)
     uint8_t *pic;
     int x, x2;
 
-    pic = CacheLump(entrynum); /* cache the lump */
+    pic = CacheLump(entrynum);
     ParseLump(pic, wadentry[entrynum].length);
 
     for (x = 0; !result && x < width; x++)
     {
-        /* every previous column */
         for (x2 = 0; x2 < x; x2++)
         {
             if (columns[x] == columns[x2])
