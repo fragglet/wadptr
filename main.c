@@ -401,7 +401,7 @@ static bool Compress(const char *wadname)
             SPAMMY_PRINTF("\tStacking ");
             findshrink = wadglobal.entries[count].length;
 
-            success = B_Stack(count);
+            success = B_Stack(&wadglobal, count);
             wadglobal.entries[count].offset = ftell(fstream);
             wadglobal.entries[count].length = B_WriteBlockmap(fstream);
 
@@ -591,7 +591,7 @@ static bool Uncompress(const char *wadname)
             SPAMMY_PRINTF("\tUnstacking");
             fflush(stdout);
 
-            success = B_Unstack(count);
+            success = B_Unstack(&wadglobal, count);
             wadglobal.entries[count].offset = ftell(fstream);
             wadglobal.entries[count].length = B_WriteBlockmap(fstream);
 
@@ -708,7 +708,7 @@ static const char *CompressionMethod(int lumpnum)
     }
     else if (!strncmp(wadglobal.entries[lumpnum].name, "BLOCKMAP", 8))
     {
-        if (B_IsStacked(lumpnum))
+        if (B_IsStacked(&wadglobal, lumpnum))
         {
             return "Stacked";
         }

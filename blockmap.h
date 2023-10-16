@@ -22,9 +22,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-bool B_Stack(int lumpnum);
-bool B_Unstack(int lumpnum);
-bool B_IsStacked(int lumpnum);
+#include "waddir.h"
+
+bool B_Stack(wad_file_t *wf, int lumpnum);
+bool B_Unstack(wad_file_t *wf, int lumpnum);
+bool B_IsStacked(wad_file_t *wf, int lumpnum);
 size_t B_WriteBlockmap(FILE *fstream);
 
 #endif
