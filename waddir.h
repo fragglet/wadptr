@@ -24,8 +24,6 @@
 
 #include "errors.h"
 
-typedef enum { IWAD, PWAD, NONWAD } wadtype;
-
 typedef struct {
     long offset;
     long length;
@@ -34,7 +32,7 @@ typedef struct {
 
 typedef struct {
     FILE *fp;
-    wadtype type;
+    enum { IWAD, PWAD } type;
     long num_entries, diroffset;
     entry_t *entries;
 } wad_file_t;
@@ -43,6 +41,11 @@ typedef struct {
 #define IWAD_MAGIC "IWAD"
 
 // Portable structure I/O:
+#define WAD_HEADER_MAGIC       0
+#define WAD_HEADER_NUM_ENTRIES 4
+#define WAD_HEADER_DIR_OFFSET  8
+#define WAD_HEADER_SIZE        12
+
 #define ENTRY_OFF  0
 #define ENTRY_LEN  4
 #define ENTRY_NAME 8
@@ -50,12 +53,12 @@ typedef struct {
 
 // TODO: The API here for opening and closing WAD files is terrible and
 // ought to be completely reworked.
-bool ReadWad(wad_file_t *wf);
+void ReadWad(wad_file_t *wf);
 int EntryExists(wad_file_t *wf, char *entrytofind);
 void *CacheLump(wad_file_t *wf, int entrynum);
 
-int WriteWadHeader(wad_file_t *wf, FILE *fp);
-int WriteWadDirectory(wad_file_t *wf, FILE *fp);
+void WriteWadHeader(wad_file_t *wf, FILE *fp);
+void WriteWadDirectory(wad_file_t *wf, FILE *fp);
 
 bool IsLevelEntry(char *s);
 

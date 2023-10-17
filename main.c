@@ -328,10 +328,7 @@ static bool Compress(const char *wadname)
         perror("fopen");
         return false;
     }
-    if (!ReadWad(&wf))
-    {
-        return false;
-    }
+    ReadWad(&wf);
     if (wf.type == IWAD && !IwadWarning(wadname))
     {
         return false;
@@ -528,10 +525,7 @@ static bool Uncompress(const char *wadname)
         perror("fopen");
         return false;
     }
-    if (!ReadWad(&wf))
-    {
-        return false;
-    }
+    ReadWad(&wf);
     if (wf.type == IWAD && !IwadWarning(wadname))
     {
         return false;
@@ -737,10 +731,7 @@ static bool ListEntries(const char *wadname)
         perror("fopen");
         return false;
     }
-    if (!ReadWad(&wf))
-    {
-        return false;
-    }
+    ReadWad(&wf);
     CheckHexenFormat(&wf, wadname);
 
     SPAMMY_PRINTF(

@@ -22,121 +22,133 @@
 #include "waddir.h"
 #include "wadptr.h"
 
-static int ReadWadHeader(wad_file_t *wf, FILE *fp)
+static void ReadWadHeader(wad_file_t *wf)
 {
-    unsigned char buff[4];
-    int wadType;
+    uint8_t buf[WAD_HEADER_SIZE];
+    int bytes;
 
-    rewind(fp);
-    fread(buff, 4, 1, fp);
-    wf->num_entries = 0;
-    wf->diroffset = 0;
+    rewind(wf->fp);
 
-    if (memcmp(buff, PWAD_MAGIC, 4) == 0)
+    bytes = fread(buf, 1, WAD_HEADER_SIZE, wf->fp);
+    if (bytes != WAD_HEADER_SIZE)
     {
-        wadType = PWAD;
+        ErrorExit("Failed to read WAD header: read %d / %d bytes", bytes,
+                  WAD_HEADER_SIZE);
     }
-    else if (memcmp(buff, IWAD_MAGIC, 4) == 0)
+
+    if (memcmp(buf + WAD_HEADER_MAGIC, PWAD_MAGIC, 4) == 0)
     {
-        wadType = IWAD;
+        wf->type = PWAD;
+    }
+    else if (memcmp(buf + WAD_HEADER_MAGIC, IWAD_MAGIC, 4) == 0)
+    {
+        wf->type = IWAD;
     }
     else
     {
-        fprintf(stderr, "File is not an IWAD or a PWAD!\n");
-        return NONWAD;
+        ErrorExit("File does not have IWAD or PWAD magic string!");
     }
-    fread(buff, 4, 1, fp);
-    wf->num_entries = READ_LONG(buff);
-    fread(buff, 4, 1, fp);
-    wf->diroffset = READ_LONG(buff);
-    return wadType;
+
+    wf->num_entries = READ_LONG(buf + WAD_HEADER_NUM_ENTRIES);
+    wf->diroffset = READ_LONG(buf + WAD_HEADER_DIR_OFFSET);
 }
 
-static int ReadWadEntry(wad_file_t *wf, FILE *fp, entry_t *entry)
+static bool ReadWadEntry(wad_file_t *wf, entry_t *entry)
 {
-    unsigned char buff[ENTRY_SIZE];
+    unsigned char buf[ENTRY_SIZE];
 
-    if (fread(buff, 1, ENTRY_SIZE, fp) != ENTRY_SIZE)
-        return -1;
-    entry->offset = READ_LONG(buff + ENTRY_OFF);
-    entry->length = READ_LONG(buff + ENTRY_LEN);
-    memset(entry->name, 0, 8);
-    strncpy(entry->name, (char *) buff + ENTRY_NAME, 8);
-    return 0;
-}
-
-static int ReadWadDirectory(wad_file_t *wf, FILE *fp)
-{
-    long i;
-
-    wf->entries = REALLOC_ARRAY(entry_t, wf->entries, wf->num_entries);
-    for (i = 0; i < wf->num_entries; i++)
-    {
-        if (ReadWadEntry(wf, fp, wf->entries + i) != 0)
-            return -1;
-    }
-    return 0;
-}
-
-bool ReadWad(wad_file_t *wf)
-{
-    if ((wf->type = ReadWadHeader(wf, wf->fp)) == NONWAD)
+    if (fread(buf, 1, ENTRY_SIZE, wf->fp) != ENTRY_SIZE)
     {
         return false;
     }
 
-    fseek(wf->fp, wf->diroffset, SEEK_SET);
-    ReadWadDirectory(wf, wf->fp);
+    entry->offset = READ_LONG(buf + ENTRY_OFF);
+    entry->length = READ_LONG(buf + ENTRY_LEN);
+    memcpy(entry->name, buf + ENTRY_NAME, 8);
 
     return true;
 }
 
-int WriteWadHeader(wad_file_t *wf, FILE *fp)
+static void ReadWadDirectory(wad_file_t *wf)
 {
-    char buff[5];
+    unsigned int i;
+
+    if (fseek(wf->fp, wf->diroffset, SEEK_SET) != 0)
+    {
+        perror("fseek");
+        ErrorExit("Failed to seek to WAD directory");
+    }
+
+    wf->entries = REALLOC_ARRAY(entry_t, wf->entries, wf->num_entries);
+    for (i = 0; i < wf->num_entries; i++)
+    {
+        if (!ReadWadEntry(wf, &wf->entries[i]))
+        {
+            ErrorExit("Failed to read WAD directory; read %d / %d entries", i,
+                      wf->num_entries);
+        }
+    }
+}
+
+void ReadWad(wad_file_t *wf)
+{
+    ReadWadHeader(wf);
+    ReadWadDirectory(wf);
+}
+
+void WriteWadHeader(wad_file_t *wf, FILE *fp)
+{
+    uint8_t buf[WAD_HEADER_SIZE];
+    size_t bytes;
 
     rewind(fp);
-    if (wf->type == PWAD)
+
+    switch (wf->type)
     {
-        memcpy(buff, PWAD_MAGIC, 4);
+    case PWAD:
+        memcpy(buf + WAD_HEADER_MAGIC, PWAD_MAGIC, 4);
+        break;
+    case IWAD:
+        memcpy(buf + WAD_HEADER_MAGIC, IWAD_MAGIC, 4);
+        break;
     }
-    else if (wf->type == IWAD)
+
+    WRITE_LONG(buf + WAD_HEADER_NUM_ENTRIES, wf->num_entries);
+    WRITE_LONG(buf + WAD_HEADER_DIR_OFFSET, wf->diroffset);
+
+    bytes = fwrite(buf, 1, WAD_HEADER_SIZE, fp);
+    if (bytes != WAD_HEADER_SIZE)
     {
-        memcpy(buff, IWAD_MAGIC, 4);
+        ErrorExit("Failed to write WAD header: wrote %d / %d bytes", bytes,
+                  WAD_HEADER_SIZE);
     }
-    else
-    {
-        ErrorExit("Trying to write a WAD of type %d?", wf->type);
-    }
-    fwrite(buff, 1, 4, fp);
-    WRITE_LONG(buff, wf->num_entries);
-    fwrite(buff, 1, 4, fp);
-    WRITE_LONG(buff, wf->diroffset);
-    fwrite(buff, 1, 4, fp);
-    return 0;
 }
 
-static int WriteWadEntry(FILE *fp, entry_t *entry)
+static void WriteWadEntry(FILE *fp, entry_t *entry)
 {
-    char buff[ENTRY_SIZE + 1];
+    uint8_t buf[ENTRY_SIZE];
+    size_t bytes;
 
-    WRITE_LONG(buff + ENTRY_OFF, entry->offset);
-    WRITE_LONG(buff + ENTRY_LEN, entry->length);
-    memset(buff + ENTRY_NAME, 0, 8);
-    strncpy(buff + ENTRY_NAME, entry->name, 8);
-    return (fwrite(buff, 1, ENTRY_SIZE, fp) == ENTRY_SIZE) ? 0 : -1;
+    WRITE_LONG(buf + ENTRY_OFF, entry->offset);
+    WRITE_LONG(buf + ENTRY_LEN, entry->length);
+    memcpy(buf + ENTRY_NAME, entry->name, 8);
+
+    bytes = fwrite(buf, 1, ENTRY_SIZE, fp);
+    if (bytes != ENTRY_SIZE)
+    {
+        ErrorExit("Failed to write WAD entry: wrote %d / %d bytes", bytes,
+                  ENTRY_SIZE);
+    }
 }
 
-int WriteWadDirectory(wad_file_t *wf, FILE *fp)
+void WriteWadDirectory(wad_file_t *wf, FILE *fp)
 {
-    long i;
+    unsigned int i;
 
     for (i = 0; i < wf->num_entries; i++)
     {
-        if (WriteWadEntry(fp, wf->entries + i) != 0)
-            return -1;
+        WriteWadEntry(fp, wf->entries + i);
     }
-    return 0;
 }
 
 int EntryExists(wad_file_t *wf, char *entrytofind)
