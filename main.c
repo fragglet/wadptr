@@ -380,9 +380,7 @@ static bool Compress(const char *wadname)
                 success = P_Pack(&wf, count);
 
                 P_WriteLinedefs(fstream, &wf.entries[count - 1]);
-
-                wf.entries[count].offset = ftell(fstream);
-                wf.entries[count].length = P_WriteSidedefs(fstream);
+                P_WriteSidedefs(fstream, &wf.entries[count]);
 
                 written = true;
 
@@ -569,9 +567,7 @@ static bool Uncompress(const char *wadname)
                 success = P_Unpack(&wf, count);
 
                 P_WriteLinedefs(fstream, &wf.entries[count - 1]);
-
-                wf.entries[count].offset = ftell(fstream);
-                wf.entries[count].length = P_WriteSidedefs(fstream);
+                P_WriteSidedefs(fstream, &wf.entries[count]);
 
                 if (success)
                 {

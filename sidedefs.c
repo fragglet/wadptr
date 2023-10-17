@@ -216,11 +216,13 @@ void P_WriteLinedefs(FILE *fstream, entry_t *entry)
     free(linedefs_result.lines);
 }
 
-size_t P_WriteSidedefs(FILE *fstream)
+void P_WriteSidedefs(FILE *fstream, entry_t *entry)
 {
+    entry->offset = WriteWadLump(fstream, NULL, 0);
+    entry->length = sidedefs_result.len * SDEF_SIZE;
+
     WriteSidedefs(&sidedefs_result, fstream);
     free(sidedefs_result.sides);
-    return sidedefs_result.len * SDEF_SIZE;
 }
 
 // Performs the reverse of P_Pack(). Again, the result must be written
