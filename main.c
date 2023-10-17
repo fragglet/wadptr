@@ -327,7 +327,7 @@ static bool Compress(const char *wadname)
     FILE *fstream;
     bool written;
     uint8_t *temp;
-    char *tempwad_name, a[50];
+    char *tempwad_name;
 
     // TODO: This should be unnecessary:
     memset(&wf, 0, sizeof(wad_file_t));
@@ -349,10 +349,6 @@ static bool Compress(const char *wadname)
 
     fstream =
         OpenTempFile(outputwad != NULL ? outputwad : wadname, &tempwad_name);
-
-    // TODO: Remove this temp header code once everything uses WriteWadLump()
-    memset(a, 0, 12);
-    fwrite(a, 12, 1, fstream);
 
     for (count = 0; count < wf.num_entries; count++)
     {
@@ -515,7 +511,7 @@ static bool Compress(const char *wadname)
 static bool Uncompress(const char *wadname)
 {
     wad_file_t wf;
-    char tempstr[50], *tempwad_name;
+    char *tempwad_name;
     FILE *fstream;
     uint8_t *tempres;
     bool written, blockmap_failures = false, sidedefs_failures = false;
@@ -537,10 +533,6 @@ static bool Uncompress(const char *wadname)
     CheckHexenFormat(&wf, wadname);
 
     fstream = OpenTempFile(wadname, &tempwad_name);
-
-    // TODO: Remove this temp header code once everything uses WriteWadLump()
-    memset(tempstr, 0, 12);
-    fwrite(tempstr, 12, 1, fstream);
 
     for (count = 0; count < wf.num_entries; count++)
     {
