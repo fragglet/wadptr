@@ -63,8 +63,8 @@ void ReadWad(wad_file_t *wf);
 int EntryExists(wad_file_t *wf, char *entrytofind);
 void *CacheLump(wad_file_t *wf, int entrynum);
 
-void WriteWadHeader(wad_file_t *wf, FILE *fp);
-void WriteWadDirectory(wad_file_t *wf, FILE *fp);
+void WriteWadDirectory(FILE *fp, wad_file_type_t type, entry_t *entries,
+                       size_t num_entries);
 uint32_t WriteWadLump(FILE *fp, void *buf, size_t len);
 
 bool IsLevelEntry(char *s);

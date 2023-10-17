@@ -96,14 +96,15 @@ void ReadWad(wad_file_t *wf)
     ReadWadDirectory(wf);
 }
 
-void WriteWadHeader(wad_file_t *wf, FILE *fp)
+static void WriteWadHeader(FILE *fp, wad_file_type_t type,
+                           uint32_t num_entries, uint32_t dir_offset)
 {
     uint8_t buf[WAD_HEADER_SIZE];
     size_t bytes;
 
     rewind(fp);
 
-    switch (wf->type)
+    switch (type)
     {
     case WAD_FILE_PWAD:
         memcpy(buf + WAD_HEADER_MAGIC, PWAD_MAGIC, 4);
@@ -113,8 +114,8 @@ void WriteWadHeader(wad_file_t *wf, FILE *fp)
         break;
     }
 
-    WRITE_LONG(buf + WAD_HEADER_NUM_ENTRIES, wf->num_entries);
-    WRITE_LONG(buf + WAD_HEADER_DIR_OFFSET, wf->diroffset);
+    WRITE_LONG(buf + WAD_HEADER_NUM_ENTRIES, num_entries);
+    WRITE_LONG(buf + WAD_HEADER_DIR_OFFSET, dir_offset);
 
     bytes = fwrite(buf, 1, WAD_HEADER_SIZE, fp);
     if (bytes != WAD_HEADER_SIZE)
@@ -141,14 +142,18 @@ static void WriteWadEntry(FILE *fp, entry_t *entry)
     }
 }
 
-void WriteWadDirectory(wad_file_t *wf, FILE *fp)
+void WriteWadDirectory(FILE *fp, wad_file_type_t type, entry_t *entries,
+                       size_t num_entries)
 {
+    long dir_offset = ftell(fp);
     unsigned int i;
 
-    for (i = 0; i < wf->num_entries; i++)
+    for (i = 0; i < num_entries; i++)
     {
-        WriteWadEntry(fp, wf->entries + i);
+        WriteWadEntry(fp, entries + i);
     }
+
+    WriteWadHeader(fp, type, num_entries, dir_offset);
 }
 
 uint32_t WriteWadLump(FILE *fp, void *buf, size_t len)

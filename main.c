@@ -451,10 +451,7 @@ static bool Compress(const char *wadname)
         }
     }
 
-    // Write new directory:
-    wf.diroffset = ftell(fstream);
-    WriteWadDirectory(&wf, fstream);
-    WriteWadHeader(&wf, fstream);
+    WriteWadDirectory(fstream, wf.type, wf.entries, wf.num_entries);
 
     fclose(fstream);
     fclose(wf.fp);
@@ -633,10 +630,8 @@ static bool Uncompress(const char *wadname)
             SPAMMY_PRINTF(", done.\n");
         }
     }
-    // update the directory location
-    wf.diroffset = ftell(fstream);
-    WriteWadDirectory(&wf, fstream);
-    WriteWadHeader(&wf, fstream);
+
+    WriteWadDirectory(fstream, wf.type, wf.entries, wf.num_entries);
 
     fclose(fstream);
     fclose(wf.fp);

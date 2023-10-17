@@ -116,9 +116,7 @@ void RebuildMergedWad(wad_file_t *wf, FILE *newwad)
     }
 
     // Write the wad directory for the new WAD:
-    wf->diroffset = ftell(newwad);
-    WriteWadDirectory(wf, newwad);
-    WriteWadHeader(wf, newwad);
+    WriteWadDirectory(newwad, wf->type, wf->entries, wf->num_entries);
 
     free(lumps);
     free(sorted_map);
