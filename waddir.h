@@ -58,6 +58,7 @@ typedef struct {
 #define ENTRY_SIZE 16
 
 bool OpenWadFile(wad_file_t *wf, const char *filename);
+void CloseWadFile(wad_file_t *wf);
 
 int EntryExists(wad_file_t *wf, char *entrytofind);
 void *CacheLump(wad_file_t *wf, int entrynum);

@@ -110,6 +110,12 @@ bool OpenWadFile(wad_file_t *wf, const char *filename)
     return true;
 }
 
+void CloseWadFile(wad_file_t *wf)
+{
+    fclose(wf->fp);
+    free(wf->entries);
+}
+
 static void WriteWadHeader(FILE *fp, wad_file_type_t type,
                            uint32_t num_entries, uint32_t dir_offset)
 {

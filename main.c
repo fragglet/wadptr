@@ -451,13 +451,13 @@ static bool Compress(const char *wadname)
     new_size = FileSize(fstream);
 
     fclose(fstream);
-    fclose(wf.fp);
+    CloseWadFile(&wf);
 
     if (allowmerge)
     {
         char *tempwad2_name;
 
-        wf.fp = fopen(tempwad_name, "rb+");
+        OpenWadFile(&wf, tempwad_name);
         fstream = OpenTempFile(outputwad != NULL ? outputwad : wadname,
                                &tempwad2_name);
 
@@ -469,7 +469,7 @@ static bool Compress(const char *wadname)
         new_size = FileSize(fstream);
 
         fclose(fstream);
-        fclose(wf.fp);
+        CloseWadFile(&wf);
 
         remove(tempwad_name);
         free(tempwad_name);
@@ -496,8 +496,6 @@ static bool Compress(const char *wadname)
     SPAMMY_PRINTF("*** %s is %ld bytes smaller (%d%%) ***\n",
                   outputwad != NULL ? outputwad : wadname,
                   orig_size - new_size, findshrink);
-
-    free(wf.entries);
 
     return true;
 }
@@ -620,8 +618,7 @@ static bool Uncompress(const char *wadname)
     WriteWadDirectory(fstream, wf.type, wf.entries, wf.num_entries);
 
     fclose(fstream);
-    fclose(wf.fp);
-    free(wf.entries);
+    CloseWadFile(&wf);
 
     if (outputwad == NULL)
     {
@@ -739,8 +736,7 @@ static bool ListEntries(const char *wadname)
         }
     }
 
-    fclose(wf.fp);
-    free(wf.entries);
+    CloseWadFile(&wf);
 
     return true;
 }
