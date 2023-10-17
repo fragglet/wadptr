@@ -494,8 +494,8 @@ static bool Compress(const char *wadname)
 
     findshrink = FindPerc(orig_size, new_size);
     SPAMMY_PRINTF("*** %s is %ld bytes smaller (%d%%) ***\n",
-                  outputwad != NULL ? outputwad : wadname,
-                  orig_size - new_size, findshrink);
+                  outputwad != NULL ? outputwad : wadname, orig_size - new_size,
+                  findshrink);
 
     return true;
 }
@@ -589,8 +589,8 @@ static bool Uncompress(const char *wadname)
             SPAMMY_PRINTF("\tUnsquashing");
             fflush(stdout);
             tempres = S_Unsquash(&wf, count);
-            wf.entries[count].offset
-                = WriteWadLump(fstream, tempres, wf.entries[count].length);
+            wf.entries[count].offset =
+                WriteWadLump(fstream, tempres, wf.entries[count].length);
             free(tempres);
             SPAMMY_PRINTF(", done\n");
             written = true;
@@ -609,7 +609,7 @@ static bool Uncompress(const char *wadname)
             fflush(stdout);
             tempres = CacheLump(&wf, count);
             wf.entries[count].offset =
-                WriteWadLump(fstream, tempres,  wf.entries[count].length);
+                WriteWadLump(fstream, tempres, wf.entries[count].length);
             free(tempres);
             SPAMMY_PRINTF(", done.\n");
         }

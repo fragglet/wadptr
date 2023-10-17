@@ -116,8 +116,8 @@ void CloseWadFile(wad_file_t *wf)
     free(wf->entries);
 }
 
-static void WriteWadHeader(FILE *fp, wad_file_type_t type,
-                           uint32_t num_entries, uint32_t dir_offset)
+static void WriteWadHeader(FILE *fp, wad_file_type_t type, uint32_t num_entries,
+                           uint32_t dir_offset)
 {
     uint8_t buf[WAD_HEADER_SIZE];
     size_t bytes;
