@@ -31,7 +31,7 @@ bool P_Pack(wad_file_t *wf, int sidedef_num);
 bool P_Unpack(wad_file_t *wf, int sidedef_num);
 bool P_IsPacked(wad_file_t *wf, int sidedef_num);
 
-size_t P_WriteLinedefs(FILE *fstream);
+void P_WriteLinedefs(FILE *fstream, entry_t *entry);
 size_t P_WriteSidedefs(FILE *fstream);
 
 #endif

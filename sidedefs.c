@@ -198,8 +198,13 @@ bool P_Pack(wad_file_t *wf, int sidedef_num)
     return true;
 }
 
-size_t P_WriteLinedefs(FILE *fstream)
+void P_WriteLinedefs(FILE *fstream, entry_t *entry)
 {
+    // Writing an empty lump ensures that we are at a valid file
+    // location to do the actual write.
+    entry->offset = WriteWadLump(fstream, NULL, 0);
+    entry->length = linedefs_result.len * LinedefSize();
+
     if (hexen_format_wad)
     {
         WriteHexenLinedefs(&linedefs_result, fstream);
@@ -209,7 +214,6 @@ size_t P_WriteLinedefs(FILE *fstream)
         WriteDoomLinedefs(&linedefs_result, fstream);
     }
     free(linedefs_result.lines);
-    return linedefs_result.len * LinedefSize();
 }
 
 size_t P_WriteSidedefs(FILE *fstream)
