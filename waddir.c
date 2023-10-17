@@ -22,7 +22,7 @@
 #include "waddir.h"
 #include "wadptr.h"
 
-static void ReadWadHeader(wad_file_t *wf)
+static long ReadWadHeader(wad_file_t *wf)
 {
     uint8_t buf[WAD_HEADER_SIZE];
     int bytes;
@@ -50,7 +50,7 @@ static void ReadWadHeader(wad_file_t *wf)
     }
 
     wf->num_entries = READ_LONG(buf + WAD_HEADER_NUM_ENTRIES);
-    wf->diroffset = READ_LONG(buf + WAD_HEADER_DIR_OFFSET);
+    return READ_LONG(buf + WAD_HEADER_DIR_OFFSET);
 }
 
 static bool ReadWadEntry(wad_file_t *wf, entry_t *entry)
@@ -69,11 +69,11 @@ static bool ReadWadEntry(wad_file_t *wf, entry_t *entry)
     return true;
 }
 
-static void ReadWadDirectory(wad_file_t *wf)
+static void ReadWadDirectory(wad_file_t *wf, long dir_offset)
 {
     unsigned int i;
 
-    if (fseek(wf->fp, wf->diroffset, SEEK_SET) != 0)
+    if (fseek(wf->fp, dir_offset, SEEK_SET) != 0)
     {
         perror("fseek");
         ErrorExit("Failed to seek to WAD directory");
@@ -92,8 +92,8 @@ static void ReadWadDirectory(wad_file_t *wf)
 
 void ReadWad(wad_file_t *wf)
 {
-    ReadWadHeader(wf);
-    ReadWadDirectory(wf);
+    long dir_offset = ReadWadHeader(wf);
+    ReadWadDirectory(wf, dir_offset);
 }
 
 static void WriteWadHeader(FILE *fp, wad_file_type_t type,

@@ -39,7 +39,7 @@ typedef enum {
 typedef struct {
     FILE *fp;
     wad_file_type_t type;
-    long num_entries, diroffset;
+    long num_entries;
     entry_t *entries;
 } wad_file_t;
 
