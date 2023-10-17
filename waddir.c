@@ -38,11 +38,11 @@ static void ReadWadHeader(wad_file_t *wf)
 
     if (memcmp(buf + WAD_HEADER_MAGIC, PWAD_MAGIC, 4) == 0)
     {
-        wf->type = PWAD;
+        wf->type = WAD_FILE_PWAD;
     }
     else if (memcmp(buf + WAD_HEADER_MAGIC, IWAD_MAGIC, 4) == 0)
     {
-        wf->type = IWAD;
+        wf->type = WAD_FILE_IWAD;
     }
     else
     {
@@ -105,10 +105,10 @@ void WriteWadHeader(wad_file_t *wf, FILE *fp)
 
     switch (wf->type)
     {
-    case PWAD:
+    case WAD_FILE_PWAD:
         memcpy(buf + WAD_HEADER_MAGIC, PWAD_MAGIC, 4);
         break;
-    case IWAD:
+    case WAD_FILE_IWAD:
         memcpy(buf + WAD_HEADER_MAGIC, IWAD_MAGIC, 4);
         break;
     }

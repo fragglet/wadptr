@@ -329,7 +329,7 @@ static bool Compress(const char *wadname)
         return false;
     }
     ReadWad(&wf);
-    if (wf.type == IWAD && !IwadWarning(wadname))
+    if (wf.type == WAD_FILE_IWAD && !IwadWarning(wadname))
     {
         return false;
     }
@@ -526,7 +526,7 @@ static bool Uncompress(const char *wadname)
         return false;
     }
     ReadWad(&wf);
-    if (wf.type == IWAD && !IwadWarning(wadname))
+    if (wf.type == WAD_FILE_IWAD && !IwadWarning(wadname))
     {
         return false;
     }

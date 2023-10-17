@@ -30,9 +30,14 @@ typedef struct {
     char name[8];
 } entry_t;
 
+typedef enum {
+    WAD_FILE_IWAD,
+    WAD_FILE_PWAD,
+} wad_file_type_t;
+
 typedef struct {
     FILE *fp;
-    enum { IWAD, PWAD } type;
+    wad_file_type_t type;
     long num_entries, diroffset;
     entry_t *entries;
 } wad_file_t;
