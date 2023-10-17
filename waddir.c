@@ -24,20 +24,19 @@
 
 static int ReadWadHeader(wad_file_t *wf, FILE *fp)
 {
-    unsigned char buff[5];
+    unsigned char buff[4];
     int wadType;
 
     rewind(fp);
-    buff[4] = 0;
     fread(buff, 4, 1, fp);
     wf->num_entries = 0;
     wf->diroffset = 0;
 
-    if (strcmp((char *) buff, pwad_name) == 0)
+    if (memcmp(buff, PWAD_MAGIC, 4) == 0)
     {
         wadType = PWAD;
     }
-    else if (strcmp((char *) buff, iwad_name) == 0)
+    else if (memcmp(buff, IWAD_MAGIC, 4) == 0)
     {
         wadType = IWAD;
     }
@@ -99,11 +98,11 @@ int WriteWadHeader(wad_file_t *wf, FILE *fp)
     rewind(fp);
     if (wf->type == PWAD)
     {
-        strncpy(buff, pwad_name, 4);
+        memcpy(buff, PWAD_MAGIC, 4);
     }
     else if (wf->type == IWAD)
     {
-        strncpy(buff, iwad_name, 4);
+        memcpy(buff, IWAD_MAGIC, 4);
     }
     else
     {

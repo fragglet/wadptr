@@ -39,6 +39,9 @@ typedef struct {
     entry_t *entries;
 } wad_file_t;
 
+#define PWAD_MAGIC "PWAD"
+#define IWAD_MAGIC "IWAD"
+
 // Portable structure I/O:
 #define ENTRY_OFF  0
 #define ENTRY_LEN  4

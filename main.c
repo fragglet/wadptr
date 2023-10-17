@@ -52,9 +52,6 @@ bool allowstack = true;  // blockmap stacking
 bool hexen_format_wad;
 static bool quiet_mode = false;
 
-const char *pwad_name = "PWAD";
-const char *iwad_name = "IWAD";
-
 static bool FileExists(const char *filename)
 {
     FILE *fs;

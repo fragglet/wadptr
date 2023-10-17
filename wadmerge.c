@@ -88,7 +88,7 @@ void RebuildMergedWad(wad_file_t *wf, FILE *newwad)
     lumps = ALLOC_ARRAY(lump_data_t, wf->num_entries);
     num_lumps = 0;
 
-    fwrite(iwad_name, 1, 4, newwad);
+    fwrite(IWAD_MAGIC, 1, 4, newwad);
     fwrite(&along, 4, 1, newwad);
     fwrite(&along, 4, 1, newwad);
 
