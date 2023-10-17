@@ -57,9 +57,8 @@ typedef struct {
 #define ENTRY_NAME 8
 #define ENTRY_SIZE 16
 
-// TODO: The API here for opening and closing WAD files is terrible and
-// ought to be completely reworked.
-void ReadWad(wad_file_t *wf);
+bool OpenWadFile(wad_file_t *wf, const char *filename);
+
 int EntryExists(wad_file_t *wf, char *entrytofind);
 void *CacheLump(wad_file_t *wf, int entrynum);
 

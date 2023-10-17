@@ -90,10 +90,24 @@ static void ReadWadDirectory(wad_file_t *wf, long dir_offset)
     }
 }
 
-void ReadWad(wad_file_t *wf)
+static void ReadWad(wad_file_t *wf)
 {
     long dir_offset = ReadWadHeader(wf);
     ReadWadDirectory(wf, dir_offset);
+}
+
+bool OpenWadFile(wad_file_t *wf, const char *filename)
+{
+    memset(wf, 0, sizeof(wad_file_t));
+
+    wf->fp = fopen(filename, "rb");
+    if (wf->fp == NULL)
+    {
+        perror("fopen");
+        return false;
+    }
+    ReadWad(wf);
+    return true;
 }
 
 static void WriteWadHeader(FILE *fp, wad_file_type_t type,

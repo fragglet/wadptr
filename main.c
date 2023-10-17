@@ -329,16 +329,10 @@ static bool Compress(const char *wadname)
     uint8_t *temp;
     char *tempwad_name;
 
-    // TODO: This should be unnecessary:
-    memset(&wf, 0, sizeof(wad_file_t));
-
-    wf.fp = fopen(wadname, "rb");
-    if (wf.fp == NULL)
+    if (!OpenWadFile(&wf, wadname))
     {
-        perror("fopen");
         return false;
     }
-    ReadWad(&wf);
     if (wf.type == WAD_FILE_IWAD && !IwadWarning(wadname))
     {
         return false;
@@ -519,13 +513,10 @@ static bool Uncompress(const char *wadname)
 
     memset(&wf, 0, sizeof(wad_file_t));
 
-    wf.fp = fopen(wadname, "rb");
-    if (wf.fp == NULL)
+    if (!OpenWadFile(&wf, wadname))
     {
-        perror("fopen");
         return false;
     }
-    ReadWad(&wf);
     if (wf.type == WAD_FILE_IWAD && !IwadWarning(wadname))
     {
         return false;
@@ -716,13 +707,10 @@ static bool ListEntries(const char *wadname)
 
     memset(&wf, 0, sizeof(wad_file_t));
 
-    wf.fp = fopen(wadname, "rb");
-    if (wf.fp == NULL)
+    if (!OpenWadFile(&wf, wadname))
     {
-        perror("fopen");
         return false;
     }
-    ReadWad(&wf);
     CheckHexenFormat(&wf, wadname);
 
     SPAMMY_PRINTF(
