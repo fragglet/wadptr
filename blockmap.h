@@ -27,6 +27,6 @@
 bool B_Stack(wad_file_t *wf, int lumpnum);
 bool B_Unstack(wad_file_t *wf, int lumpnum);
 bool B_IsStacked(wad_file_t *wf, int lumpnum);
-size_t B_WriteBlockmap(FILE *fstream);
+void B_WriteBlockmap(FILE *fstream, entry_t *entry);
 
 #endif

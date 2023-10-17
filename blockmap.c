@@ -44,7 +44,7 @@ typedef struct {
 } blockmap_t;
 
 static blockmap_t ReadBlockmap(wad_file_t *wf, int lumpnum);
-static void WriteBlockmap(const blockmap_t *blockmap, FILE *fp);
+static uint32_t WriteBlockmap(const blockmap_t *blockmap, FILE *fp);
 
 static blockmap_t blockmap_result;
 
@@ -328,11 +328,11 @@ bool B_IsStacked(wad_file_t *wf, int lumpnum)
     return result;
 }
 
-size_t B_WriteBlockmap(FILE *fstream)
+void B_WriteBlockmap(FILE *fstream, entry_t *entry)
 {
-    WriteBlockmap(&blockmap_result, fstream);
+    entry->offset = WriteBlockmap(&blockmap_result, fstream);
+    entry->length = blockmap_result.len * 2;
     free(blockmap_result.elements);
-    return blockmap_result.len * 2;
 }
 
 static blockmap_t ReadBlockmap(wad_file_t *wf, int lumpnum)
@@ -365,10 +365,10 @@ static blockmap_t ReadBlockmap(wad_file_t *wf, int lumpnum)
     return result;
 }
 
-static void WriteBlockmap(const blockmap_t *blockmap, FILE *fp)
+static uint32_t WriteBlockmap(const blockmap_t *blockmap, FILE *fp)
 {
     uint8_t *buffer;
-    size_t written;
+    uint32_t result;
     int i;
 
     buffer = ALLOC_ARRAY(uint8_t, blockmap->len * 2);
@@ -378,12 +378,8 @@ static void WriteBlockmap(const blockmap_t *blockmap, FILE *fp)
         WRITE_SHORT(&buffer[i * 2], blockmap->elements[i]);
     }
 
-    written = fwrite(buffer, 2, blockmap->len, fp);
-    if (written < blockmap->len)
-    {
-        ErrorExit("Failed writing BLOCKMAP lump: wrote only %d / %d elements",
-                  written, blockmap->len);
-    }
-
+    result = WriteWadLump(fp, buffer, blockmap->len * 2);
     free(buffer);
+
+    return result;
 }

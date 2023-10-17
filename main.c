@@ -408,8 +408,7 @@ static bool Compress(const char *wadname)
             findshrink = wf.entries[count].length;
 
             success = B_Stack(&wf, count);
-            wf.entries[count].offset = ftell(fstream);
-            wf.entries[count].length = B_WriteBlockmap(fstream);
+            B_WriteBlockmap(fstream, &wf.entries[count]);
 
             findshrink = FindPerc(findshrink, wf.entries[count].length);
             if (success)
@@ -596,8 +595,7 @@ static bool Uncompress(const char *wadname)
             fflush(stdout);
 
             success = B_Unstack(&wf, count);
-            wf.entries[count].offset = ftell(fstream);
-            wf.entries[count].length = B_WriteBlockmap(fstream);
+            B_WriteBlockmap(fstream, &wf.entries[count]);
 
             if (success)
             {
