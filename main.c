@@ -113,6 +113,16 @@ static FILE *OpenTempFile(const char *file_in_same_dir, char **filename)
     return NULL;
 }
 
+static long FileSize(FILE *fp)
+{
+    if (fseek(fp, 0, SEEK_END) != 0)
+    {
+        perror("fseek");
+        ErrorExit("Failed to read file size");
+    }
+    return ftell(fp);
+}
+
 void PrintProgress(int numerator, int denominator)
 {
     static clock_t last_progress_time = 0;
@@ -313,7 +323,7 @@ static bool Compress(const char *wadname)
 {
     wad_file_t wf;
     int count, findshrink;
-    long wadsize; // previous wad size (to find % smaller)
+    long orig_size, new_size;
     FILE *fstream;
     bool written;
     uint8_t *temp;
@@ -335,7 +345,7 @@ static bool Compress(const char *wadname)
     }
     CheckHexenFormat(&wf, wadname);
 
-    wadsize = wf.diroffset + (ENTRY_SIZE * wf.num_entries);
+    orig_size = FileSize(wf.fp);
 
     fstream =
         OpenTempFile(outputwad != NULL ? outputwad : wadname, &tempwad_name);
@@ -452,6 +462,7 @@ static bool Compress(const char *wadname)
     }
 
     WriteWadDirectory(fstream, wf.type, wf.entries, wf.num_entries);
+    new_size = FileSize(fstream);
 
     fclose(fstream);
     fclose(wf.fp);
@@ -468,6 +479,8 @@ static bool Compress(const char *wadname)
         fflush(stdout);
         RebuildMergedWad(&wf, fstream);
         SPAMMY_PRINTF(" done.\n");
+
+        new_size = FileSize(fstream);
 
         fclose(fstream);
         fclose(wf.fp);
@@ -493,12 +506,10 @@ static bool Compress(const char *wadname)
 
     free(tempwad_name);
 
-    findshrink =
-        FindPerc(wadsize, wf.diroffset + (wf.num_entries * ENTRY_SIZE));
+    findshrink = FindPerc(orig_size, new_size);
     SPAMMY_PRINTF("*** %s is %ld bytes smaller (%d%%) ***\n",
                   outputwad != NULL ? outputwad : wadname,
-                  wadsize - (wf.diroffset + wf.num_entries * ENTRY_SIZE),
-                  findshrink);
+                  orig_size - new_size, findshrink);
 
     free(wf.entries);
 
