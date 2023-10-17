@@ -72,7 +72,6 @@ void RebuildMergedWad(wad_file_t *wf, FILE *newwad)
     lump_data_t *lumps;
     int i, num_lumps;
     uint8_t *cached;
-    long along = 0;
 
     // This is an optimization not for WAD size, but for compressed WAD size.
     // We write out lumps not in WAD directory order, but ordered by lump
@@ -87,10 +86,6 @@ void RebuildMergedWad(wad_file_t *wf, FILE *newwad)
 
     lumps = ALLOC_ARRAY(lump_data_t, wf->num_entries);
     num_lumps = 0;
-
-    fwrite(IWAD_MAGIC, 1, 4, newwad);
-    fwrite(&along, 4, 1, newwad);
-    fwrite(&along, 4, 1, newwad);
 
     for (i = 0; i < wf->num_entries; i++)
     {
@@ -110,8 +105,8 @@ void RebuildMergedWad(wad_file_t *wf, FILE *newwad)
         if (ld == NULL)
         {
             memcpy(lumps[num_lumps].hash, hash, sizeof(sha1_digest_t));
-            lumps[num_lumps].offset = ftell(newwad);
-            fwrite(cached, 1, wf->entries[lumpnum].length, newwad);
+            lumps[num_lumps].offset =
+                WriteWadLump(newwad, cached, wf->entries[lumpnum].length);
             ld = &lumps[num_lumps];
             ++num_lumps;
         }

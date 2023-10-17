@@ -151,6 +151,33 @@ void WriteWadDirectory(wad_file_t *wf, FILE *fp)
     }
 }
 
+uint32_t WriteWadLump(FILE *fp, void *buf, size_t len)
+{
+    long result = ftell(fp);
+    size_t bytes;
+
+    // We check that we are never writing over the header area.
+    if (result < WAD_HEADER_SIZE)
+    {
+        uint8_t hdr[WAD_HEADER_SIZE];
+        memset(hdr, 0, sizeof(hdr));
+        rewind(fp);
+        if (fwrite(hdr, 1, WAD_HEADER_SIZE, fp) != WAD_HEADER_SIZE)
+        {
+            ErrorExit("Failed to write temporary header");
+        }
+        result = ftell(fp);
+    }
+
+    bytes = fwrite(buf, 1, len, fp);
+    if (bytes != len)
+    {
+        ErrorExit("Failed writing WAD lump: wrote %d / %d bytes", bytes, len);
+    }
+
+    return result;
+}
+
 int EntryExists(wad_file_t *wf, char *entrytofind)
 {
     int count;

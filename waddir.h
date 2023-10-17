@@ -19,6 +19,7 @@
 #define __WADDIR_H_INCLUDED__
 
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -64,6 +65,7 @@ void *CacheLump(wad_file_t *wf, int entrynum);
 
 void WriteWadHeader(wad_file_t *wf, FILE *fp);
 void WriteWadDirectory(wad_file_t *wf, FILE *fp);
+uint32_t WriteWadLump(FILE *fp, void *buf, size_t len);
 
 bool IsLevelEntry(char *s);
 

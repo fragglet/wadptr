@@ -340,8 +340,9 @@ static bool Compress(const char *wadname)
     fstream =
         OpenTempFile(outputwad != NULL ? outputwad : wadname, &tempwad_name);
 
+    // TODO: Remove this temp header code once everything uses WriteWadLump()
     memset(a, 0, 12);
-    fwrite(a, 12, 1, fstream); // temp header
+    fwrite(a, 12, 1, fstream);
 
     for (count = 0; count < wf.num_entries; count++)
     {
@@ -422,10 +423,10 @@ static bool Compress(const char *wadname)
             findshrink = wf.entries[count].length;
 
             temp = S_Squash(&wf, count);
-            wf.entries[count].offset = ftell(fstream);
-            fwrite(temp, wf.entries[count].length, 1, fstream);
-
+            wf.entries[count].offset =
+                WriteWadLump(fstream, temp, wf.entries[count].length);
             free(temp);
+
             findshrink = FindPerc(findshrink, wf.entries[count].length);
             SPAMMY_PRINTF("(%i%%), done.\n", findshrink);
             written = true;
@@ -443,8 +444,8 @@ static bool Compress(const char *wadname)
             SPAMMY_PRINTF("\tStoring ");
             fflush(stdout);
             temp = CacheLump(&wf, count);
-            wf.entries[count].offset = ftell(fstream);
-            fwrite(temp, wf.entries[count].length, 1, fstream);
+            wf.entries[count].offset =
+                WriteWadLump(fstream, temp, wf.entries[count].length);
             free(temp);
             SPAMMY_PRINTF("(0%%), done.\n");
         }
@@ -514,7 +515,6 @@ static bool Uncompress(const char *wadname)
     FILE *fstream;
     uint8_t *tempres;
     bool written, blockmap_failures = false, sidedefs_failures = false;
-    long fileloc;
     int count;
 
     memset(&wf, 0, sizeof(wad_file_t));
@@ -533,8 +533,10 @@ static bool Uncompress(const char *wadname)
     CheckHexenFormat(&wf, wadname);
 
     fstream = OpenTempFile(wadname, &tempwad_name);
+
+    // TODO: Remove this temp header code once everything uses WriteWadLump()
     memset(tempstr, 0, 12);
-    fwrite(tempstr, 12, 1, fstream); // temp header
+    fwrite(tempstr, 12, 1, fstream);
 
     for (count = 0; count < wf.num_entries; count++)
     {
@@ -606,8 +608,8 @@ static bool Uncompress(const char *wadname)
             SPAMMY_PRINTF("\tUnsquashing");
             fflush(stdout);
             tempres = S_Unsquash(&wf, count);
-            wf.entries[count].offset = ftell(fstream);
-            fwrite(tempres, wf.entries[count].length, 1, fstream);
+            wf.entries[count].offset
+                = WriteWadLump(fstream, tempres, wf.entries[count].length);
             free(tempres);
             SPAMMY_PRINTF(", done\n");
             written = true;
@@ -625,10 +627,9 @@ static bool Uncompress(const char *wadname)
             SPAMMY_PRINTF("\tStoring");
             fflush(stdout);
             tempres = CacheLump(&wf, count);
-            fileloc = ftell(fstream);
-            fwrite(tempres, wf.entries[count].length, 1, fstream);
+            wf.entries[count].offset =
+                WriteWadLump(fstream, tempres,  wf.entries[count].length);
             free(tempres);
-            wf.entries[count].offset = fileloc;
             SPAMMY_PRINTF(", done.\n");
         }
     }
