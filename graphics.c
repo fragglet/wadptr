@@ -56,6 +56,47 @@ static int LargestColumnCompare(unsigned int index1, unsigned int index2,
     return colsize[index2] - colsize[index1];
 }
 
+// Certain tools (though I'm not sure which?) generate inefficient columns
+// that get split across multiple posts unnecessarily. An example can be
+// found in eg. btsx_e2a.wad's TITLEPIC and CREDITS lumps. We can save a
+// few bytes by combining them.
+static void CombinePosts(void)
+{
+    uint8_t *post, *next_post;
+    int x, i;
+
+    for (x = 0; x < width; x++)
+    {
+        post = columns[x];
+
+        i = 0;
+        while (post[i] != 0xff)
+        {
+            uint8_t off = post[0], len = post[1];
+            int next_i = i + post[i + 1] + 4;
+
+            next_post = post + next_i;
+            if (next_post[0] != 0xff)
+            {
+                uint8_t next_off = next_post[0], next_len = next_post[1];
+
+                // If the next post exactly follows on from this one,
+                // and the new length won't overflow, we can merge.
+                if (((int) off + (int) len) == next_off &&
+                    ((int) len + (int) next_len) < 0x100)
+                {
+                    post[1] += next_len;
+                    memmove(post + 3 + len, next_post + 3,
+                            colsize[x] - next_i - 3);
+                    colsize[x] -= 4;
+                    continue;
+                }
+            }
+            i = next_i;
+        }
+    }
+}
+
 // Squashes a graphic. Call with the lump number, returns a pointer to the
 // new(compressed) lump. This must be free()d when it is no longer needed, as
 // S_Squash() does not do this itself.
@@ -73,6 +114,7 @@ uint8_t *S_Squash(wad_file_t *wf, int entrynum)
     oldlump = CacheLump(wf, entrynum);
 
     ParseLump(oldlump, wf->entries[entrynum].length);
+    CombinePosts();
 
     // We build the sorted map so that we iterate over columns by order of
     // decreasing size; this maximizes the chance of being able to make a
