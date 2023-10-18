@@ -24,7 +24,6 @@
 extern bool allowpack;   // level packing on
 extern bool allowsquash; // picture squashing on
 extern bool allowmerge;  // lump merging on
-extern bool hexen_format_wad;
 
 #ifdef _WIN32
 #define DIRSEP "\\"

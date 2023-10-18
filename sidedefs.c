@@ -128,6 +128,7 @@ static int linedefnum; /* linedef wad entry number */
 
 static linedef_array_t linedefs_result;
 static sidedef_array_t sidedefs_result;
+static bool hexen_format;
 
 // Maps old sidedef number to new; used by RemapLinedefs() to update the
 // sidedef references in the LINEDEFS lump.
@@ -135,7 +136,7 @@ static sidedef_ref_t *newsidedef_index;
 
 static size_t LinedefSize(void)
 {
-    if (hexen_format_wad)
+    if (hexen_format)
     {
         return HX_LDEF_SIZE;
     }
@@ -144,7 +145,12 @@ static size_t LinedefSize(void)
 
 static linedef_array_t ReadLinedefs(wad_file_t *wf, int lumpnum)
 {
-    if (hexen_format_wad)
+    // Hexen levels have a slightly different format, and we can detect
+    // this by looking for the presence of a BEHAVIOR lump, which is
+    // unique to this format.
+    hexen_format = EntryExists(wf, "BEHAVIOR") >= 0;
+
+    if (hexen_format)
     {
         return ReadHexenLinedefs(wf, lumpnum);
     }
@@ -205,7 +211,7 @@ void P_WriteLinedefs(FILE *fstream, entry_t *entry)
     entry->offset = WriteWadLump(fstream, NULL, 0);
     entry->length = linedefs_result.len * LinedefSize();
 
-    if (hexen_format_wad)
+    if (hexen_format)
     {
         WriteHexenLinedefs(&linedefs_result, fstream);
     }
