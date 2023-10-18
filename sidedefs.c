@@ -145,11 +145,6 @@ static size_t LinedefSize(void)
 
 static linedef_array_t ReadLinedefs(wad_file_t *wf, int lumpnum)
 {
-    // Hexen levels have a slightly different format, and we can detect
-    // this by looking for the presence of a BEHAVIOR lump, which is
-    // unique to this format.
-    hexen_format = EntryExists(wf, "BEHAVIOR") >= 0;
-
     if (hexen_format)
     {
         return ReadHexenLinedefs(wf, lumpnum);
@@ -291,6 +286,8 @@ bool P_IsPacked(wad_file_t *wf, int sidedef_num)
     // SIDEDEFS always follows LINEDEFS.
     linedefnum = sidedef_num - 1;
     sidedefnum = sidedef_num;
+
+    CheckLumpSizes(wf);
 
     linedefs = ReadLinedefs(wf, linedefnum);
 
@@ -476,7 +473,14 @@ static void RemapLinedefs(linedef_array_t *linedefs)
 
 static void CheckLumpSizes(wad_file_t *wf)
 {
-    unsigned int linedef_size = LinedefSize();
+    unsigned int linedef_size;
+
+    // Hexen levels have a slightly different format, and we can detect
+    // this by looking for the presence of a BEHAVIOR lump, which is
+    // unique to this format.
+    hexen_format = EntryExists(wf, "BEHAVIOR") >= 0;
+    linedef_size = LinedefSize();
+
     if ((wf->entries[linedefnum].length % linedef_size) != 0)
     {
         ErrorExit("RebuildSidedefs: LINEDEFS lump (#%d) is %d bytes, "
