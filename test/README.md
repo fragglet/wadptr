@@ -29,6 +29,7 @@ Mini / unit test WADs:
   different, but one column is a suffix of the other.
 * `packable.wad` contains a minimal level with four identical sidedefs
   that can be packed, but the blockmap is too small to be stackable.
+* `hxpackable.wad`, same thing but in Hexen format.
 * `stackable.wad` contains a minimal level with no identical sidedefs
   (cannot be packed), but is large enough that the blockmap can be
   stacked.
