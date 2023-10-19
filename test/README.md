@@ -15,3 +15,6 @@ run tests. Included here are:
   we check that we can at least process that BLOCKMAP without making it
   any larger. The WAD has a single redundant byte at the end so that
   wadptr will successfully reduce its size.
+* `btsxcred.wad` is the CREDIT screen graphic from btsx\_e1a.wad, which
+  has its columns unnecessarily spread into two posts, and checks that
+  the code to combine posts works as intended.
