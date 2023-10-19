@@ -159,10 +159,25 @@ static void WriteWadEntry(FILE *fp, entry_t *entry)
     }
 }
 
+static uint32_t CheckedTell(FILE *fp)
+{
+    long result = ftell(fp);
+    if (result < 0)
+    {
+        perror("ftell");
+        ErrorExit("Failed to read file position");
+    }
+    if (result > UINT32_MAX)
+    {
+        ErrorExit("File position out of range; pos=%ld", result);
+    }
+    return (uint32_t) result;
+}
+
 void WriteWadDirectory(FILE *fp, wad_file_type_t type, entry_t *entries,
                        size_t num_entries)
 {
-    long dir_offset = ftell(fp);
+    uint32_t dir_offset = CheckedTell(fp);
     unsigned int i;
 
     for (i = 0; i < num_entries; i++)
@@ -175,7 +190,7 @@ void WriteWadDirectory(FILE *fp, wad_file_type_t type, entry_t *entries,
 
 uint32_t WriteWadLump(FILE *fp, void *buf, size_t len)
 {
-    long result = ftell(fp);
+    uint32_t result = CheckedTell(fp);
     size_t bytes;
 
     // We check that we are never writing over the header area.
@@ -188,7 +203,7 @@ uint32_t WriteWadLump(FILE *fp, void *buf, size_t len)
         {
             ErrorExit("Failed to write temporary header");
         }
-        result = ftell(fp);
+        result = CheckedTell(fp);
     }
 
     bytes = fwrite(buf, 1, len, fp);

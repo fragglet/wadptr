@@ -114,12 +114,23 @@ static FILE *OpenTempFile(const char *file_in_same_dir, char **filename)
 
 static long FileSize(FILE *fp)
 {
+    long result;
     if (fseek(fp, 0, SEEK_END) != 0)
     {
         perror("fseek");
-        ErrorExit("Failed to read file size");
+        goto failed;
     }
-    return ftell(fp);
+    result = ftell(fp);
+    if (result < 0)
+    {
+        perror("ftell");
+        goto failed;
+    }
+    return result;
+
+failed:
+    ErrorExit("Failed to read file size");
+    return -1;
 }
 
 void PrintProgress(int numerator, int denominator)
