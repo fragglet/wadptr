@@ -474,12 +474,10 @@ static bool Compress(const char *wadname)
     // simple rename() call.
     if (outputwad == NULL)
     {
-        remove(wadname);
         rename(tempwad_name, wadname);
     }
     else
     {
-        remove(outputwad);
         rename(tempwad_name, outputwad);
     }
 
@@ -612,7 +610,6 @@ static bool Uncompress(const char *wadname)
     if (outputwad == NULL)
     {
         // Replace the original wad with the new one:
-        remove(wadname);
         rename(tempwad_name, wadname);
     }
     else
