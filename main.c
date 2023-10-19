@@ -350,7 +350,7 @@ static bool Compress(const char *wadname)
     {
         uint32_t orig_lump_len = wf.entries[count].length;
 
-        SPAMMY_PRINTF("Adding: %.8s       ", wf.entries[count].name);
+        SPAMMY_PRINTF("Adding: %-8.8s       ", wf.entries[count].name);
         fflush(stdout);
         written = false;
 
@@ -360,14 +360,14 @@ static bool Compress(const char *wadname)
             {
                 // We will write both LINEDEFS and SIDEDEFS when we reach
                 // the next lump.
-                SPAMMY_PRINTF("\tDeferred... (0%%)\n");
+                SPAMMY_PRINTF("Deferred... (0%%)\n");
                 written = true;
             }
             else if (IsSidedefs(&wf, count))
             {
                 bool success;
 
-                SPAMMY_PRINTF("\tPacking");
+                SPAMMY_PRINTF("Packing");
                 fflush(stdout);
 
                 success = P_Pack(&wf, count);
@@ -395,7 +395,7 @@ static bool Compress(const char *wadname)
         {
             bool success;
 
-            SPAMMY_PRINTF("\tStacking ");
+            SPAMMY_PRINTF("Stacking ");
             fflush(stdout);
 
             success = B_Stack(&wf, count);
@@ -419,7 +419,7 @@ static bool Compress(const char *wadname)
 
         if (allowsquash && S_IsGraphic(&wf, count))
         {
-            SPAMMY_PRINTF("\tSquashing ");
+            SPAMMY_PRINTF("Squashing ");
             fflush(stdout);
 
             temp = S_Squash(&wf, count);
@@ -435,14 +435,14 @@ static bool Compress(const char *wadname)
 
         if (!written && wf.entries[count].length == 0)
         {
-            SPAMMY_PRINTF("\tEmpty (0%%).\n");
+            SPAMMY_PRINTF("Empty (0%%).\n");
             wf.entries[count].offset = 0;
             written = true;
         }
 
         if (!written)
         {
-            SPAMMY_PRINTF("\tStoring ");
+            SPAMMY_PRINTF("Storing ");
             fflush(stdout);
             temp = CacheLump(&wf, count);
             wf.entries[count].offset =
@@ -526,7 +526,7 @@ static bool Uncompress(const char *wadname)
     {
         written = false;
 
-        SPAMMY_PRINTF("Adding: %.8s       ", wf.entries[count].name);
+        SPAMMY_PRINTF("Adding: %-8.8s       ", wf.entries[count].name);
         fflush(stdout);
 
         if (allowpack)
@@ -534,14 +534,14 @@ static bool Uncompress(const char *wadname)
             if (count + 1 < wf.num_entries && IsSidedefs(&wf, count + 1))
             {
                 // Write on next loop.
-                SPAMMY_PRINTF("\tDeferred...\n");
+                SPAMMY_PRINTF("Deferred...\n");
                 written = true;
             }
             else if (IsSidedefs(&wf, count))
             {
                 bool success;
 
-                SPAMMY_PRINTF("\tUnpacking");
+                SPAMMY_PRINTF("Unpacking");
                 fflush(stdout);
 
                 success = P_Unpack(&wf, count);
@@ -565,7 +565,7 @@ static bool Uncompress(const char *wadname)
         {
             bool success;
 
-            SPAMMY_PRINTF("\tUnstacking");
+            SPAMMY_PRINTF("Unstacking");
             fflush(stdout);
 
             success = B_Unstack(&wf, count);
@@ -585,7 +585,7 @@ static bool Uncompress(const char *wadname)
 
         if (allowsquash && S_IsGraphic(&wf, count))
         {
-            SPAMMY_PRINTF("\tUnsquashing");
+            SPAMMY_PRINTF("Unsquashing");
             fflush(stdout);
             tempres = S_Unsquash(&wf, count);
             wf.entries[count].offset =
@@ -597,14 +597,14 @@ static bool Uncompress(const char *wadname)
 
         if (!written && wf.entries[count].length == 0)
         {
-            SPAMMY_PRINTF("\tEmpty.\n");
+            SPAMMY_PRINTF("Empty.\n");
             wf.entries[count].offset = 0;
             written = true;
         }
 
         if (!written)
         {
-            SPAMMY_PRINTF("\tStoring");
+            SPAMMY_PRINTF("Storing");
             fflush(stdout);
             tempres = CacheLump(&wf, count);
             wf.entries[count].offset =
@@ -711,9 +711,9 @@ static bool ListEntries(const char *wadname)
 
     for (i = 0; i < wf.num_entries; i++)
     {
-        printf("%7d %7d  0x%08x  %-11s %-8.8s    ", i + 1,
-               wf.entries[i].length, wf.entries[i].offset,
-               CompressionMethod(&wf, i), wf.entries[i].name);
+        printf("%7d %7d  0x%08x  %-11s %-8.8s    ", i + 1, wf.entries[i].length,
+               wf.entries[i].offset, CompressionMethod(&wf, i),
+               wf.entries[i].name);
 
         // shared resource?
         for (j = 0; wf.entries[i].length > 0 && j < i; j++)
