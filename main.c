@@ -396,6 +396,7 @@ static bool Compress(const char *wadname)
             bool success;
 
             SPAMMY_PRINTF("\tStacking ");
+            fflush(stdout);
 
             success = B_Stack(&wf, count);
             B_WriteBlockmap(fstream, &wf.entries[count]);
