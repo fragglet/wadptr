@@ -337,7 +337,7 @@ static bool Compress(const char *wadname)
 
     for (count = 0; count < wf.num_entries; count++)
     {
-        long orig_lump_len = wf.entries[count].length;
+        uint32_t orig_lump_len = wf.entries[count].length;
 
         SPAMMY_PRINTF("Adding: %.8s       ", wf.entries[count].name);
         fflush(stdout);
@@ -699,7 +699,7 @@ static bool ListEntries(const char *wadname)
 
     for (i = 0; i < wf.num_entries; i++)
     {
-        printf("%7d %7ld  0x%08lx  %-11s %-8.8s    ", i + 1,
+        printf("%7d %7d  0x%08x  %-11s %-8.8s    ", i + 1,
                wf.entries[i].length, wf.entries[i].offset,
                CompressionMethod(&wf, i), wf.entries[i].name);
 

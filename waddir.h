@@ -26,8 +26,8 @@
 #include "errors.h"
 
 typedef struct {
-    long offset;
-    long length;
+    uint32_t offset;
+    uint32_t length;
     char name[8];
 } entry_t;
 
@@ -39,7 +39,7 @@ typedef enum {
 typedef struct {
     FILE *fp;
     wad_file_type_t type;
-    long num_entries;
+    uint32_t num_entries;
     entry_t *entries;
 } wad_file_t;
 

@@ -22,7 +22,7 @@
 #include "waddir.h"
 #include "wadptr.h"
 
-static long ReadWadHeader(wad_file_t *wf)
+static uint32_t ReadWadHeader(wad_file_t *wf)
 {
     uint8_t buf[WAD_HEADER_SIZE];
     int bytes;
@@ -69,7 +69,7 @@ static bool ReadWadEntry(wad_file_t *wf, entry_t *entry)
     return true;
 }
 
-static void ReadWadDirectory(wad_file_t *wf, long dir_offset)
+static void ReadWadDirectory(wad_file_t *wf, uint32_t dir_offset)
 {
     unsigned int i;
 
@@ -90,14 +90,10 @@ static void ReadWadDirectory(wad_file_t *wf, long dir_offset)
     }
 }
 
-static void ReadWad(wad_file_t *wf)
-{
-    long dir_offset = ReadWadHeader(wf);
-    ReadWadDirectory(wf, dir_offset);
-}
-
 bool OpenWadFile(wad_file_t *wf, const char *filename)
 {
+    uint32_t dir_offset;
+
     memset(wf, 0, sizeof(wad_file_t));
 
     wf->fp = fopen(filename, "rb");
@@ -106,7 +102,8 @@ bool OpenWadFile(wad_file_t *wf, const char *filename)
         perror("fopen");
         return false;
     }
-    ReadWad(wf);
+    dir_offset = ReadWadHeader(wf);
+    ReadWadDirectory(wf, dir_offset);
     return true;
 }
 
