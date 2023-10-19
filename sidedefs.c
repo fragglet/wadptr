@@ -107,7 +107,7 @@ typedef struct {
     size_t len, size;
 } sidedef_array_t;
 
-static void CheckLumpSizes(wad_file_t *wf);
+static void CheckLumpSizes(wad_file_t *wf, int linedef_num, int sidedef_num);
 static sidedef_array_t DoPack(const sidedef_array_t *sidedefs);
 static void RemapLinedefs(linedef_array_t *linedefs);
 static void RebuildSidedefs(const linedef_array_t *linedefs,
@@ -121,10 +121,6 @@ static sidedef_array_t ReadSidedefs(wad_file_t *wf, int lumpnum);
 static void WriteDoomLinedefs(const linedef_array_t *linedefs, FILE *fp);
 static void WriteHexenLinedefs(const linedef_array_t *linedefs, FILE *fp);
 static void WriteSidedefs(const sidedef_array_t *sidedefs, FILE *fp);
-
-// TODO: Eliminate these two globals:
-static int sidedefnum; /* sidedef wad entry number */
-static int linedefnum; /* linedef wad entry number */
 
 static linedef_array_t linedefs_result;
 static sidedef_array_t sidedefs_result;
@@ -165,14 +161,12 @@ bool P_Pack(wad_file_t *wf, int sidedef_num)
 {
     sidedef_array_t orig_sidedefs, unpacked_sidedefs;
     linedef_array_t orig_linedefs;
+    int linedef_num = sidedef_num - 1;
 
-    linedefnum = sidedef_num - 1;
-    sidedefnum = sidedef_num;
+    CheckLumpSizes(wf, linedef_num, sidedef_num);
 
-    CheckLumpSizes(wf);
-
-    orig_sidedefs = ReadSidedefs(wf, sidedefnum);
-    orig_linedefs = ReadLinedefs(wf, linedefnum);
+    orig_sidedefs = ReadSidedefs(wf, sidedef_num);
+    orig_linedefs = ReadLinedefs(wf, linedef_num);
 
     RebuildSidedefs(&orig_linedefs, &orig_sidedefs, &linedefs_result,
                     &unpacked_sidedefs);
@@ -232,14 +226,12 @@ bool P_Unpack(wad_file_t *wf, int sidedef_num)
 {
     linedef_array_t orig_linedefs;
     sidedef_array_t orig_sidedefs;
+    int linedef_num = sidedef_num - 1;
 
-    linedefnum = sidedef_num - 1;
-    sidedefnum = sidedef_num;
+    CheckLumpSizes(wf, linedef_num, sidedef_num);
 
-    CheckLumpSizes(wf);
-
-    orig_linedefs = ReadLinedefs(wf, linedefnum);
-    orig_sidedefs = ReadSidedefs(wf, sidedefnum);
+    orig_linedefs = ReadLinedefs(wf, linedef_num);
+    orig_sidedefs = ReadSidedefs(wf, sidedef_num);
 
     RebuildSidedefs(&orig_linedefs, &orig_sidedefs, &linedefs_result,
                     &sidedefs_result);
@@ -281,17 +273,16 @@ bool P_IsPacked(wad_file_t *wf, int sidedef_num)
     uint8_t *sidedef_used;
     size_t num_sidedefs;
     bool packed = false;
-    int count;
+    int count, linedef_num;
 
     // SIDEDEFS always follows LINEDEFS.
-    linedefnum = sidedef_num - 1;
-    sidedefnum = sidedef_num;
+    linedef_num = sidedef_num - 1;
 
-    CheckLumpSizes(wf);
+    CheckLumpSizes(wf, linedef_num, sidedef_num);
 
-    linedefs = ReadLinedefs(wf, linedefnum);
+    linedefs = ReadLinedefs(wf, linedef_num);
 
-    num_sidedefs = wf->entries[sidedefnum].length / SDEF_SIZE;
+    num_sidedefs = wf->entries[sidedef_num].length / SDEF_SIZE;
     sidedef_used = ALLOC_ARRAY(uint8_t, num_sidedefs);
     for (count = 0; count < num_sidedefs; count++)
     {
@@ -471,7 +462,7 @@ static void RemapLinedefs(linedef_array_t *linedefs)
     free(newsidedef_index);
 }
 
-static void CheckLumpSizes(wad_file_t *wf)
+static void CheckLumpSizes(wad_file_t *wf, int linedef_num, int sidedef_num)
 {
     unsigned int linedef_size;
 
@@ -481,17 +472,17 @@ static void CheckLumpSizes(wad_file_t *wf)
     hexen_format = EntryExists(wf, "BEHAVIOR") >= 0;
     linedef_size = LinedefSize();
 
-    if ((wf->entries[linedefnum].length % linedef_size) != 0)
+    if ((wf->entries[linedef_num].length % linedef_size) != 0)
     {
         ErrorExit("RebuildSidedefs: LINEDEFS lump (#%d) is %d bytes, "
                   "not a multiple of %d",
-                  linedefnum, wf->entries[linedefnum].length, linedef_size);
+                  linedef_num, wf->entries[linedef_num].length, linedef_size);
     }
-    if ((wf->entries[sidedefnum].length % SDEF_SIZE) != 0)
+    if ((wf->entries[sidedef_num].length % SDEF_SIZE) != 0)
     {
         ErrorExit("RebuildSidedefs: SIDEDEFS lump (#%d) is %d bytes, "
                   "not a multiple of %d",
-                  sidedefnum, wf->entries[sidedefnum].length, SDEF_SIZE);
+                  sidedef_num, wf->entries[sidedef_num].length, SDEF_SIZE);
     }
 }
 
