@@ -253,7 +253,7 @@ static void ParseCommandLine(void)
 
     if (filelist_index < 0)
     {
-        ErrorExit("No input WAD(s) file specified.");
+        ErrorExit("No input WAD files specified.");
     }
     else if (outputwad != NULL && g_argc - filelist_index != 1)
     {
