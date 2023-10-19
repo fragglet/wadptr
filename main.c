@@ -501,8 +501,6 @@ static bool Uncompress(const char *wadname)
     bool written, blockmap_failures = false, sidedefs_failures = false;
     int count;
 
-    memset(&wf, 0, sizeof(wad_file_t));
-
     if (!OpenWadFile(&wf, wadname))
     {
         return false;
@@ -692,8 +690,6 @@ static bool ListEntries(const char *wadname)
 {
     wad_file_t wf;
     int i, j;
-
-    memset(&wf, 0, sizeof(wad_file_t));
 
     if (!OpenWadFile(&wf, wadname))
     {
