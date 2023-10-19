@@ -97,7 +97,8 @@ This behavior can be disabled using the \fB-nostack\fR option.
 .PP
 To see an example of wadptr used in a very effective way, see miniwad,
 a minimalist Doom-compatible IWAD file that is less than 250KiB in size:
-<https://github.com/fragglet/miniwad>
+.UR https://github.com/fragglet/miniwad
+.UE
 .SH LIMITATIONS
 The \fB-c\fR command will compress a WAD file and the \fB-u\fR command
 can then be used to restore the original uncompressed file. However, the
@@ -112,7 +113,8 @@ For compatibility reasons, wadptr's blockmap stacking is deliberately
 very conservative. Far more aggressive techniques can be used to shrink
 blockmap lumps further, particularly for large levels that run up
 against the blockmap size limit. If you need this, check out ZokumBSP:
-<https://github.com/zokum-no/zokumbsp>
+.UR https://github.com/zokum-no/zokumbsp
+.UE
 .PP
 When packing sidedefs, linedefs with special types always get their own
 unique sidedefs that are not shared with other linedefs. This is to
@@ -140,18 +142,32 @@ Uncompress \fBfoo.wad\fR, overwriting the original file.
 .TP
 wadptr -o newfoo.wad -c foo.wad
 Compress \fBfoo.wad\fR but write the resulting file to \fBnewfoo.wad\fR.
+.SH BUG REPORTS
+Bugs can be reported to the GitHub issue tracker:
+.br
+.UR https://github.com/fragglet/wadptr
+.UE
+.SH WWW
+.UR https://soulsphere.org/projects/wadptr/
+.UE
 .SH SEE ALSO
 \fBdeutex\fR(6), \fBbsp\fR(6), \fByadex\fR(6), \fBeureka\fR(1),
 \fBchocolate-doom\fR(6)
 .SH HISTORY
-wadptr was originally written in 1998 by Simon Howard as a command-line
-program for MS-DOS. Simon continues to maintain the project. The first
-version worked as an adjunct to \fBdeutex\fR(6), but with the 2.x series
-it changed to a standalone tool. Andreas Dehmel ported the program to
-several different Unix systems and also to RISC OS. The source code was
-recently (writing in 2023) overhauled and cleaned up.
+wadptr was originally written in 1998 by
+.MT fraggle@gmail.com
+Simon Howard
+.ME
+as a command-line program for MS-DOS. Simon continues to maintain the
+project.  The first version worked as an adjunct to \fBdeutex\fR(6), but
+with the 2.x series it changed to a standalone tool. Andreas Dehmel ported
+the program to several different Unix systems and also to RISC OS. The
+source code was recently (writing in 2023) overhauled and cleaned up.
 .PP
-\fIDoom\fR is a first-person shooter (FPS) game released by id Software
+.UR https://doomwiki.org/wiki/Doom
+\fIDoom\fR
+.UE
+is a first-person shooter (FPS) game released by id Software
 in 1993 that has consistently topped lists of the best video games of
 all time. It retains an active modding community to this day that
 continues to develop new levels and reinvent the game in new and amazing
