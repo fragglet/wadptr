@@ -15,6 +15,13 @@ run tests. Included here are:
   we check that we can at least process that BLOCKMAP without making it
   any larger. The WAD has a single redundant byte at the end so that
   wadptr will successfully reduce its size.
+
+Graphics test WADs:
+
+* `samecol.wad` has a single graphic containing two identical columns,
+  to confirm those will be combined.
+* `suffix.wad` has a single graphic containing two columns that are
+  different, but one column is a suffix of the other.
 * `btsxcred.wad` is the CREDIT screen graphic from btsx\_e1a.wad, which
   has its columns unnecessarily spread into two posts, and checks that
   the code to combine posts works as intended.
