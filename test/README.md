@@ -15,6 +15,8 @@ run tests. Included here are:
   we check that we can at least process that BLOCKMAP without making it
   any larger. The WAD has a single redundant byte at the end so that
   wadptr will successfully reduce its size.
+* `samelump.wad` contains two lumps with identical column; this
+  confirms that the WAD merging code works as intended.
 
 Graphics test WADs:
 
