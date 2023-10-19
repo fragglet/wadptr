@@ -32,7 +32,7 @@ static bool Compress(const char *filename);
 static bool Uncompress(const char *filename);
 static bool ListEntries(const char *filename);
 static bool DoAction(const char *filename);
-static int FindPerc(int before, int after);
+static int PercentSmaller(int before, int after);
 static void Help(void);
 static bool IwadWarning(const char *);
 static void ParseCommandLine(void);
@@ -314,7 +314,7 @@ static bool IsSidedefs(wad_file_t *wf, int count)
 static bool Compress(const char *wadname)
 {
     wad_file_t wf;
-    int count, findshrink;
+    int count;
     long orig_size, new_size;
     FILE *fstream;
     bool written;
@@ -337,6 +337,8 @@ static bool Compress(const char *wadname)
 
     for (count = 0; count < wf.num_entries; count++)
     {
+        long orig_lump_len = wf.entries[count].length;
+
         SPAMMY_PRINTF("Adding: %.8s       ", wf.entries[count].name);
         fflush(stdout);
         written = false;
@@ -356,7 +358,6 @@ static bool Compress(const char *wadname)
 
                 SPAMMY_PRINTF("\tPacking");
                 fflush(stdout);
-                findshrink = wf.entries[count].length;
 
                 success = P_Pack(&wf, count);
 
@@ -365,10 +366,11 @@ static bool Compress(const char *wadname)
 
                 written = true;
 
-                findshrink = FindPerc(findshrink, wf.entries[count].length);
                 if (success)
                 {
-                    SPAMMY_PRINTF(" (%i%%), done.\n", findshrink);
+                    SPAMMY_PRINTF(" (%i%%), done.\n",
+                                  PercentSmaller(orig_lump_len,
+                                                 wf.entries[count].length));
                 }
                 else
                 {
@@ -383,15 +385,15 @@ static bool Compress(const char *wadname)
             bool success;
 
             SPAMMY_PRINTF("\tStacking ");
-            findshrink = wf.entries[count].length;
 
             success = B_Stack(&wf, count);
             B_WriteBlockmap(fstream, &wf.entries[count]);
 
-            findshrink = FindPerc(findshrink, wf.entries[count].length);
             if (success)
             {
-                SPAMMY_PRINTF("(%i%%), done.\n", findshrink);
+                SPAMMY_PRINTF(
+                    "(%i%%), done.\n",
+                    PercentSmaller(orig_lump_len, wf.entries[count].length));
             }
             else
             {
@@ -407,15 +409,15 @@ static bool Compress(const char *wadname)
         {
             SPAMMY_PRINTF("\tSquashing ");
             fflush(stdout);
-            findshrink = wf.entries[count].length;
 
             temp = S_Squash(&wf, count);
             wf.entries[count].offset =
                 WriteWadLump(fstream, temp, wf.entries[count].length);
             free(temp);
 
-            findshrink = FindPerc(findshrink, wf.entries[count].length);
-            SPAMMY_PRINTF("(%i%%), done.\n", findshrink);
+            SPAMMY_PRINTF(
+                "(%i%%), done.\n",
+                PercentSmaller(orig_lump_len, wf.entries[count].length));
             written = true;
         }
 
@@ -483,10 +485,9 @@ static bool Compress(const char *wadname)
 
     free(tempwad_name);
 
-    findshrink = FindPerc(orig_size, new_size);
     SPAMMY_PRINTF("*** %s is %ld bytes smaller (%d%%) ***\n",
                   outputwad != NULL ? outputwad : wadname, orig_size - new_size,
-                  findshrink);
+                  PercentSmaller(orig_size, new_size));
 
     return true;
 }
@@ -731,7 +732,7 @@ static bool ListEntries(const char *wadname)
 }
 
 // Find how much smaller something is: returns a percentage.
-static int FindPerc(int before, int after)
+static int PercentSmaller(int before, int after)
 {
     double perc;
 
