@@ -534,6 +534,91 @@ static bool Compress(const char *wadname)
     return true;
 }
 
+static bool TryUnpack(wad_file_t *wf, unsigned int lump_index, FILE *out_file,
+                      bool *had_failure)
+{
+    if (lump_index + 1 < wf->num_entries && IsSidedefs(wf, lump_index + 1))
+    {
+        // Write on next loop.
+        SPAMMY_PRINTF("Deferred...\n");
+        return true;
+    }
+    else if (IsSidedefs(wf, lump_index))
+    {
+        bool success;
+
+        SPAMMY_PRINTF("Unpacking");
+        fflush(stdout);
+
+        success = P_Unpack(wf, lump_index);
+
+        P_WriteLinedefs(out_file, &wf->entries[lump_index - 1]);
+        P_WriteSidedefs(out_file, &wf->entries[lump_index]);
+
+        if (success)
+        {
+            SPAMMY_PRINTF(", done.\n");
+        }
+        else
+        {
+            SPAMMY_PRINTF(", failed.\n");
+            *had_failure = true;
+        }
+        return true;
+    }
+
+    return false;
+}
+
+static bool TryUnstack(wad_file_t *wf, unsigned int lump_index, FILE *out_file,
+                       bool *had_failure)
+{
+    bool success;
+
+    if (strncmp(wf->entries[lump_index].name, "BLOCKMAP", 8) != 0)
+    {
+        return false;
+    }
+
+    SPAMMY_PRINTF("Unstacking");
+    fflush(stdout);
+
+    success = B_Unstack(wf, lump_index);
+    B_WriteBlockmap(out_file, &wf->entries[lump_index]);
+
+    if (success)
+    {
+        SPAMMY_PRINTF(", done.\n");
+    }
+    else
+    {
+        SPAMMY_PRINTF(", failed.\n");
+        *had_failure = true;
+    }
+
+    return true;
+}
+
+static bool TryUnsquash(wad_file_t *wf, unsigned int lump_index, FILE *out_file)
+{
+    uint8_t *temp;
+
+    if (!S_IsGraphic(wf, lump_index))
+    {
+        return false;
+    }
+
+    SPAMMY_PRINTF("Unsquashing");
+    fflush(stdout);
+    temp = S_Unsquash(wf, lump_index);
+    wf->entries[lump_index].offset =
+        WriteWadLump(out_file, temp, wf->entries[lump_index].length);
+    free(temp);
+    SPAMMY_PRINTF(", done\n");
+
+    return true;
+}
+
 static bool Uncompress(const char *wadname)
 {
     wad_file_t wf;
@@ -541,7 +626,7 @@ static bool Uncompress(const char *wadname)
     FILE *fstream;
     uint8_t *tempres;
     bool written, blockmap_failures = false, sidedefs_failures = false;
-    int count;
+    unsigned int count;
 
     if (!OpenWadFile(&wf, wadname))
     {
@@ -563,68 +648,15 @@ static bool Uncompress(const char *wadname)
 
         if (allowpack)
         {
-            if (count + 1 < wf.num_entries && IsSidedefs(&wf, count + 1))
-            {
-                // Write on next loop.
-                SPAMMY_PRINTF("Deferred...\n");
-                written = true;
-            }
-            else if (IsSidedefs(&wf, count))
-            {
-                bool success;
-
-                SPAMMY_PRINTF("Unpacking");
-                fflush(stdout);
-
-                success = P_Unpack(&wf, count);
-
-                P_WriteLinedefs(fstream, &wf.entries[count - 1]);
-                P_WriteSidedefs(fstream, &wf.entries[count]);
-
-                if (success)
-                {
-                    SPAMMY_PRINTF(", done.\n");
-                }
-                else
-                {
-                    SPAMMY_PRINTF(", failed.\n");
-                    sidedefs_failures = true;
-                }
-                written = true;
-            }
+            written = TryUnpack(&wf, count, fstream, &sidedefs_failures);
         }
-        if (allowstack && !strncmp(wf.entries[count].name, "BLOCKMAP", 8))
+        if (!written && allowstack)
         {
-            bool success;
-
-            SPAMMY_PRINTF("Unstacking");
-            fflush(stdout);
-
-            success = B_Unstack(&wf, count);
-            B_WriteBlockmap(fstream, &wf.entries[count]);
-
-            if (success)
-            {
-                SPAMMY_PRINTF(", done.\n");
-            }
-            else
-            {
-                SPAMMY_PRINTF(", failed.\n");
-                blockmap_failures = true;
-            }
-            written = true;
+            written = TryUnstack(&wf, count, fstream, &blockmap_failures);
         }
-
-        if (allowsquash && S_IsGraphic(&wf, count))
+        if (!written && allowsquash)
         {
-            SPAMMY_PRINTF("Unsquashing");
-            fflush(stdout);
-            tempres = S_Unsquash(&wf, count);
-            wf.entries[count].offset =
-                WriteWadLump(fstream, tempres, wf.entries[count].length);
-            free(tempres);
-            SPAMMY_PRINTF(", done\n");
-            written = true;
+            written = TryUnsquash(&wf, count, fstream);
         }
 
         if (!written && wf.entries[count].length == 0)
