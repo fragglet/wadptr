@@ -71,7 +71,8 @@ static void SortMapElements(unsigned int *elements, size_t num_elements,
 // Generates a "sorted map", which is an array that maps from original
 // element index to the index that element would be at if the array was
 // sorted.
-unsigned int *MakeSortedMap(unsigned num_elements, sort_compare_fn_t compare_fn,
+unsigned int *MakeSortedMap(unsigned int num_elements,
+                            sort_compare_fn_t compare_fn,
                             const void *callback_data)
 {
     unsigned int *result = ALLOC_ARRAY(unsigned int, num_elements);
