@@ -228,7 +228,7 @@ int EntryExists(wad_file_t *wf, char *entrytofind)
 
 // Load a lump into memory.
 // The name is misleading; nothing is being cached.
-void *CacheLump(wad_file_t *wf, int entrynum)
+void *CacheLump(wad_file_t *wf, unsigned int entrynum)
 {
     uint8_t *working = ALLOC_ARRAY(uint8_t, wf->entries[entrynum].length);
     size_t read;

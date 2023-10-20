@@ -61,7 +61,7 @@ bool OpenWadFile(wad_file_t *wf, const char *filename);
 void CloseWadFile(wad_file_t *wf);
 
 int EntryExists(wad_file_t *wf, char *entrytofind);
-void *CacheLump(wad_file_t *wf, int entrynum);
+void *CacheLump(wad_file_t *wf, unsigned int entrynum);
 
 void WriteWadDirectory(FILE *fp, wad_file_type_t type, entry_t *entries,
                        size_t num_entries);
