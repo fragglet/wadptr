@@ -43,7 +43,7 @@ typedef struct {
     int num_blocks;
 } blockmap_t;
 
-static blockmap_t ReadBlockmap(wad_file_t *wf, int lumpnum);
+static blockmap_t ReadBlockmap(wad_file_t *wf, unsigned int lumpnum);
 static uint32_t WriteBlockmap(const blockmap_t *blockmap, FILE *fp);
 
 static blockmap_t blockmap_result;
@@ -95,7 +95,7 @@ static int FindIdenticalBlock(const block_t *blocklist,
                               unsigned int *sorted_map, size_t num_blocks,
                               const block_t *block)
 {
-    int i;
+    unsigned int i;
 
     for (i = 0; i < num_blocks; i++)
     {
@@ -112,7 +112,7 @@ static int FindIdenticalBlock(const block_t *blocklist,
         if (!memcmp(block->elements, ib->elements + ib->len - block->len,
                     block->len * 2))
         {
-            return bi;
+            return (int) bi;
         }
     }
 
@@ -223,7 +223,7 @@ static blockmap_t RebuildBlockmap(const blockmap_t *blockmap, bool compress)
 // range so long as it is only a single block list.
 static bool IsOverflowedBlockmap(const blockmap_t *blockmap)
 {
-    int i, sentinel_count = 0;
+    unsigned int i, sentinel_count = 0;
 
     if (blockmap->len < EXTENDED_MAX_BLOCKMAP_OFFSET)
     {
@@ -245,7 +245,7 @@ static bool IsOverflowedBlockmap(const blockmap_t *blockmap)
     return blockmap->elements[blockmap->len - 1] != 0xffff;
 }
 
-bool B_Stack(wad_file_t *wf, int lumpnum)
+bool B_Stack(wad_file_t *wf, unsigned int lumpnum)
 {
     blockmap_t blockmap = ReadBlockmap(wf, lumpnum);
 
@@ -283,7 +283,7 @@ bool B_Stack(wad_file_t *wf, int lumpnum)
     return true;
 }
 
-bool B_Unstack(wad_file_t *wf, int lumpnum)
+bool B_Unstack(wad_file_t *wf, unsigned int lumpnum)
 {
     blockmap_t blockmap = ReadBlockmap(wf, lumpnum);
 
@@ -305,7 +305,7 @@ static int CompareBlockOffsets(unsigned int i1, unsigned int i2,
     return (int) block_offsets[i2] - (int) block_offsets[i1];
 }
 
-bool B_IsStacked(wad_file_t *wf, int lumpnum)
+bool B_IsStacked(wad_file_t *wf, unsigned int lumpnum)
 {
     unsigned int *sorted_map;
     uint16_t *block_offsets;
@@ -339,10 +339,10 @@ void B_WriteBlockmap(FILE *fstream, entry_t *entry)
     free(blockmap_result.elements);
 }
 
-static blockmap_t ReadBlockmap(wad_file_t *wf, int lumpnum)
+static blockmap_t ReadBlockmap(wad_file_t *wf, unsigned int lumpnum)
 {
     blockmap_t result;
-    int i;
+    unsigned int i;
 
     result.len = wf->entries[lumpnum].length / sizeof(uint16_t);
     if (result.len < 4)
@@ -358,7 +358,7 @@ static blockmap_t ReadBlockmap(wad_file_t *wf, int lumpnum)
     }
 
     result.num_blocks = result.elements[2] * result.elements[3];
-    if (result.len < result.num_blocks + 4)
+    if (result.len < result.num_blocks + 4U)
     {
         ErrorExit("BLOCKMAP lump too short: %d blocks < %d "
                   "(%d x %d = %d blocks, + 4 for header",
@@ -373,7 +373,7 @@ static uint32_t WriteBlockmap(const blockmap_t *blockmap, FILE *fp)
 {
     uint8_t *buffer;
     uint32_t result;
-    int i;
+    unsigned int i;
 
     buffer = ALLOC_ARRAY(uint8_t, blockmap->len * 2);
 

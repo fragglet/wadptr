@@ -24,9 +24,9 @@
 
 #include "waddir.h"
 
-bool B_Stack(wad_file_t *wf, int lumpnum);
-bool B_Unstack(wad_file_t *wf, int lumpnum);
-bool B_IsStacked(wad_file_t *wf, int lumpnum);
+bool B_Stack(wad_file_t *wf, unsigned int lumpnum);
+bool B_Unstack(wad_file_t *wf, unsigned int lumpnum);
+bool B_IsStacked(wad_file_t *wf, unsigned int lumpnum);
 void B_WriteBlockmap(FILE *fstream, entry_t *entry);
 
 #endif
