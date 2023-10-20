@@ -24,9 +24,9 @@
 
 #include "waddir.h"
 
-uint8_t *S_Squash(wad_file_t *wf, int entrynum);
-uint8_t *S_Unsquash(wad_file_t *wf, int entrynum);
-bool S_IsSquashed(wad_file_t *wf, int entrynum);
-bool S_IsGraphic(wad_file_t *wf, int entrynum);
+uint8_t *S_Squash(wad_file_t *wf, unsigned int entrynum);
+uint8_t *S_Unsquash(wad_file_t *wf, unsigned int entrynum);
+bool S_IsSquashed(wad_file_t *wf, unsigned int entrynum);
+bool S_IsGraphic(wad_file_t *wf, unsigned int entrynum);
 
 #endif

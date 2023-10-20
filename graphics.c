@@ -25,17 +25,18 @@
 #include "wadptr.h"
 
 static void ParseLump(uint8_t *lump, size_t lump_len);
-static int FindColumnLength(int x, const uint8_t *column, size_t len);
+static unsigned int FindColumnLength(unsigned int x, const uint8_t *column,
+                                     size_t len);
 
 // True when we are inside an S_Unsquash call.
 static bool unsquash_mode = false;
 
 // Picture width, height, etc. from header.
-static short height, width;
-static short loffset, toffset;
+static unsigned short height, width;
+static unsigned short loffset, toffset;
 
 static uint8_t **columns = NULL;
-static int *colsize = NULL;
+static unsigned int *colsize = NULL;
 
 static void AppendBytes(uint8_t **ptr, size_t *len, size_t *sz,
                         const uint8_t *newdata, const size_t newdata_len)
@@ -53,6 +54,7 @@ static void AppendBytes(uint8_t **ptr, size_t *len, size_t *sz,
 static int LargestColumnCompare(unsigned int index1, unsigned int index2,
                                 const void *callback_data)
 {
+    (void) callback_data;
     return colsize[index2] - colsize[index1];
 }
 
@@ -63,7 +65,7 @@ static int LargestColumnCompare(unsigned int index1, unsigned int index2,
 static void CombinePosts(void)
 {
     uint8_t *post, *next_post;
-    int x, i;
+    unsigned int x, i;
 
     for (x = 0; x < width; x++)
     {
@@ -73,7 +75,7 @@ static void CombinePosts(void)
         while (post[i] != 0xff)
         {
             uint8_t off = post[0], len = post[1];
-            int next_i = i + post[i + 1] + 4;
+            unsigned int next_i = i + post[i + 1] + 4;
 
             next_post = post + next_i;
             if (next_post[0] != 0xff)
@@ -100,12 +102,12 @@ static void CombinePosts(void)
 // Squashes a graphic. Call with the lump number, returns a pointer to the
 // new(compressed) lump. This must be free()d when it is no longer needed, as
 // S_Squash() does not do this itself.
-uint8_t *S_Squash(wad_file_t *wf, int entrynum)
+uint8_t *S_Squash(wad_file_t *wf, unsigned int entrynum)
 {
     uint8_t *oldlump, *newres;
     size_t newres_len, newres_size;
     unsigned int *sorted_map;
-    int i, i2;
+    unsigned int i, i2;
 
     if (!S_IsGraphic(wf, entrynum))
     {
@@ -130,14 +132,14 @@ uint8_t *S_Squash(wad_file_t *wf, int entrynum)
 
     for (i = 0; i < width; i++)
     {
-        int x = sorted_map[i];
+        unsigned int x = sorted_map[i];
 #ifdef DEBUG
         printf("column: %4d len: %4d\n", sorted_map[i], colsize[sorted_map[i]]);
 #endif
         for (i2 = 0; !unsquash_mode && i2 < i; i2++)
         {
             uint8_t *suffix_ptr;
-            int x2 = sorted_map[i2];
+            unsigned int x2 = sorted_map[i2];
 
             if (colsize[x2] < colsize[x])
             {
@@ -185,7 +187,7 @@ uint8_t *S_Squash(wad_file_t *wf, int entrynum)
 // Unsquash a picture. Unsquashing rebuilds the image, just like when we
 // do the squashing, except that we set a special flag that skips
 // searching for identical columns.
-uint8_t *S_Unsquash(wad_file_t *wf, int entrynum)
+uint8_t *S_Unsquash(wad_file_t *wf, unsigned int entrynum)
 {
     uint8_t *result;
 
@@ -206,7 +208,7 @@ static void ParseLump(uint8_t *lump, size_t lump_len)
     toffset = READ_SHORT(lump + 6);
 
     columns = REALLOC_ARRAY(uint8_t *, columns, width);
-    colsize = REALLOC_ARRAY(int, colsize, width);
+    colsize = REALLOC_ARRAY(unsigned int, colsize, width);
 
     for (x = 0; x < width; x++)
     {
@@ -221,9 +223,10 @@ static void ParseLump(uint8_t *lump, size_t lump_len)
     }
 }
 
-static int FindColumnLength(int x, const uint8_t *column, size_t len)
+static unsigned int FindColumnLength(unsigned int x, const uint8_t *column,
+                                     size_t len)
 {
-    int i = 0;
+    unsigned int i = 0;
 
     while (1)
     {
@@ -242,11 +245,11 @@ static int FindColumnLength(int x, const uint8_t *column, size_t len)
     }
 }
 
-bool S_IsSquashed(wad_file_t *wf, int entrynum)
+bool S_IsSquashed(wad_file_t *wf, unsigned int entrynum)
 {
     bool result = false;
     uint8_t *pic;
-    int x, x2;
+    unsigned int x, x2;
 
     pic = CacheLump(wf, entrynum);
     ParseLump(pic, wf->entries[entrynum].length);
@@ -267,12 +270,12 @@ bool S_IsSquashed(wad_file_t *wf, int entrynum)
     return result;
 }
 
-bool S_IsGraphic(wad_file_t *wf, int entrynum)
+bool S_IsGraphic(wad_file_t *wf, unsigned int entrynum)
 {
     uint8_t *graphic, *columns;
     char *s = wf->entries[entrynum].name;
-    int count;
-    short width, height;
+    unsigned int count;
+    unsigned short width, height;
 
     if (!strncmp(s, "ENDOOM", 8))
         return false;
@@ -296,7 +299,7 @@ bool S_IsGraphic(wad_file_t *wf, int entrynum)
     columns = graphic + 8;
 
     if (width > 320 || height > 200 || width <= 0 || height <= 0 ||
-        8 + width * 4 > wf->entries[entrynum].length)
+        width * 4 + 8U > wf->entries[entrynum].length)
     {
         free(graphic);
         return false;
