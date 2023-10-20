@@ -2,3 +2,4 @@ wadptr
 *.o
 dist
 wadptr.exe
+.wadptr-temp-*
