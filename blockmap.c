@@ -40,7 +40,7 @@ typedef struct {
 typedef struct {
     uint16_t *elements;
     size_t len, size;
-    int num_blocks;
+    unsigned int num_blocks;
 } blockmap_t;
 
 static blockmap_t ReadBlockmap(wad_file_t *wf, unsigned int lumpnum);
@@ -52,7 +52,7 @@ static block_t *MakeBlocklist(const blockmap_t *blockmap)
 {
     block_t *blocklist;
     block_t *block;
-    int i, start_index, end_index;
+    unsigned int i, start_index, end_index;
 
     blocklist = ALLOC_ARRAY(block_t, blockmap->num_blocks);
 
@@ -133,7 +133,7 @@ static blockmap_t RebuildBlockmap(const blockmap_t *blockmap, bool compress)
     block_t *blocklist;
     uint16_t *block_offsets;
     unsigned int *sorted_map;
-    int i;
+    unsigned int i;
 
     blocklist = MakeBlocklist(blockmap);
 
@@ -310,7 +310,7 @@ bool B_IsStacked(wad_file_t *wf, unsigned int lumpnum)
     unsigned int *sorted_map;
     uint16_t *block_offsets;
     bool result = false;
-    int i;
+    unsigned int i;
 
     blockmap_t blockmap = ReadBlockmap(wf, lumpnum);
 
