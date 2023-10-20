@@ -41,8 +41,16 @@ test_wad_file() {
         return 1
     fi
 
+    if ! ./wadptr -l $fn; then
+        return 1
+    fi
+
     if ! ./wadptr -o $wd/compr2.wad -c $fn || ! diff $fn $wd/compr2.wad; then
         echo "WAD differs after compression a second time"
+        return 1
+    fi
+
+    if ! ./wadptr -l $fn; then
         return 1
     fi
 
@@ -58,9 +66,17 @@ test_wad_file() {
         return 1
     fi
 
+    if ! ./wadptr -l $fn; then
+        return 1
+    fi
+
     if ! ./wadptr -o $wd/uncompr2.wad -u $fn ||
        ! diff $fn $wd/uncompr2.wad; then
         echo "WAD differs after decompression a second time"
+        return 1
+    fi
+
+    if ! ./wadptr -l $fn; then
         return 1
     fi
 
