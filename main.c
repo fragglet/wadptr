@@ -322,14 +322,111 @@ static bool IsSidedefs(wad_file_t *wf, int count)
            !strncmp(wf->entries[count - 1].name, "LINEDEFS", 8);
 }
 
+static bool TryPack(wad_file_t *wf, unsigned int lump_index, FILE *out_file)
+{
+    uint32_t orig_lump_len = wf->entries[lump_index].length;
+
+    if (lump_index + 1 < wf->num_entries && IsSidedefs(wf, lump_index + 1))
+    {
+        // We will write both LINEDEFS and SIDEDEFS when we reach
+        // the next lump.
+        SPAMMY_PRINTF("Deferred... (0%%)\n");
+        return true;
+    }
+    else if (IsSidedefs(wf, lump_index))
+    {
+        bool success;
+
+        SPAMMY_PRINTF("Packing");
+        fflush(stdout);
+
+        success = P_Pack(wf, lump_index);
+
+        P_WriteLinedefs(out_file, &wf->entries[lump_index - 1]);
+        P_WriteSidedefs(out_file, &wf->entries[lump_index]);
+
+        if (success)
+        {
+            SPAMMY_PRINTF(
+                " (%i%%), done.\n",
+                PercentSmaller(orig_lump_len, wf->entries[lump_index].length));
+        }
+        else
+        {
+            // TODO: Print info message if compression failed.
+            SPAMMY_PRINTF(" (0%%), failed.\n");
+        }
+
+        return true;
+    }
+
+    return false;
+}
+
+static bool TryStack(wad_file_t *wf, unsigned int lump_index, FILE *out_file)
+{
+    uint32_t orig_lump_len = wf->entries[lump_index].length;
+    bool success;
+
+    if (strncmp(wf->entries[lump_index].name, "BLOCKMAP", 8) != 0)
+    {
+        return false;
+    }
+
+    SPAMMY_PRINTF("Stacking ");
+    fflush(stdout);
+
+    success = B_Stack(wf, lump_index);
+    B_WriteBlockmap(out_file, &wf->entries[lump_index]);
+
+    if (success)
+    {
+        SPAMMY_PRINTF(
+            "(%i%%), done.\n",
+            PercentSmaller(orig_lump_len, wf->entries[lump_index].length));
+    }
+    else
+    {
+        // TODO: Print some kind of info message at the end of
+        // compression to notify the user that not all blockmaps
+        // could be stacked.
+        SPAMMY_PRINTF("(0%%), failed.\n");
+    }
+
+    return true;
+}
+
+static bool TrySquash(wad_file_t *wf, unsigned int lump_index, FILE *out_file)
+{
+    uint32_t orig_lump_len = wf->entries[lump_index].length;
+    uint8_t *temp;
+
+    if (!S_IsGraphic(wf, lump_index))
+    {
+        return false;
+    }
+
+    SPAMMY_PRINTF("Squashing ");
+    fflush(stdout);
+
+    temp = S_Squash(wf, lump_index);
+    wf->entries[lump_index].offset =
+        WriteWadLump(out_file, temp, wf->entries[lump_index].length);
+    free(temp);
+
+    SPAMMY_PRINTF(
+        "(%i%%), done.\n",
+        PercentSmaller(orig_lump_len, wf->entries[lump_index].length));
+    return true;
+}
+
 static bool Compress(const char *wadname)
 {
     wad_file_t wf;
-    int count;
+    unsigned int count;
     long orig_size, new_size;
     FILE *fstream;
     bool written;
-    uint8_t *temp;
     char *tempwad_name;
 
     if (!OpenWadFile(&wf, wadname))
@@ -348,89 +445,23 @@ static bool Compress(const char *wadname)
 
     for (count = 0; count < wf.num_entries; count++)
     {
-        uint32_t orig_lump_len = wf.entries[count].length;
-
         SPAMMY_PRINTF("Adding: %-8.8s       ", wf.entries[count].name);
         fflush(stdout);
         written = false;
 
-        if (allowpack)
+        if (!written && allowpack)
         {
-            if (count + 1 < wf.num_entries && IsSidedefs(&wf, count + 1))
-            {
-                // We will write both LINEDEFS and SIDEDEFS when we reach
-                // the next lump.
-                SPAMMY_PRINTF("Deferred... (0%%)\n");
-                written = true;
-            }
-            else if (IsSidedefs(&wf, count))
-            {
-                bool success;
-
-                SPAMMY_PRINTF("Packing");
-                fflush(stdout);
-
-                success = P_Pack(&wf, count);
-
-                P_WriteLinedefs(fstream, &wf.entries[count - 1]);
-                P_WriteSidedefs(fstream, &wf.entries[count]);
-
-                written = true;
-
-                if (success)
-                {
-                    SPAMMY_PRINTF(" (%i%%), done.\n",
-                                  PercentSmaller(orig_lump_len,
-                                                 wf.entries[count].length));
-                }
-                else
-                {
-                    // TODO: Print info message if compression failed.
-                    SPAMMY_PRINTF(" (0%%), failed.\n");
-                }
-            }
+            written = TryPack(&wf, count, fstream);
         }
 
-        if (allowstack && !strncmp(wf.entries[count].name, "BLOCKMAP", 8))
+        if (!written && allowstack)
         {
-            bool success;
-
-            SPAMMY_PRINTF("Stacking ");
-            fflush(stdout);
-
-            success = B_Stack(&wf, count);
-            B_WriteBlockmap(fstream, &wf.entries[count]);
-
-            if (success)
-            {
-                SPAMMY_PRINTF(
-                    "(%i%%), done.\n",
-                    PercentSmaller(orig_lump_len, wf.entries[count].length));
-            }
-            else
-            {
-                // TODO: Print some kind of info message at the end of
-                // compression to notify the user that not all blockmaps
-                // could be stacked.
-                SPAMMY_PRINTF("(0%%), failed.\n");
-            }
-            written = true;
+            written = TryStack(&wf, count, fstream);
         }
 
-        if (allowsquash && S_IsGraphic(&wf, count))
+        if (!written && allowsquash)
         {
-            SPAMMY_PRINTF("Squashing ");
-            fflush(stdout);
-
-            temp = S_Squash(&wf, count);
-            wf.entries[count].offset =
-                WriteWadLump(fstream, temp, wf.entries[count].length);
-            free(temp);
-
-            SPAMMY_PRINTF(
-                "(%i%%), done.\n",
-                PercentSmaller(orig_lump_len, wf.entries[count].length));
-            written = true;
+            written = TrySquash(&wf, count, fstream);
         }
 
         if (!written && wf.entries[count].length == 0)
@@ -442,6 +473,7 @@ static bool Compress(const char *wadname)
 
         if (!written)
         {
+            uint8_t *temp;
             SPAMMY_PRINTF("Storing ");
             fflush(stdout);
             temp = CacheLump(&wf, count);
