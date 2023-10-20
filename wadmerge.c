@@ -70,7 +70,7 @@ void RebuildMergedWad(wad_file_t *wf, FILE *newwad)
 {
     unsigned int *sorted_map;
     lump_data_t *lumps;
-    int i, num_lumps;
+    unsigned int i, num_lumps;
     uint8_t *cached;
 
     // This is an optimization not for WAD size, but for compressed WAD size.

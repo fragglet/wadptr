@@ -217,7 +217,7 @@ uint32_t WriteWadLump(FILE *fp, void *buf, size_t len)
 
 int EntryExists(wad_file_t *wf, char *entrytofind)
 {
-    int count;
+    unsigned int count;
     for (count = 0; count < wf->num_entries; count++)
     {
         if (!strncmp(wf->entries[count].name, entrytofind, 8))
@@ -282,7 +282,7 @@ static const char *level_lump_names[] = {
 // associated with levels (in the list above).
 bool IsLevelEntry(char *s)
 {
-    int i;
+    unsigned int i;
 
     for (i = 0; i < sizeof(level_lump_names) / sizeof(*level_lump_names); i++)
     {

@@ -762,7 +762,7 @@ static const char *CompressionMethod(wad_file_t *wf, int lumpnum)
 static bool ListEntries(const char *wadname)
 {
     wad_file_t wf;
-    int i, j;
+    unsigned int i, j;
 
     if (!OpenWadFile(&wf, wadname))
     {

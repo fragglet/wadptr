@@ -27,7 +27,7 @@ static void SortMapElements(unsigned int *elements, size_t num_elements,
 {
     unsigned int pivot, pivot_index;
     size_t arr1_len;
-    int i;
+    unsigned int i;
 
     if (num_elements <= 1)
     {
