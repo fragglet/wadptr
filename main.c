@@ -50,6 +50,7 @@ bool allowsquash = true; // picture squashing on
 bool allowmerge = true;  // lump merging on
 bool allowstack = true;  // blockmap stacking
 bool extsides = false;   // extended sidedefs limit
+bool extblocks = false;  // extended blockmap limit
 static bool quiet_mode = false;
 
 static bool FileExists(const char *filename)
@@ -231,6 +232,10 @@ static void ParseCommandLine(void)
         {
             extsides = true;
         }
+        else if (!strcmp(arg, "-extblocks"))
+        {
+            extblocks = true;
+        }
         else if (!strcmp(arg, "-version") || !strcmp(arg, "-v"))
         {
             printf("%s\n", VERSION);
@@ -317,6 +322,7 @@ static void Help(void)
         "                      -nopack    Disable sidedef packing\n"
         "                      -nostack   Disable blockmap stacking\n"
         "                      -extsides  Extended sidedefs limit\n"
+        "                      -extblocks Extended blockmap limit\n"
         "\n");
 }
 

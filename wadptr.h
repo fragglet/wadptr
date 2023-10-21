@@ -25,6 +25,7 @@ extern bool allowpack;   // level packing on
 extern bool allowsquash; // picture squashing on
 extern bool allowmerge;  // lump merging on
 extern bool extsides;    // extended sidedefs limit
+extern bool extblocks;   // extended blockmap limit
 
 #ifdef _WIN32
 #define DIRSEP "\\"

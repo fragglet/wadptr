@@ -25,7 +25,7 @@
 
 // Blockmap lumps have a vanilla limit of ~64KiB; the 16-bit integers
 // are interpreted by the engine as signed integers.
-#define MAX_BLOCKMAP_OFFSET 0x7fff /* 16-bit ints */
+#define VANILLA_MAX_BLOCKMAP_OFFSET 0x7fff /* 16-bit ints */
 
 // Extended limit, if we treat the blockmap elements as unsigned 16-bit
 // integers. Note that we cannot include 0xffff because it is used as
@@ -127,6 +127,18 @@ static int LargestBlockCompare(unsigned int i1, unsigned int i2,
     return (int) blocklist[i2].len - (int) blocklist[i1].len;
 }
 
+// We never generate a blockmap that will exceed the vanilla 16-bit
+// signed limit. However, we support an option that instead treats the
+// values as unsigned values, since some source ports support this.
+static size_t BlockmapLimit(void)
+{
+    if (extblocks)
+    {
+        return EXTENDED_MAX_BLOCKMAP_OFFSET;
+    }
+    return VANILLA_MAX_BLOCKMAP_OFFSET;
+}
+
 static blockmap_t RebuildBlockmap(const blockmap_t *blockmap, bool compress)
 {
     blockmap_t result;
@@ -192,7 +204,7 @@ static blockmap_t RebuildBlockmap(const blockmap_t *blockmap, bool compress)
                    blocklist[match_index].len - block->len);
 #endif
         }
-        else if (result.len > MAX_BLOCKMAP_OFFSET)
+        else if (result.len > BlockmapLimit())
         {
             free(result.elements);
             result.elements = NULL;
