@@ -167,7 +167,9 @@ static uint32_t CheckedTell(FILE *fp)
         perror("ftell");
         ErrorExit("Failed to read file position");
     }
-    if (result > UINT32_MAX)
+    // Doom's filelump_t in w_wad.c uses a signed integer for file position,
+    // though if your WAD file is >2GiB you've probably got other problems.
+    if (result > INT32_MAX)
     {
         ErrorExit("File position out of range; pos=%ld", result);
     }
