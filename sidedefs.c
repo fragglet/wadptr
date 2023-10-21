@@ -26,9 +26,11 @@
 #include "waddir.h"
 #include "wadptr.h"
 
-// Vanilla sidedefs count limit.
-// TODO: Support the Boom extended format.
-#define MAX_SIDEDEFS 0x7fff
+// Vanilla Doom treats sidedef indexes as signed, but Boom and other ports
+// allow the full unsigned 16-bit range to be used. Note that MAX_EXT_SIDEDEFS
+// is one less than 0xffff since it's used to indicate "no sidedef".
+#define MAX_VANILLA_SIDEDEFS 0x7fff
+#define MAX_EXT_SIDEDEFS     0xfffe
 
 #define NO_SIDEDEF ((sidedef_ref_t) UINT32_MAX)
 
@@ -131,6 +133,15 @@ static bool hexen_format;
 // sidedef references in the LINEDEFS lump.
 static sidedef_ref_t *newsidedef_index;
 
+static size_t SidedefsLimit(void)
+{
+    if (extsides)
+    {
+        return MAX_EXT_SIDEDEFS;
+    }
+    return MAX_VANILLA_SIDEDEFS;
+}
+
 static size_t LinedefSize(void)
 {
     if (hexen_format)
@@ -179,7 +190,7 @@ bool P_Pack(wad_file_t *wf, unsigned int sidedef_num)
     // original one?
 
     // We never generate a corrupt (overflowed) SIDEDEFS list.
-    if (sidedefs_result.len > MAX_SIDEDEFS)
+    if (sidedefs_result.len > SidedefsLimit())
     {
         free(sidedefs_result.sides);
         sidedefs_result = orig_sidedefs;
@@ -240,9 +251,7 @@ bool P_Unpack(wad_file_t *wf, unsigned int sidedef_num)
     // It is possible that the decompressed sidedefs list overflows the
     // limits of the SIDEDEFS on-disk format. We never want to save a
     // corrupted sidedefs list.
-    // TODO: Some source ports (eg. Boom compatible) support up to 64K
-    // sidedefs, and we should support this as an option.
-    if (sidedefs_result.len > MAX_SIDEDEFS)
+    if (sidedefs_result.len > SidedefsLimit())
     {
         free(sidedefs_result.sides);
         sidedefs_result = orig_sidedefs;
