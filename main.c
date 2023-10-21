@@ -713,13 +713,17 @@ static bool Uncompress(const char *wadname)
                       "the decompressed\nversion would exceed the vanilla "
                       "BLOCKMAP size limit.\n");
     }
-    if (sidedefs_failures && !extsides)
+    if (sidedefs_failures)
     {
         SPAMMY_PRINTF("\nSome SIDEDEFS lumps could not be unpacked because "
-                      "the decompressed\nversion would exceed the vanilla "
-                      "sidedef count limit. If this is not\na vanilla WAD, "
-                      "you can try using the -extsides command line "
-                      "argument.\n");
+                      "the decompressed\nversion would exceed the sidedef "
+                      "count limit.\n");
+        if (!extsides)
+        {
+            SPAMMY_PRINTF("If this is not a vanilla WAD, you can try using "
+                          "the -extsides command\nline argument to use the "
+                          "extended sidedefs limit.\n");
+        }
     }
 
     return true;
