@@ -54,6 +54,16 @@ below). In uncompress mode, this disables graphic \fIunsquashing\fR.
 Disables blockmap stacking (see the \fBcompression schemes\fR section
 below). In uncompress mode, this disables blockmap \fIunstacking\fR.
 .TP
+\fB-extblocks\fR
+Enables extended BLOCKMAP size limit, for WADs targeting limit-removing
+source ports. This effectively doubles the limit, but the resulting
+lump will not work with vanilla Doom.
+.TP
+\fB-extsides\fR
+Enables extended sidedef count limit, for WADs targeting limit-removing
+source ports. This effectively doubles the limit, but the resulting
+lump will not work with vanilla Doom.
+.TP
 \fB-v\fR
 Print version number.
 .SH COMPRESSION SCHEMES
@@ -127,7 +137,10 @@ Some levels are so large that it is impossible to unpack their sidedefs
 or unstack their blockmap without exceeding the limits of the Doom level
 format. If this happens when uncompressing a level, "failed" will be
 shown in the program output for that lump and the original (compressed)
-lump will be copied into the output file unchanged.
+lump will be copied into the output file unchanged. The \fB-extblocks\fR
+and \fB-extsides\fR command line arguments can be specified to use the
+extended limits instead of the vanilla limits, but the resulting levels
+will only work in a limit-removing source port.
 .PP
 Some level editors get confused by packed sidedefs. If your level editor
 has problems, use \fB-u\fR to uncompress the file before editing.
