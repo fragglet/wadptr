@@ -4,7 +4,7 @@ OBJECTS = main.o waddir.o errors.o wadmerge.o sort.o \
           graphics.o sidedefs.o blockmap.o sha1.o
 DELETE = rm -f
 STRIP = strip
-CFLAGS = -Wall -O3
+CFLAGS = -Wall -O3 -Wextra
 PANDOC_FLAGS = -s --template=default.html5 -H style.html
 
 all: $(EXECUTABLE)
