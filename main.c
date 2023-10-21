@@ -710,8 +710,14 @@ static bool Uncompress(const char *wadname)
     if (blockmap_failures)
     {
         SPAMMY_PRINTF("\nSome BLOCKMAP lumps could not be unstacked because "
-                      "the decompressed\nversion would exceed the vanilla "
-                      "BLOCKMAP size limit.\n");
+                      "the decompressed\nversion would exceed the BLOCKMAP "
+                      "size limit.\n");
+        if (!extblocks)
+        {
+            SPAMMY_PRINTF("If this is not a vanilla WAD, you can try using "
+                          "the -extblocks command\nline argument to use the "
+                          "extended blockmap limit.\n");
+        }
     }
     if (sidedefs_failures)
     {
