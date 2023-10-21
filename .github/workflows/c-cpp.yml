@@ -9,9 +9,10 @@ jobs:
     strategy:
       matrix:
         include:
-         - makeopts: ""
+         - makeopts: "CC=gcc"
          - makeopts: "CFLAGS=-fsanitize=address"
          - makeopts: "CFLAGS=-fsanitize=undefined"
+         - makeopts: "CC=clang"
 
     steps:
     - uses: actions/checkout@v3
