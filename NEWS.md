@@ -1,5 +1,22 @@
 # wadptr revision history
 
+## 3.3 (2023-10-21)
+
+ * Compression of Hexen format levels is now supported.
+ * A bug was fixed that prevented blockmaps from being stacked.
+ * Two new arguments, `-extblocks` and `-extsides`, have been added
+   to allow use of the extended blockmap and sidedef limits that are
+   supported by some source ports.
+ * Corrupt BLOCKMAP lumps are now detected and no attempt is made to
+   process them.
+ * Compression of BLOCKMAP lumps is now very slightly better.
+ * The graphics squashing code can now do a slightly better job of
+   compressing some larger graphics.
+ * The code has now been tested successfully on FreeBSD, NetBSD and
+   OpenBSD.
+ * The test suite now includes a set of "unit test" WADs as regression
+   tests for all the individual features.
+
 ## 3.2 (2023-10-14)
 
  * The sidedef packing code is now considerably more efficient,
