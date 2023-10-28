@@ -96,8 +96,13 @@ static FILE *OpenTempFile(const char *file_in_same_dir, char **filename)
             continue;
         }
 
+#ifdef _WIN32
+#define EXCLUSIVE ""
+#else
+#define EXCLUSIVE "x"
+#endif
         // The x modifier guarantees we never overwrite a file.
-        result = fopen(*filename, "w+xb");
+        result = fopen(*filename, "w+b" EXCLUSIVE);
         if (result != NULL)
         {
             return result;
@@ -105,6 +110,7 @@ static FILE *OpenTempFile(const char *file_in_same_dir, char **filename)
 
         if (errno != EEXIST)
         {
+            perror("fopen");
             ErrorExit("Failed to open %s for writing.", *filename);
         }
     }
