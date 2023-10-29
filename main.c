@@ -526,7 +526,13 @@ static bool Compress(const char *wadname)
         fclose(fstream);
         CloseWadFile(&wf);
 
-        remove(tempwad_name);
+        if (remove(tempwad_name) < 0)
+        {
+            // We couldn't remove the old temporary WAD, but this isn't
+            // a fatal error. Report the error to the console, but keep
+            // on going.
+            perror("remove");
+        }
         free(tempwad_name);
         tempwad_name = tempwad2_name;
     }
