@@ -540,13 +540,11 @@ static bool Compress(const char *wadname)
     // We only overwrite the original input file once we have generated
     // the new one as a temporary file, so that it takes place as a
     // simple rename() call.
-    if (outputwad == NULL)
+    if (rename(tempwad_name, outputwad != NULL ? outputwad : wadname) < 0)
     {
-        rename(tempwad_name, wadname);
-    }
-    else
-    {
-        rename(tempwad_name, outputwad);
+        perror("rename");
+        ErrorExit("Failed to rename temporary file '%s' to '%s'",
+                  tempwad_name, outputwad != NULL ? outputwad : wadname);
     }
 
     free(tempwad_name);
@@ -707,14 +705,11 @@ static bool Uncompress(const char *wadname)
     fclose(fstream);
     CloseWadFile(&wf);
 
-    if (outputwad == NULL)
+    if (rename(tempwad_name, outputwad != NULL ? outputwad : wadname) < 0)
     {
-        // Replace the original wad with the new one:
-        rename(tempwad_name, wadname);
-    }
-    else
-    {
-        rename(tempwad_name, outputwad);
+        perror("rename");
+        ErrorExit("Failed to rename temporary file '%s' to '%s'",
+                  tempwad_name, outputwad != NULL ? outputwad : wadname);
     }
 
     free(tempwad_name);
