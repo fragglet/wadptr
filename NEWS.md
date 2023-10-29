@@ -1,5 +1,12 @@
 # wadptr revision history
 
+## 3.4 (2023-10-29)
+
+ * A bug was fixed on Windows that prevented new files from being
+   written and therefore made the program not work at all. Big thanks
+   go to @Kroc on GitHub for reporting this issue and for assistance
+   in debugging.
+
 ## 3.3 (2023-10-21)
 
  * Compression of Hexen format levels is now supported.
