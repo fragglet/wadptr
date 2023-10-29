@@ -539,7 +539,16 @@ static bool Compress(const char *wadname)
 
     // We only overwrite the original input file once we have generated
     // the new one as a temporary file, so that it takes place as a
-    // simple rename() call.
+    // simple rename() call. However! The Windows version of rename()
+    // does not overwrite existing files, so we have to delete first.
+#ifdef _WIN32
+    if (remove(outputwad != NULL ? outputwad : wadname) < 0 && errno != ENOENT)
+    {
+        perror("remove");
+        ErrorExit("Failed to remove old input file '%s' for rename.",
+                  outputwad != NULL ? outputwad : wadname);
+    }
+#endif
     if (rename(tempwad_name, outputwad != NULL ? outputwad : wadname) < 0)
     {
         perror("rename");
@@ -705,6 +714,15 @@ static bool Uncompress(const char *wadname)
     fclose(fstream);
     CloseWadFile(&wf);
 
+#ifdef _WIN32
+    // Windows version of rename() does not overwrite; we must delete first.
+    if (remove(outputwad != NULL ? outputwad : wadname) < 0 && errno != ENOENT)
+    {
+        perror("remove");
+        ErrorExit("Failed to remove old input file '%s' for rename.",
+                  outputwad != NULL ? outputwad : wadname);
+    }
+#endif
     if (rename(tempwad_name, outputwad != NULL ? outputwad : wadname) < 0)
     {
         perror("rename");
