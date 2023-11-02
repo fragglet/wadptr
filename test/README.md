@@ -18,6 +18,9 @@ run tests. Included here are:
 * `btsxcred.wad` is the CREDIT screen graphic from btsx\_e1a.wad, which
   has its columns unnecessarily spread into two posts, and checks that
   the code to combine posts works as intended.
+* `64c30n9.wad` is a Doom 64-format WAD. A single zero byte has been
+  appended to the end of the WAD so that the tests successfully reduce
+  the file size.
 
 Mini / unit test WADs:
 

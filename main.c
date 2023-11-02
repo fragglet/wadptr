@@ -51,6 +51,7 @@ bool allowmerge = true;  // lump merging on
 bool allowstack = true;  // blockmap stacking
 bool extsides = false;   // extended sidedefs limit
 bool extblocks = false;  // extended blockmap limit
+static bool psx_format = false;
 static bool quiet_mode = false;
 
 static bool FileExists(const char *filename)
@@ -332,6 +333,12 @@ static void Help(void)
         "\n");
 }
 
+// Checks for the lump names unique to PSX levels (and Doom 64).
+static bool IsPlaystationWad(wad_file_t *wf)
+{
+    return EntryExists(wf, "LEAFS") >= 0 || EntryExists(wf, "LIGHTS") >= 0;
+}
+
 // LINEDEFS and SIDEDEFS lumps follow each other in Doom WADs. This is
 // baked into the engine - Doom doesn't actually even look at the names.
 static bool IsSidedefs(wad_file_t *wf, int count)
@@ -455,6 +462,7 @@ static bool Compress(const char *wadname)
     {
         return false;
     }
+    psx_format = IsPlaystationWad(&wf);
 
     orig_size = FileSize(wf.fp);
 
@@ -467,7 +475,7 @@ static bool Compress(const char *wadname)
         fflush(stdout);
         written = false;
 
-        if (!written && allowpack)
+        if (!written && allowpack && !psx_format)
         {
             written = TryPack(&wf, count, fstream);
         }
@@ -667,6 +675,7 @@ static bool Uncompress(const char *wadname)
     {
         return false;
     }
+    psx_format = IsPlaystationWad(&wf);
 
     fstream = OpenTempFile(wadname, &tempwad_name);
 
@@ -677,7 +686,7 @@ static bool Uncompress(const char *wadname)
         SPAMMY_PRINTF("Adding: %-8.8s       ", wf.entries[count].name);
         fflush(stdout);
 
-        if (allowpack)
+        if (allowpack && !psx_format)
         {
             written = TryUnpack(&wf, count, fstream, &sidedefs_failures);
         }
@@ -766,7 +775,7 @@ static const char *CompressionMethod(wad_file_t *wf, int lumpnum)
     {
         return "Empty";
     }
-    else if (IsSidedefs(wf, lumpnum))
+    else if (!psx_format && IsSidedefs(wf, lumpnum))
     {
         // This is a level:
         if (P_IsPacked(wf, lumpnum))
@@ -817,6 +826,7 @@ static bool ListEntries(const char *wadname)
     {
         return false;
     }
+    psx_format = IsPlaystationWad(&wf);
 
     SPAMMY_PRINTF(
         " Number  Length  Offset      Method      Name        Shared\n"
