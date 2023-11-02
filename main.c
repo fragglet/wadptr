@@ -864,6 +864,11 @@ static int PercentSmaller(int before, int after)
 {
     double perc;
 
+    if (before == 0)
+    {
+        return 0;
+    }
+
     perc = 1 - (((double) after) / before);
 
     return (int) (100 * perc);

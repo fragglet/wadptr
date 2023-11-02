@@ -257,9 +257,47 @@ static bool IsOverflowedBlockmap(const blockmap_t *blockmap)
     return blockmap->elements[blockmap->len - 1] != 0xffff;
 }
 
+// IsValidBlockmap performs basic sanity checking on the given blockmap to
+// confirm that it meets the minimum length. If it doesn't, a message is
+// printed to stderr and false is returned. It isn't considered a fatal error
+// because some WADs contain empty BLOCKMAP lumps and rely on the source port
+// to do the build internally.
+static bool IsValidBlockmap(blockmap_t *blockmap)
+{
+    unsigned int num_blocks;
+
+    if (blockmap->len < 4)
+    {
+        fprintf(stderr, "BLOCKMAP lump too short: %d < %d header size\n",
+                blockmap->len, 4);
+        return false;
+    }
+
+    num_blocks = blockmap->elements[2] * blockmap->elements[3];
+    if (blockmap->len < num_blocks + 4U)
+    {
+        fprintf(stderr, "BLOCKMAP lump too short: %d blocks < %d "
+                "(%d x %d = %d blocks, + 4 for header\n",
+                blockmap->len, num_blocks + 4, blockmap->elements[2],
+                blockmap->elements[3], num_blocks);
+        return false;
+    }
+
+    return true;
+}
+
+
 bool B_Stack(wad_file_t *wf, unsigned int lumpnum)
 {
     blockmap_t blockmap = ReadBlockmap(wf, lumpnum);
+
+    if (!IsValidBlockmap(&blockmap))
+    {
+        blockmap_result = blockmap;
+        return true;
+    }
+
+    blockmap.num_blocks = blockmap.elements[2] * blockmap.elements[3];
 
     if (IsOverflowedBlockmap(&blockmap))
     {
@@ -357,25 +395,10 @@ static blockmap_t ReadBlockmap(wad_file_t *wf, unsigned int lumpnum)
     unsigned int i;
 
     result.len = wf->entries[lumpnum].length / sizeof(uint16_t);
-    if (result.len < 4)
-    {
-        ErrorExit("BLOCKMAP lump too short: %d < %d header size", result.len,
-                  4);
-    }
     result.elements = CacheLump(wf, lumpnum);
-
     for (i = 0; i < result.len; i++)
     {
         result.elements[i] = READ_SHORT((uint8_t *) &result.elements[i]);
-    }
-
-    result.num_blocks = result.elements[2] * result.elements[3];
-    if (result.len < result.num_blocks + 4U)
-    {
-        ErrorExit("BLOCKMAP lump too short: %d blocks < %d "
-                  "(%d x %d = %d blocks, + 4 for header",
-                  result.len, result.num_blocks + 4, result.elements[2],
-                  result.elements[3], result.num_blocks);
     }
 
     return result;

@@ -7,6 +7,8 @@ run tests. Included here are:
   which checks that we handle such WADs appropriately.
 * Eternal Doom,  which is similarly notorious for having very large
   levels.
+* `crymap02.wad` is MAP02 from [Cryogenics](https://doomwiki.org/wiki/Cryogenics),
+  a large level that contains an empty BLOCKMAP lump.
 * `evimap32.wad` is MAP32 from [Eviternity](https://doomwiki.org/wiki/Eviternity),
   an exceedingly large level.
 * `btsx2m20.wad` is MAP20 from [BTSX E2](https://doomwiki.org/wiki/Back_to_Saturn_X),
