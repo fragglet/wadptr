@@ -378,6 +378,7 @@ bool B_IsStacked(wad_file_t *wf, unsigned int lumpnum)
         return false;
     }
 
+    blockmap.num_blocks = blockmap.elements[2] * blockmap.elements[3];
     block_offsets = &blockmap.elements[4];
     sorted_map =
         MakeSortedMap(blockmap.num_blocks, CompareBlockOffsets, block_offsets);
