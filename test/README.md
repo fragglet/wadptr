@@ -24,7 +24,7 @@ run tests. Included here are:
 
 Mini / unit test WADs:
 
-* `samelump.wad` contains two lumps with identical column; this
+* `samelump.wad` contains two lumps with identical contents; this
   confirms that the WAD merging code works as intended.
 * `samecol.wad` has a single graphic containing two identical columns,
   to confirm those will be combined.
