@@ -337,6 +337,14 @@ bool B_Unstack(wad_file_t *wf, unsigned int lumpnum)
 {
     blockmap_t blockmap = ReadBlockmap(wf, lumpnum);
 
+    if (!IsValidBlockmap(&blockmap))
+    {
+        blockmap_result = blockmap;
+        return true;
+    }
+
+    blockmap.num_blocks = blockmap.elements[2] * blockmap.elements[3];
+
     blockmap_result = RebuildBlockmap(&blockmap, false);
     if (blockmap_result.len == 0)
     {
@@ -363,6 +371,12 @@ bool B_IsStacked(wad_file_t *wf, unsigned int lumpnum)
     unsigned int i;
 
     blockmap_t blockmap = ReadBlockmap(wf, lumpnum);
+
+    if (!IsValidBlockmap(&blockmap))
+    {
+        free(blockmap.elements);
+        return false;
+    }
 
     block_offsets = &blockmap.elements[4];
     sorted_map =
