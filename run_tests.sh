@@ -95,7 +95,7 @@ test_wad_file() {
 
 all_success=true
 
-for wad in test/*.wad; do
+find test -name '*.wad' | while read wad; do
     filename=$(basename $wad)
     cp $wad $wd
 
