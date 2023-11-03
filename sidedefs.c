@@ -479,8 +479,11 @@ static void CheckLumpSizes(wad_file_t *wf, unsigned int linedef_num,
 
     // Hexen levels have a slightly different format, and we can detect
     // this by looking for the presence of a BEHAVIOR lump, which is
-    // unique to this format.
-    hexen_format = EntryExists(wf, "BEHAVIOR") >= 0;
+    // unique to this format. Level lumps are always in a fixed order
+    // (Doom requires this), so we can expect that the BEHAVIOR lump is
+    // 9 entries after the LINEDEFS lump.
+    hexen_format = linedef_num + 9 < wf->num_entries &&
+                   !strncmp(wf->entries[linedef_num + 9].name, "BEHAVIOR", 8);
     linedef_size = LinedefSize();
 
     if ((wf->entries[linedef_num].length % linedef_size) != 0)

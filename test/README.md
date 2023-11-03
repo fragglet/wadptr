@@ -38,3 +38,5 @@ Mini / unit test WADs:
 * `stackable.wad` contains a minimal level with no identical sidedefs
   (cannot be packed), but is large enough that the blockmap can be
   stacked.
+* `mixed.wad` contains both a Doom format level and a Hexen format
+  level, to check that we correctly handle mixed-format WADs.
