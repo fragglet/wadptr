@@ -32,7 +32,7 @@ static bool Compress(const char *filename);
 static bool Uncompress(const char *filename);
 static bool ListEntries(const char *filename);
 static bool DoAction(const char *filename);
-static int PercentSmaller(int before, int after);
+static const char *PercentSmaller(int before, int after);
 static void Help(void);
 static bool IwadWarning(const char *);
 static void ParseCommandLine(void);
@@ -373,7 +373,7 @@ static bool TryPack(wad_file_t *wf, unsigned int lump_index, FILE *out_file)
         if (success)
         {
             SPAMMY_PRINTF(
-                " (%i%%), done.\n",
+                " (%s), done.\n",
                 PercentSmaller(orig_lump_len, wf->entries[lump_index].length));
         }
         else
@@ -407,7 +407,7 @@ static bool TryStack(wad_file_t *wf, unsigned int lump_index, FILE *out_file)
     if (success)
     {
         SPAMMY_PRINTF(
-            "(%i%%), done.\n",
+            "(%s), done.\n",
             PercentSmaller(orig_lump_len, wf->entries[lump_index].length));
     }
     else
@@ -440,7 +440,7 @@ static bool TrySquash(wad_file_t *wf, unsigned int lump_index, FILE *out_file)
     free(temp);
 
     SPAMMY_PRINTF(
-        "(%i%%), done.\n",
+        "(%s), done.\n",
         PercentSmaller(orig_lump_len, wf->entries[lump_index].length));
     return true;
 }
@@ -566,7 +566,7 @@ static bool Compress(const char *wadname)
 
     free(tempwad_name);
 
-    SPAMMY_PRINTF("*** %s is %ld bytes smaller (%d%%) ***\n",
+    SPAMMY_PRINTF("*** %s is %ld bytes smaller (%s) ***\n",
                   outputwad != NULL ? outputwad : wadname, orig_size - new_size,
                   PercentSmaller(orig_size, new_size));
 
@@ -860,18 +860,30 @@ static bool ListEntries(const char *wadname)
 }
 
 // Find how much smaller something is: returns a percentage.
-static int PercentSmaller(int before, int after)
+static const char *PercentSmaller(int before, int after)
 {
-    double perc;
+    static char buf[32];
+    int percent;
 
     if (before == 0)
     {
-        return 0;
+        percent = 0;
+    }
+    else
+    {
+        percent = (100 * (before - after)) / before;
     }
 
-    perc = 1 - (((double) after) / before);
+    if (after < before)
+    {
+        snprintf(buf, sizeof(buf), "%d%%", percent);
+    }
+    else
+    {
+        snprintf(buf, sizeof(buf), "%d%% larger!", abs(percent));
+    }
 
-    return (int) (100 * perc);
+    return buf;
 }
 
 // ReadResponse reads a line from standard input containing a single character
