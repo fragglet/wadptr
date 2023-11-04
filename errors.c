@@ -24,6 +24,7 @@ void ErrorExit(char *s, ...)
     va_list args;
     va_start(args, s);
 
+    puts("");
     vfprintf(stderr, s, args);
     fprintf(stderr, "\n");
 
