@@ -24,9 +24,9 @@
 #include "waddir.h"
 #include "wadptr.h"
 
-static void ParseLump(uint8_t *lump, size_t lump_len);
-static unsigned int FindColumnLength(unsigned int x, const uint8_t *column,
-                                     size_t len);
+static bool ParseLump(uint8_t *lump, size_t lump_len);
+static bool FindColumnLength(unsigned int x, const uint8_t *column, size_t len,
+                             unsigned *result);
 
 // True when we are inside an S_Unsquash call.
 static bool unsquash_mode = false;
@@ -111,7 +111,18 @@ uint8_t *S_Squash(wad_file_t *wf, unsigned int entrynum)
 
     oldlump = CacheLump(wf, entrynum);
 
-    ParseLump(oldlump, wf->entries[entrynum].length);
+    // It is possible in some cases that we encounter a corrupt graphic
+    // lump; in these cases ParseLump() prints an error message, but we
+    // otherwise just ignore the problem lump and keep using the same
+    // contents as before.
+    if (!ParseLump(oldlump, wf->entries[entrynum].length))
+    {
+        fprintf(stderr,
+                "%.8s is a badly-formed or corrupt graphic lump. "
+                "No attempt will be made to process it.\n",
+                wf->entries[entrynum].name);
+        return oldlump;
+    }
     CombinePosts();
 
     // We build the sorted map so that we iterate over columns by order of
@@ -194,7 +205,7 @@ uint8_t *S_Unsquash(wad_file_t *wf, unsigned int entrynum)
     return result;
 }
 
-static void ParseLump(uint8_t *lump, size_t lump_len)
+static bool ParseLump(uint8_t *lump, size_t lump_len)
 {
     int x;
 
@@ -215,12 +226,17 @@ static void ParseLump(uint8_t *lump, size_t lump_len)
                       lump_len);
         }
         columns[x] = lump + offset;
-        colsize[x] = FindColumnLength(x, columns[x], lump_len - offset);
+        if (!FindColumnLength(x, columns[x], lump_len - offset, &colsize[x]))
+        {
+            return false;
+        }
     }
+
+    return true;
 }
 
-static unsigned int FindColumnLength(unsigned int x, const uint8_t *column,
-                                     size_t len)
+static bool FindColumnLength(unsigned int x, const uint8_t *column, size_t len,
+                             unsigned int *result)
 {
     unsigned int i = 0;
 
@@ -228,15 +244,18 @@ static unsigned int FindColumnLength(unsigned int x, const uint8_t *column,
     {
         if (column[i] == 0xff)
         {
-            return i + 1;
+            *result = i + 1;
+            return true;
         }
         // jump to the beginning of the next post
         i += column[i + 1] + 4;
         if (i > len)
         {
-            ErrorExit("Column %d overruns the end of the lump with no 0xff "
-                      "terminating byte",
-                      x);
+            fprintf(stderr,
+                    "Column %d overruns the end of the lump with no 0xff "
+                    "terminating byte.\n",
+                    x);
+            return false;
         }
     }
 }
@@ -248,7 +267,11 @@ bool S_IsSquashed(wad_file_t *wf, unsigned int entrynum)
     unsigned int x, x2;
 
     pic = CacheLump(wf, entrynum);
-    ParseLump(pic, wf->entries[entrynum].length);
+    if (!ParseLump(pic, wf->entries[entrynum].length))
+    {
+        free(pic);
+        return false;
+    }
 
     for (x = 0; !result && x < width; x++)
     {

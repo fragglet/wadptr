@@ -23,6 +23,9 @@ run tests. Included here are:
 * `64c30n9.wad` is a Doom 64-format WAD. A single zero byte has been
   appended to the end of the WAD so that the tests successfully reduce
   the file size.
+* `gotcha3.wad` contains a graphic lump (PLATFORM) that is corrupted;
+  we print an error message when such lumps are encountered but
+  otherwise proceed without changing their contents.
 
 Mini / unit test WADs:
 

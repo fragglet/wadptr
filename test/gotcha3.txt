@@ -1,0 +1,91 @@
+You wake from your nap... 
+Was it a scream that had woke you... or just part of a dream?
+This cleaning job just doesn't pay... 
+Too many dangerous chemicals and wierd experiments going on in
+the companies in this complex.
+There is an odd smell that greets you as you Open the door. 
+A revolver is laying on the ground. You pick it up and notice that
+it is loaded. 
+Just then there is a gutteral noise... An alarming yell...
+You spin in time to see a crazed guard with a shotgun pointed at you! 
+You run just as he fires. From the look in his eyes, it will be 
+"shoot first and ask questions later"...
+
+================================================================
+Title                   : GOTCHA 3   
+Filename                : GOTCHA3.WAD
+Author                  : Bruce Vautherot
+Email Address           : bvauther@pms039.pms.ford.com
+
+Description             : This is a map of an industrial complex.
+                          It would seem that there has been some
+                          wierd experiments going on with the
+                          rival companies in this community.
+                          It seems that while you were sleeping in
+                          a secluded room, something has happened
+                          to the security personnel that has made
+                          them into killing machines.
+                          It has well lit buildings with lots of
+                          windows, the outside is kinda dark.
+                          There are quite a few buildings and there
+                          is a stream.  The weapons in this include
+                          the shotgun, chaingun, and rocket launcher,
+                          depending on the level of play and what
+                          type of play. It is a good deathmatch level.
+
+
+Additional Credits to   : My wife. My 3 kids (who helped test it)
+                          The guys at work. (after hour doom-boys)
+                          The DoomEd editor. FANTASTIC!! EXCELLENT!!!
+                          The DoomCad 4.2 editor for platform assign and
+                          integrity checks.
+                          All the Internet Posters for ideas.
+================================================================
+
+* Play Information *
+
+Episode and Level #     : E1M1
+Single Player           : Yes
+Cooperative 2-4 Player  : Yes
+Deathmatch 2-4 Player   : YES!!!!!
+Difficulty Settings     : Yes
+New Sounds              : No
+New Graphics            : No
+Demos Replaced          : None
+
+* Additional Information *
+
+Level 1 is really easy... with primarily only shotgun guys. 
+Level 4 is tougher... as it should be. 
+There is an exit, you have to hit the wall at the end of the north 
+road, this will make a switch appear which will make a switch appear
+at the south end of the same road. That switch will make an exit switch
+appear at the south-west road end.
+
+If you like this wad, pick up the other "gotcha" wad files for more
+fun. 
+
+
+* Construction *
+
+Base                    : New level from scratch
+Build Time              : 26 Hours (who cares?)
+Editor(s) used          : DoomEd & DoomCad 4.2
+Known Bugs              : There are a few areas where there are some
+                          minor HOM effects, no show stoppers. Nothing
+                          will clean them up.
+
+
+* Copyright / Permissions *
+
+This wad may be used as a base to build additional levels.  
+Steal whatever you want. Have as much fun as you can with it.
+
+You MAY distribute this WAD as is, provided you include this file, with
+no modifications.  You may distribute this file in any electronic
+format (BBS, Diskette, CD, etc) as long as you include this file 
+intact.
+
+If you ALTER the WAD, please remove this file from any distribution.
+
+
