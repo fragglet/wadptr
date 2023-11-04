@@ -863,24 +863,37 @@ static bool ListEntries(const char *wadname)
 static const char *PercentSmaller(int before, int after)
 {
     static char buf[32];
-    int percent;
+    char percentbuf[16];
+    int permille;
 
     if (before == 0)
     {
-        percent = 0;
+        permille = 0;
     }
     else
     {
-        percent = (100 * (before - after)) / before;
+        permille = abs((1000 * (before - after)) / before);
     }
 
-    if (after < before)
+    // No change is represented as "0%" but a small change of less than
+    // 0.1% is represented as "0.0%":
+    if (after != before && permille < 100)
     {
-        snprintf(buf, sizeof(buf), "%d%%", percent);
+        snprintf(percentbuf, sizeof(percentbuf), "%d.%d",
+                 permille / 10, permille % 10);
     }
     else
     {
-        snprintf(buf, sizeof(buf), "%d%% larger!", abs(percent));
+        snprintf(percentbuf, sizeof(percentbuf), "%d", permille / 10);
+    }
+
+    if (after <= before)
+    {
+        snprintf(buf, sizeof(buf), "%s%%", percentbuf);
+    }
+    else
+    {
+        snprintf(buf, sizeof(buf), "%s%% larger!", percentbuf);
     }
 
     return buf;
