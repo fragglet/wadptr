@@ -566,8 +566,10 @@ static bool Compress(const char *wadname)
 
     free(tempwad_name);
 
-    SPAMMY_PRINTF("*** %s is %ld bytes smaller (%s) ***\n",
-                  outputwad != NULL ? outputwad : wadname, orig_size - new_size,
+    SPAMMY_PRINTF("*** %s is %ld bytes %s (%s) ***\n",
+                  outputwad != NULL ? outputwad : wadname,
+                  labs(orig_size - new_size),
+                  new_size <= orig_size ? "smaller" : "larger",
                   PercentSmaller(orig_size, new_size));
 
     return true;
