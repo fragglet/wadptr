@@ -1,5 +1,23 @@
 # wadptr revision history
 
+## 3.5 (2023-11-04)
+
+ * There is now better error reporting; error messages now show the
+   filename and the lump being processed when the error occurred.
+ * Slightly more accurate percentage values are displayed when lumps
+   or WADs are reduced in size by less than 10%.
+ * PSX/Doom 64 format levels are now handled correctly rather than
+   aborting with an error (they are ignored). Thanks @Kroc.
+ * Under-length BLOCKMAP lumps are now ignored without aborting with
+   an error. Thanks @Kroc.
+ * Corrupt graphic lumps are now ignored without aborting with an
+   error. Thanks @Kroc.
+ * WADs containing a mixture of Doom-format and Hexen-format levels
+   are now correctly handled. Thanks @Kroc.
+ * There is now a message printed when SIDEDEFS lumps grow in size,
+   and there is a new section in the manual that explains why this can
+   happen sometimes (thanks @Kroc).
+
 ## 3.4 (2023-10-29)
 
  * A bug was fixed on Windows that prevented new files from being
