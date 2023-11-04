@@ -560,8 +560,8 @@ static bool Compress(const char *wadname)
     if (rename(tempwad_name, outputwad != NULL ? outputwad : wadname) < 0)
     {
         perror("rename");
-        ErrorExit("Failed to rename temporary file '%s' to '%s'",
-                  tempwad_name, outputwad != NULL ? outputwad : wadname);
+        ErrorExit("Failed to rename temporary file '%s' to '%s'", tempwad_name,
+                  outputwad != NULL ? outputwad : wadname);
     }
 
     free(tempwad_name);
@@ -737,8 +737,8 @@ static bool Uncompress(const char *wadname)
     if (rename(tempwad_name, outputwad != NULL ? outputwad : wadname) < 0)
     {
         perror("rename");
-        ErrorExit("Failed to rename temporary file '%s' to '%s'",
-                  tempwad_name, outputwad != NULL ? outputwad : wadname);
+        ErrorExit("Failed to rename temporary file '%s' to '%s'", tempwad_name,
+                  outputwad != NULL ? outputwad : wadname);
     }
 
     free(tempwad_name);
@@ -881,8 +881,8 @@ static const char *PercentSmaller(int before, int after)
     // 0.1% is represented as "0.0%":
     if (after != before && permille < 100)
     {
-        snprintf(percentbuf, sizeof(percentbuf), "%d.%d",
-                 permille / 10, permille % 10);
+        snprintf(percentbuf, sizeof(percentbuf), "%d.%d", permille / 10,
+                 permille % 10);
     }
     else
     {
