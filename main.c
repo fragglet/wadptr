@@ -298,6 +298,7 @@ static void ParseCommandLine(void)
 
 static bool DoAction(const char *wadname)
 {
+    SetContextFilename(wadname);
     switch (action)
     {
     case LIST:
@@ -474,6 +475,7 @@ static bool Compress(const char *wadname)
 
     for (count = 0; count < wf.num_entries; count++)
     {
+        SetContextLump(wf.entries[count].name);
         SPAMMY_PRINTF("Adding: %-8.8s       ", wf.entries[count].name);
         fflush(stdout);
         written = false;
@@ -512,6 +514,8 @@ static bool Compress(const char *wadname)
             SPAMMY_PRINTF("(0%%), done.\n");
         }
     }
+
+    SetContextLump(NULL);
 
     WriteWadDirectory(fstream, wf.type, wf.entries, wf.num_entries);
     new_size = FileSize(fstream);
@@ -694,6 +698,7 @@ static bool Uncompress(const char *wadname)
 
     for (count = 0; count < wf.num_entries; count++)
     {
+        SetContextLump(wf.entries[count].name);
         written = false;
 
         SPAMMY_PRINTF("Adding: %-8.8s       ", wf.entries[count].name);
@@ -730,6 +735,8 @@ static bool Uncompress(const char *wadname)
             SPAMMY_PRINTF(", done.\n");
         }
     }
+
+    SetContextLump(NULL);
 
     WriteWadDirectory(fstream, wf.type, wf.entries, wf.num_entries);
 
@@ -847,6 +854,7 @@ static bool ListEntries(const char *wadname)
 
     for (i = 0; i < wf.num_entries; i++)
     {
+        SetContextLump(wf.entries[i].name);
         printf("%7d %7d  0x%08x  %-11s %-8.8s    ", i + 1, wf.entries[i].length,
                wf.entries[i].offset, CompressionMethod(&wf, i),
                wf.entries[i].name);
@@ -867,6 +875,7 @@ static bool ListEntries(const char *wadname)
         }
     }
 
+    SetContextLump(NULL);
     CloseWadFile(&wf);
 
     return true;

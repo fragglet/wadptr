@@ -18,6 +18,8 @@
 #ifndef __ERRORS_H_INCLUDED__
 #define __ERRORS_H_INCLUDED__
 
+void SetContextFilename(const char *filename);
+void SetContextLump(const char *lump);
 void ErrorExit(char *s, ...);
 
 #endif

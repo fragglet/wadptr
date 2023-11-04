@@ -19,12 +19,33 @@
 
 #include "errors.h"
 
+static const char *context_filename, *context_lump;
+
+void SetContextFilename(const char *filename)
+{
+    context_filename = filename;
+    context_lump = NULL;
+}
+
+void SetContextLump(const char *lump)
+{
+    context_lump = lump;
+}
+
 void ErrorExit(char *s, ...)
 {
     va_list args;
     va_start(args, s);
 
     puts("");
+    if (context_filename != NULL)
+    {
+        fprintf(stderr, "%s: ", context_filename);
+        if (context_lump != NULL)
+        {
+            fprintf(stderr, "%.8s: ", context_lump);
+        }
+    }
     vfprintf(stderr, s, args);
     fprintf(stderr, "\n");
 
