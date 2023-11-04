@@ -109,6 +109,28 @@ To see an example of wadptr used in a very effective way, see miniwad,
 a minimalist Doom-compatible IWAD file that is less than 250KiB in size:
 .UR https://github.com/fragglet/miniwad
 .UE
+.SH SIDEDEFS ON SPECIAL LINES
+When packing sidedefs, linedefs with special types always get unique
+sidedefs that are not shared with any other linedefs. This is to avoid
+problems with animated walls, such as:
+.IP \(bu
+Scrolling walls; if multiple scrolling wall linedefs share the same
+sidedef, these walls will all scroll faster than normal. Non-scrolling
+walls that share the same sidedef will also scroll unintentionally.
+.IP \(bu
+Wall switches; if multiple switch lines share the same sidedef, pressing
+one will animate all others.
+.PP
+wadptr's behavior is maybe excessively cautious in that it applies to any
+and all special lines, but since only very few linedefs in a typical level
+are special lines this is judged to be a reasonable tradeoff.
+.PP
+However, if wadptr repacks the sidedefs on a level that was already
+packed by another, less cautious, tool, the resulting sidedefs lump may
+be slightly larger than the original. While counterintuitive given the
+purpose of the program is to make WADs smaller, this is almost certainly
+what you want to happen; other tools that do sidedef packing less
+cautiously may cause unintended visual glitches to occur.
 .SH LIMITATIONS
 The \fB-c\fR command will compress a WAD file and the \fB-u\fR command
 can then be used to restore the original uncompressed file. However, the
@@ -125,13 +147,6 @@ blockmap lumps further, particularly for large levels that run up
 against the blockmap size limit. If you need this, check out ZokumBSP:
 .UR https://github.com/zokum-no/zokumbsp
 .UE
-.PP
-When packing sidedefs, linedefs with special types always get their own
-unique sidedefs that are not shared with other linedefs. This is to
-avoid problems with animated walls (including scrolling walls and
-switches). wadptr's behavior is maybe excessively cautious in that it
-applies to any and all special lines, but since only very few linedefs
-in a typical level are special lines this is judged to be okay.
 .PP
 Some levels are so large that it is impossible to unpack their sidedefs
 or unstack their blockmap without exceeding the limits of the Doom level

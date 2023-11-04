@@ -347,7 +347,8 @@ static bool IsSidedefs(wad_file_t *wf, int count)
            !strncmp(wf->entries[count - 1].name, "LINEDEFS", 8);
 }
 
-static bool TryPack(wad_file_t *wf, unsigned int lump_index, FILE *out_file)
+static bool TryPack(wad_file_t *wf, unsigned int lump_index, FILE *out_file,
+                    bool *sidedefs_larger)
 {
     uint32_t orig_lump_len = wf->entries[lump_index].length;
 
@@ -375,6 +376,8 @@ static bool TryPack(wad_file_t *wf, unsigned int lump_index, FILE *out_file)
             SPAMMY_PRINTF(
                 " (%s), done.\n",
                 PercentSmaller(orig_lump_len, wf->entries[lump_index].length));
+            *sidedefs_larger = *sidedefs_larger ||
+                               wf->entries[lump_index].length > orig_lump_len;
         }
         else
         {
@@ -451,7 +454,7 @@ static bool Compress(const char *wadname)
     unsigned int count;
     long orig_size, new_size;
     FILE *fstream;
-    bool written;
+    bool written, sidedefs_larger = false;
     char *tempwad_name;
 
     if (!OpenWadFile(&wf, wadname))
@@ -477,7 +480,7 @@ static bool Compress(const char *wadname)
 
         if (!written && allowpack && !psx_format)
         {
-            written = TryPack(&wf, count, fstream);
+            written = TryPack(&wf, count, fstream, &sidedefs_larger);
         }
 
         if (!written && allowstack)
@@ -571,6 +574,14 @@ static bool Compress(const char *wadname)
                   labs(orig_size - new_size),
                   new_size <= orig_size ? "smaller" : "larger",
                   PercentSmaller(orig_size, new_size));
+
+    if (sidedefs_larger)
+    {
+        SPAMMY_PRINTF("\nSome SIDEDEFS lumps are larger than the originals. "
+                      "There is a good reason\nwhy this happens; see the "
+                      "section \"Sidedefs on Special Lines\" in the\nmanual "
+                      "for more information.\n");
+    }
 
     return true;
 }
