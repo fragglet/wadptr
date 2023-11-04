@@ -109,10 +109,6 @@ uint8_t *S_Squash(wad_file_t *wf, unsigned int entrynum)
     unsigned int *sorted_map;
     unsigned int i, i2;
 
-    if (!S_IsGraphic(wf, entrynum))
-    {
-        return NULL;
-    }
     oldlump = CacheLump(wf, entrynum);
 
     ParseLump(oldlump, wf->entries[entrynum].length);
