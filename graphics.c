@@ -260,11 +260,19 @@ static bool FindColumnLength(unsigned int x, const uint8_t *column, size_t len,
     }
 }
 
+static int ColumnOffsetCompare(unsigned int a, unsigned int b,
+                               const void *callback_data)
+{
+    (void) callback_data;
+    return columns[a] - columns[b];
+}
+
 bool S_IsSquashed(wad_file_t *wf, unsigned int entrynum)
 {
     bool result = false;
-    uint8_t *pic;
-    unsigned int x, x2;
+    uint8_t *pic, *col_min;
+    unsigned int i;
+    unsigned int *sorted_map;
 
     pic = CacheLump(wf, entrynum);
     if (!ParseLump(pic, wf->entries[entrynum].length))
@@ -273,17 +281,26 @@ bool S_IsSquashed(wad_file_t *wf, unsigned int entrynum)
         return false;
     }
 
-    for (x = 0; !result && x < width; x++)
+    sorted_map = MakeSortedMap(width, ColumnOffsetCompare, NULL);
+    col_min = pic;
+
+    for (i = 0; i < width; i++)
     {
-        for (x2 = 0; x2 < x; x2++)
+        unsigned int x = sorted_map[i];
+#ifdef DEBUG
+        printf("#%04d: Column %4d: %04x - %04x\n", i, x,
+               columns[x] - pic, columns[x] - pic + colsize[x]);
+#endif
+        if (columns[x] < col_min)
         {
-            if (columns[x] == columns[x2])
-            {
-                result = true;
-            }
+            // This column overlaps with the previous column.
+            result = true;
+            break;
         }
+        col_min = columns[x] + colsize[x];
     }
 
+    free(sorted_map);
     free(pic);
 
     return result;
