@@ -28,6 +28,17 @@
     if (!quiet_mode)  \
     printf
 
+typedef struct {
+    long orig_size;
+    long new_size;
+
+    long junk_bytes;
+    long squashed;
+    long packed;
+    long stacked;
+    long merged;
+} compress_stats_t;
+
 static bool Compress(const char *filename);
 static bool Uncompress(const char *filename);
 static bool ListEntries(const char *filename);
@@ -349,7 +360,7 @@ static bool IsSidedefs(wad_file_t *wf, int count)
 }
 
 static bool TryPack(wad_file_t *wf, unsigned int lump_index, FILE *out_file,
-                    bool *sidedefs_larger)
+                    bool *sidedefs_larger, compress_stats_t *stats)
 {
     uint32_t orig_lump_len = wf->entries[lump_index].length;
 
@@ -379,6 +390,7 @@ static bool TryPack(wad_file_t *wf, unsigned int lump_index, FILE *out_file,
                 PercentSmaller(orig_lump_len, wf->entries[lump_index].length));
             *sidedefs_larger = *sidedefs_larger ||
                                wf->entries[lump_index].length > orig_lump_len;
+            stats->packed += orig_lump_len - wf->entries[lump_index].length;
         }
         else
         {
@@ -392,7 +404,8 @@ static bool TryPack(wad_file_t *wf, unsigned int lump_index, FILE *out_file,
     return false;
 }
 
-static bool TryStack(wad_file_t *wf, unsigned int lump_index, FILE *out_file)
+static bool TryStack(wad_file_t *wf, unsigned int lump_index, FILE *out_file,
+                     compress_stats_t *stats)
 {
     uint32_t orig_lump_len = wf->entries[lump_index].length;
     bool success;
@@ -413,6 +426,7 @@ static bool TryStack(wad_file_t *wf, unsigned int lump_index, FILE *out_file)
         SPAMMY_PRINTF(
             "(%s), done.\n",
             PercentSmaller(orig_lump_len, wf->entries[lump_index].length));
+        stats->stacked += orig_lump_len - wf->entries[lump_index].length;
     }
     else
     {
@@ -425,7 +439,8 @@ static bool TryStack(wad_file_t *wf, unsigned int lump_index, FILE *out_file)
     return true;
 }
 
-static bool TrySquash(wad_file_t *wf, unsigned int lump_index, FILE *out_file)
+static bool TrySquash(wad_file_t *wf, unsigned int lump_index, FILE *out_file,
+                      compress_stats_t *stats)
 {
     uint32_t orig_lump_len = wf->entries[lump_index].length;
     uint8_t *temp;
@@ -446,14 +461,67 @@ static bool TrySquash(wad_file_t *wf, unsigned int lump_index, FILE *out_file)
     SPAMMY_PRINTF(
         "(%s), done.\n",
         PercentSmaller(orig_lump_len, wf->entries[lump_index].length));
+    stats->squashed += orig_lump_len - wf->entries[lump_index].length;
+
     return true;
+}
+
+static void PrintStats(const compress_stats_t *stats)
+{
+    unsigned int i;
+    struct {
+        const char *name;
+        long l;
+    } rows[] = {
+        {"-", 0},
+        {"Junk data deleted", stats->junk_bytes},
+        {"Graphic squashing", stats->squashed},
+        {"Blockmap stacking", stats->stacked},
+        {"Sidedef packing", stats->packed},
+        {"Lump merging", stats->merged},
+        {"-", 0},
+        {"Total", stats->orig_size - stats->new_size},
+        {NULL, 0},
+    };
+
+    printf("\nResult:\n\n");
+    printf("  %-20s %12s %8s\n", "Method", "Bytes saved", "%/orig");
+
+    for (i = 0; rows[i].name != NULL; i++)
+    {
+        if (rows[i].name[0] == '-')
+        {
+            printf("-----------------------------------------------\n");
+            continue;
+        }
+        printf("  %-20s %12ld %8s\n", rows[i].name, rows[i].l,
+               PercentSmaller(stats->orig_size, stats->orig_size - rows[i].l));
+    }
+
+    printf("\n");
+}
+
+// ExpectedSize returns the size we should expect the WAD to be if it were
+// uncompressed and contained no junk data.
+static long ExpectedSize(wad_file_t *wf)
+{
+    long result;
+    unsigned int i;
+
+    result = WAD_HEADER_SIZE + wf->num_entries * ENTRY_SIZE;
+    for (i = 0; i < wf->num_entries; i++)
+    {
+        result += wf->entries[i].length;
+    }
+
+    return result;
 }
 
 static bool Compress(const char *wadname)
 {
     wad_file_t wf;
     unsigned int count;
-    long orig_size, new_size;
+    compress_stats_t stats;
     FILE *fstream;
     bool written, sidedefs_larger = false;
     char *tempwad_name;
@@ -468,7 +536,10 @@ static bool Compress(const char *wadname)
     }
     psx_format = IsPlaystationWad(&wf);
 
-    orig_size = FileSize(wf.fp);
+    memset(&stats, 0, sizeof(compress_stats_t));
+    stats.orig_size = FileSize(wf.fp);
+    stats.junk_bytes = stats.orig_size - ExpectedSize(&wf);
+    stats.junk_bytes = stats.junk_bytes < 0 ? 0 : stats.junk_bytes;
 
     fstream =
         OpenTempFile(outputwad != NULL ? outputwad : wadname, &tempwad_name);
@@ -482,17 +553,17 @@ static bool Compress(const char *wadname)
 
         if (!written && allowpack && !psx_format)
         {
-            written = TryPack(&wf, count, fstream, &sidedefs_larger);
+            written = TryPack(&wf, count, fstream, &sidedefs_larger, &stats);
         }
 
         if (!written && allowstack)
         {
-            written = TryStack(&wf, count, fstream);
+            written = TryStack(&wf, count, fstream, &stats);
         }
 
         if (!written && allowsquash)
         {
-            written = TrySquash(&wf, count, fstream);
+            written = TrySquash(&wf, count, fstream, &stats);
         }
 
         if (!written && wf.entries[count].length == 0)
@@ -518,7 +589,7 @@ static bool Compress(const char *wadname)
     SetContextLump(NULL);
 
     WriteWadDirectory(fstream, wf.type, wf.entries, wf.num_entries);
-    new_size = FileSize(fstream);
+    stats.new_size = FileSize(fstream);
 
     fclose(fstream);
     CloseWadFile(&wf);
@@ -526,6 +597,7 @@ static bool Compress(const char *wadname)
     if (allowmerge)
     {
         char *tempwad2_name;
+        long new_size;
 
         OpenWadFile(&wf, tempwad_name);
         fstream = OpenTempFile(outputwad != NULL ? outputwad : wadname,
@@ -537,6 +609,8 @@ static bool Compress(const char *wadname)
         SPAMMY_PRINTF(" done.\n");
 
         new_size = FileSize(fstream);
+        stats.merged = stats.new_size - new_size;
+        stats.new_size = new_size;
 
         fclose(fstream);
         CloseWadFile(&wf);
@@ -573,11 +647,7 @@ static bool Compress(const char *wadname)
 
     free(tempwad_name);
 
-    SPAMMY_PRINTF("*** %s is %ld bytes %s (%s) ***\n",
-                  outputwad != NULL ? outputwad : wadname,
-                  labs(orig_size - new_size),
-                  new_size <= orig_size ? "smaller" : "larger",
-                  PercentSmaller(orig_size, new_size));
+    PrintStats(&stats);
 
     if (sidedefs_larger)
     {
