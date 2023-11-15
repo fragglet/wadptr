@@ -610,7 +610,9 @@ static bool Compress(const char *wadname)
         SPAMMY_PRINTF(" done.\n");
 
         new_size = FileSize(fstream);
-        stats.merged = stats.new_size - new_size;
+        // If the original file was already compressed, we should't claim
+        // that the merge has saved any space (relative to original file)
+        stats.merged = MIN(stats.new_size, stats.orig_size) - new_size;
         stats.new_size = new_size;
 
         fclose(fstream);
