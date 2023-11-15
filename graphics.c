@@ -288,8 +288,8 @@ bool S_IsSquashed(wad_file_t *wf, unsigned int entrynum)
     {
         unsigned int x = sorted_map[i];
 #ifdef DEBUG
-        printf("#%04d: Column %4d: %04x - %04x\n", i, x,
-               columns[x] - pic, columns[x] - pic + colsize[x]);
+        printf("#%04d: Column %4d: %04x - %04x\n", i, x, columns[x] - pic,
+               columns[x] - pic + colsize[x]);
 #endif
         if (columns[x] < col_min)
         {
@@ -334,7 +334,7 @@ bool S_IsGraphic(wad_file_t *wf, unsigned int entrynum)
     height = READ_SHORT(graphic + 2);
     columns = graphic + 8;
 
-    if (width > 320 || height > 200 || width <= 0 || height <= 0 ||
+    if (width > 1024 || height > 240 || width <= 0 || height <= 0 ||
         width * 4 + 8U > wf->entries[entrynum].length)
     {
         free(graphic);
