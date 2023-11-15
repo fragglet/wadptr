@@ -484,21 +484,22 @@ static void PrintStats(const compress_stats_t *stats)
         {NULL, 0},
     };
 
-    printf("\nResult:\n\n");
-    printf("  %-20s %12s %8s\n", "Method", "Bytes saved", "%/orig");
+    SPAMMY_PRINTF("\nResult:\n\n");
+    SPAMMY_PRINTF("  %-20s %12s %8s\n", "Method", "Bytes saved", "%/orig");
 
     for (i = 0; rows[i].name != NULL; i++)
     {
         if (rows[i].name[0] == '-')
         {
-            printf("-----------------------------------------------\n");
+            SPAMMY_PRINTF("-----------------------------------------------\n");
             continue;
         }
-        printf("  %-20s %12ld %8s\n", rows[i].name, rows[i].l,
-               PercentSmaller(stats->orig_size, stats->orig_size - rows[i].l));
+        SPAMMY_PRINTF(
+            "  %-20s %12ld %8s\n", rows[i].name, rows[i].l,
+            PercentSmaller(stats->orig_size, stats->orig_size - rows[i].l));
     }
 
-    printf("\n");
+    SPAMMY_PRINTF("\n");
 }
 
 // ExpectedSize returns the size we should expect the WAD to be if it were
