@@ -598,7 +598,6 @@ static bool Compress(const char *wadname)
     if (allowmerge)
     {
         char *tempwad2_name;
-        long new_size;
 
         OpenWadFile(&wf, tempwad_name);
         fstream = OpenTempFile(outputwad != NULL ? outputwad : wadname,
@@ -609,11 +608,9 @@ static bool Compress(const char *wadname)
         RebuildMergedWad(&wf, fstream);
         SPAMMY_PRINTF(" done.\n");
 
-        new_size = FileSize(fstream);
-        // If the original file was already compressed, we should't claim
-        // that the merge has saved any space (relative to original file)
-        stats.merged = MIN(stats.new_size, stats.orig_size) - new_size;
-        stats.new_size = new_size;
+        stats.new_size = FileSize(fstream);
+        stats.merged = stats.orig_size - stats.new_size - stats.squashed -
+                       stats.stacked - stats.packed;
 
         fclose(fstream);
         CloseWadFile(&wf);
