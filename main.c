@@ -540,7 +540,7 @@ static bool Compress(const char *wadname)
     memset(&stats, 0, sizeof(compress_stats_t));
     stats.orig_size = FileSize(wf.fp);
     stats.junk_bytes = stats.orig_size - ExpectedSize(&wf);
-    stats.junk_bytes = stats.junk_bytes < 0 ? 0 : stats.junk_bytes;
+    stats.junk_bytes = MAX(stats.junk_bytes, 0);
 
     fstream =
         OpenTempFile(outputwad != NULL ? outputwad : wadname, &tempwad_name);

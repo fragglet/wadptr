@@ -45,5 +45,10 @@ extern bool extblocks;   // extended blockmap limit
     (type *) CheckedRealloc(old, sizeof(type) * (count))
 #define ALLOC_ARRAY(type, count) REALLOC_ARRAY(type, 0, count)
 
+#undef MIN
+#define MIN(x, y) ((x) < (y) ? (x) : (y))
+#undef MAX
+#define MAX(x, y) ((x) > (y) ? (x) : (y))
+
 extern void PrintProgress(int numerator, int denominator);
 extern void *CheckedRealloc(void *old, size_t nbytes);
