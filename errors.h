@@ -20,6 +20,7 @@
 
 void SetContextFilename(const char *filename);
 void SetContextLump(const char *lump);
+void Warning(char *s, ...);
 void ErrorExit(char *s, ...);
 
 #endif

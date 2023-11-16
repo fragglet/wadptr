@@ -268,17 +268,15 @@ static bool IsValidBlockmap(blockmap_t *blockmap)
 
     if (blockmap->len < 4)
     {
-        fprintf(stderr, "BLOCKMAP lump too short: %d < %d header size\n",
-                blockmap->len, 4);
+        Warning("Lump too short: %d < %d header size", blockmap->len, 4);
         return false;
     }
 
     num_blocks = blockmap->elements[2] * blockmap->elements[3];
     if (blockmap->len < num_blocks + 4U)
     {
-        fprintf(stderr,
-                "BLOCKMAP lump too short: %d blocks < %d "
-                "(%d x %d = %d blocks, + 4 for header\n",
+        Warning("Lump too short: %d blocks < %d "
+                "(%d x %d = %d blocks, + 4 for header",
                 blockmap->len, num_blocks + 4, blockmap->elements[2],
                 blockmap->elements[3], num_blocks);
         return false;
@@ -301,13 +299,10 @@ bool B_Stack(wad_file_t *wf, unsigned int lumpnum)
 
     if (IsOverflowedBlockmap(&blockmap))
     {
-        fprintf(stderr,
-                "BLOCKMAP with lump #%d overflows the 16-bit offset "
-                "limit and is invalid; not trying to stack this "
-                "BLOCKMAP. You should maybe try using a tool like "
-                "ZokumBSP to fit this level within the vanilla "
-                "limit.\n",
-                lumpnum);
+        Warning("Lump overflows the 16-bit offset limit and is invalid; not "
+                "trying to stack this BLOCKMAP. You should maybe try using "
+                "a tool like ZokumBSP to fit this level within the vanilla "
+                "limit.");
         blockmap_result = blockmap;
         return false;
     }

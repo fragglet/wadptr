@@ -32,12 +32,8 @@ void SetContextLump(const char *lump)
     context_lump = lump;
 }
 
-void ErrorExit(char *s, ...)
+static void PrintContext(void)
 {
-    va_list args;
-    va_start(args, s);
-
-    puts("");
     if (context_filename != NULL)
     {
         fprintf(stderr, "%s: ", context_filename);
@@ -46,6 +42,25 @@ void ErrorExit(char *s, ...)
             fprintf(stderr, "%.8s: ", context_lump);
         }
     }
+}
+
+void Warning(char *s, ...)
+{
+    va_list args;
+    va_start(args, s);
+
+    PrintContext();
+    vfprintf(stderr, s, args);
+    fprintf(stderr, "\n");
+}
+
+void ErrorExit(char *s, ...)
+{
+    va_list args;
+    va_start(args, s);
+
+    puts("");
+    PrintContext();
     vfprintf(stderr, s, args);
     fprintf(stderr, "\n");
 

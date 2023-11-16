@@ -285,8 +285,7 @@ static bool CheckSidedefIndex(unsigned int ldi, unsigned int sdi,
     }
     if (sdi >= num_sidedefs)
     {
-        fprintf(stderr, "Linedef #%d contained invalid sidedef reference %d\n",
-                ldi, sdi);
+        Warning("Linedef #%d contained invalid sidedef reference %d", ldi, sdi);
         return false;
     }
 

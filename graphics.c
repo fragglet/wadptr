@@ -117,10 +117,8 @@ uint8_t *S_Squash(wad_file_t *wf, unsigned int entrynum)
     // contents as before.
     if (!ParseLump(oldlump, wf->entries[entrynum].length))
     {
-        fprintf(stderr,
-                "%.8s is a badly-formed or corrupt graphic lump. "
-                "No attempt will be made to process it.\n",
-                wf->entries[entrynum].name);
+        Warning("Badly-formed or corrupt graphic lump. "
+                "No attempt will be made to process it.");
         return oldlump;
     }
     CombinePosts();
@@ -251,9 +249,8 @@ static bool FindColumnLength(unsigned int x, const uint8_t *column, size_t len,
         i += column[i + 1] + 4;
         if (i > len)
         {
-            fprintf(stderr,
-                    "Column %d overruns the end of the lump with no 0xff "
-                    "terminating byte.\n",
+            Warning("Column %d overruns the end of the lump with no 0xff "
+                    "terminating byte.",
                     x);
             return false;
         }
