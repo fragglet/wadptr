@@ -43,3 +43,6 @@ Mini / unit test WADs:
   stacked.
 * `mixed.wad` contains both a Doom format level and a Hexen format
   level, to check that we correctly handle mixed-format WADs.
+* `bad_sdi.wad` is a copy of `packable.wad` containing a bad sidedef
+  reference on one of its linedefs, to confirm that such WADs can
+  still be processed successfully (albeit with an error message).

@@ -113,7 +113,7 @@ static void CheckLumpSizes(wad_file_t *wf, unsigned int linedef_num,
                            unsigned int sidedef_num);
 static sidedef_array_t DoPack(const sidedef_array_t *sidedefs);
 static void RemapLinedefs(linedef_array_t *linedefs);
-static void RebuildSidedefs(const linedef_array_t *linedefs,
+static bool RebuildSidedefs(const linedef_array_t *linedefs,
                             const sidedef_array_t *sidedefs,
                             linedef_array_t *ldresult,
                             sidedef_array_t *sdresult);
@@ -180,8 +180,13 @@ bool P_Pack(wad_file_t *wf, unsigned int sidedef_num)
     orig_sidedefs = ReadSidedefs(wf, sidedef_num);
     orig_linedefs = ReadLinedefs(wf, linedef_num);
 
-    RebuildSidedefs(&orig_linedefs, &orig_sidedefs, &linedefs_result,
-                    &unpacked_sidedefs);
+    if (!RebuildSidedefs(&orig_linedefs, &orig_sidedefs, &linedefs_result,
+                         &unpacked_sidedefs))
+    {
+        linedefs_result = orig_linedefs;
+        sidedefs_result = orig_sidedefs;
+        return true;
+    }
 
     sidedefs_result = DoPack(&unpacked_sidedefs);
     free(unpacked_sidedefs.sides);
@@ -245,8 +250,13 @@ bool P_Unpack(wad_file_t *wf, unsigned int sidedef_num)
     orig_linedefs = ReadLinedefs(wf, linedef_num);
     orig_sidedefs = ReadSidedefs(wf, sidedef_num);
 
-    RebuildSidedefs(&orig_linedefs, &orig_sidedefs, &linedefs_result,
-                    &sidedefs_result);
+    if (!RebuildSidedefs(&orig_linedefs, &orig_sidedefs, &linedefs_result,
+                         &sidedefs_result))
+    {
+        linedefs_result = orig_linedefs;
+        sidedefs_result = orig_sidedefs;
+        return true;
+    }
 
     // It is possible that the decompressed sidedefs list overflows the
     // limits of the SIDEDEFS on-disk format. We never want to save a
@@ -266,15 +276,21 @@ bool P_Unpack(wad_file_t *wf, unsigned int sidedef_num)
 }
 
 // Sanity check a linedef's sidedef reference is valid.
-static void CheckSidedefIndex(unsigned int linedef_index,
-                              sidedef_ref_t sidedef_index,
-                              unsigned int num_sidedefs)
+static bool CheckSidedefIndex(unsigned int ldi, unsigned int sdi,
+                              size_t num_sidedefs)
 {
-    if (sidedef_index != NO_SIDEDEF && sidedef_index >= num_sidedefs)
+    if (sdi == NO_SIDEDEF)
     {
-        ErrorExit("Linedef #%d contained invalid sidedef reference %d",
-                  linedef_index, sidedef_index);
+        return true;
     }
+    if (sdi >= num_sidedefs)
+    {
+        fprintf(stderr, "Linedef #%d contained invalid sidedef reference %d\n",
+                ldi, sdi);
+        return false;
+    }
+
+    return true;
 }
 
 bool P_IsPacked(wad_file_t *wf, unsigned int sidedef_num)
@@ -283,7 +299,7 @@ bool P_IsPacked(wad_file_t *wf, unsigned int sidedef_num)
     uint8_t *sidedef_used;
     size_t num_sidedefs;
     bool packed = false;
-    unsigned int count, linedef_num;
+    unsigned int count, linedef_num, sdi1, sdi2;
 
     // SIDEDEFS always follows LINEDEFS.
     linedef_num = sidedef_num - 1;
@@ -301,19 +317,25 @@ bool P_IsPacked(wad_file_t *wf, unsigned int sidedef_num)
 
     for (count = 0; count < linedefs.len; count++)
     {
-        if (linedefs.lines[count].sidedef1 != NO_SIDEDEF)
+        sdi1 = linedefs.lines[count].sidedef1;
+        sdi2 = linedefs.lines[count].sidedef2;
+        if (!CheckSidedefIndex(count, sdi1, num_sidedefs) ||
+            !CheckSidedefIndex(count, sdi2, num_sidedefs))
         {
-            sidedef_ref_t sdi = linedefs.lines[count].sidedef1;
-            CheckSidedefIndex(count, sdi, num_sidedefs);
-            packed = packed || sidedef_used[sdi];
-            sidedef_used[sdi] = 1;
+            packed = false;
+            break;
         }
-        if (linedefs.lines[count].sidedef2 != NO_SIDEDEF)
+        if (sdi1 != NO_SIDEDEF)
         {
-            sidedef_ref_t sdi = linedefs.lines[count].sidedef2;
-            CheckSidedefIndex(count, sdi, num_sidedefs);
-            packed = packed || sidedef_used[sdi];
-            sidedef_used[sdi] = 1;
+            packed = packed || sidedef_used[sdi1];
+            sidedef_used[sdi1] = 1;
+            break;
+        }
+        if (sdi2 != NO_SIDEDEF)
+        {
+            packed = packed || sidedef_used[sdi2];
+            sidedef_used[sdi2] = 1;
+            break;
         }
     }
     free(linedefs.lines);
@@ -500,7 +522,7 @@ static void CheckLumpSizes(wad_file_t *wf, unsigned int linedef_num,
     }
 }
 
-static void RebuildSidedefs(const linedef_array_t *linedefs,
+static bool RebuildSidedefs(const linedef_array_t *linedefs,
                             const sidedef_array_t *sidedefs,
                             linedef_array_t *ldresult,
                             sidedef_array_t *sdresult)
@@ -519,6 +541,13 @@ static void RebuildSidedefs(const linedef_array_t *linedefs,
     for (count = 0; count < linedefs->len; count++)
     {
         linedef_t *ld = &ldresult->lines[count];
+        if (!CheckSidedefIndex(count, ld->sidedef1, sidedefs->len) ||
+            !CheckSidedefIndex(count, ld->sidedef2, sidedefs->len))
+        {
+            free(ldresult->lines);
+            free(sdresult->sides);
+            return false;
+        }
         // Special lines always get their own dedicated sidedefs, because:
         //  * If a scrolling linedef shares a sidedef with another linedef,
         //    it will make that other linedef scroll, or if multiple
@@ -534,19 +563,19 @@ static void RebuildSidedefs(const linedef_array_t *linedefs,
         is_special = ld->type != 0;
         if (ld->sidedef1 != NO_SIDEDEF)
         {
-            CheckSidedefIndex(count, ld->sidedef1, sidedefs->len);
             ld->sidedef1 =
                 AppendNewSidedef(sdresult, &sidedefs->sides[ld->sidedef1]);
             sdresult->sides[ld->sidedef1].special = is_special;
         }
         if (ld->sidedef2 != NO_SIDEDEF)
         {
-            CheckSidedefIndex(count, ld->sidedef2, sidedefs->len);
             ld->sidedef2 =
                 AppendNewSidedef(sdresult, &sidedefs->sides[ld->sidedef2]);
             sdresult->sides[ld->sidedef2].special = is_special;
         }
     }
+
+    return true;
 }
 
 // Portable reading / writing of linedefs and sidedefs
