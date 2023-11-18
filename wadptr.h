@@ -19,7 +19,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define VERSION "3.5"
+#define VERSION "3.6"
 
 extern bool allowpack;   // level packing on
 extern bool allowsquash; // picture squashing on

@@ -1,5 +1,20 @@
 # wadptr revision history
 
+## 3.6 (2023-11-18)
+
+ * A summary table is now printed after compression, listing how many
+   bytes were saved and through which methods.
+ * The program doesn't abort any more if a level is encountered that
+   has invalid sidedef references. Instead, a warning is printed, and
+   the level is skipped.
+ * Larger graphics can now be squashed (the limit was previously
+   320x200 and is now 1024x240).
+ * Squashed graphics are now detected more accurately. Some lumps in
+   the list output were previously being described as unsquashed when
+   they were actually squashed.
+ * Warning messages now include context about the file and the lump
+   that were being processed.
+
 ## 3.5 (2023-11-04)
 
  * There is now better error reporting; error messages now show the
