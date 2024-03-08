@@ -62,6 +62,7 @@ bool allowmerge = true;  // lump merging on
 bool allowstack = true;  // blockmap stacking
 bool extsides = false;   // extended sidedefs limit
 bool extblocks = false;  // extended blockmap limit
+bool wipesides = false;  // clear unneeded texture references
 static bool psx_format = false;
 static bool quiet_mode = false;
 
@@ -254,6 +255,10 @@ static void ParseCommandLine(void)
         {
             extblocks = true;
         }
+        else if (!strcmp(arg, "-wipesides"))
+        {
+            wipesides = true;
+        }
         else if (!strcmp(arg, "-version") || !strcmp(arg, "-v"))
         {
             printf("%s\n", VERSION);
@@ -342,6 +347,7 @@ static void Help(void)
         "                      -nostack   Disable blockmap stacking\n"
         "                      -extsides  Extended sidedefs limit\n"
         "                      -extblocks Extended blockmap limit\n"
+        "                      -wipesides Clear unneeded texture references\n"
         "\n");
 }
 

@@ -64,6 +64,13 @@ Enables extended sidedef count limit, for WADs targeting limit-removing
 source ports. This effectively doubles the limit, but the resulting
 lump will not work with vanilla Doom.
 .TP
+\fB-wipesides\fR
+Clears lower and upper texture names of sidedefs on 1-sided linedefs.
+This helps make sidedef packing more efficient, but must be explicitly
+enabled because it is an irreversible change.
+In the future this option may be extended to modify 2-sided linedefs as
+well.
+.TP
 \fB-v\fR
 Print version number.
 .SH COMPRESSION SCHEMES

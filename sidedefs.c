@@ -565,6 +565,13 @@ static bool RebuildSidedefs(const linedef_array_t *linedefs,
             ld->sidedef1 =
                 AppendNewSidedef(sdresult, &sidedefs->sides[ld->sidedef1]);
             sdresult->sides[ld->sidedef1].special = is_special;
+
+            // One-sided line?
+            if (wipesides && ld->sidedef2 == NO_SIDEDEF)
+            {
+                strncpy(sdresult->sides[ld->sidedef1].upper, "-", 2);
+                strncpy(sdresult->sides[ld->sidedef1].lower, "-", 2);
+            }
         }
         if (ld->sidedef2 != NO_SIDEDEF)
         {

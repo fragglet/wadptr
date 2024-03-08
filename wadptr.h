@@ -26,6 +26,7 @@ extern bool allowsquash; // picture squashing on
 extern bool allowmerge;  // lump merging on
 extern bool extsides;    // extended sidedefs limit
 extern bool extblocks;   // extended blockmap limit
+extern bool wipesides;   // clear unneeded texture references
 
 #ifdef _WIN32
 #define DIRSEP "\\"
