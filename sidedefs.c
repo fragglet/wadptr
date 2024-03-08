@@ -373,9 +373,9 @@ static int CompareSidedefs(const sidedef_t *s1, const sidedef_t *s2)
         }                \
     }
 
-    CHECK_DIFF(strncmp(s1->middle, s2->middle, 8));
-    CHECK_DIFF(strncmp(s1->upper, s2->upper, 8));
-    CHECK_DIFF(strncmp(s1->lower, s2->lower, 8));
+    CHECK_DIFF(strncasecmp(s1->middle, s2->middle, 8));
+    CHECK_DIFF(strncasecmp(s1->upper, s2->upper, 8));
+    CHECK_DIFF(strncasecmp(s1->lower, s2->lower, 8));
     CHECK_DIFF(s2->special - s1->special);
     CHECK_DIFF(s2->xoffset - s1->xoffset);
     CHECK_DIFF(s2->yoffset - s1->yoffset);
