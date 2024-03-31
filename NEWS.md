@@ -1,5 +1,15 @@
 # wadptr revision history
 
+## ...
+
+ * A new option, `-wipesides`, cleans upper and lower textures from
+   one-sided lines where they are not used. This allows some sidedefs
+   to be merged that would not otherwise be merged.
+ * Textures are now compared in a case-insensitive manner, matching the
+   logic of Doom itself. This won't make a lot of difference since most
+   editors store texture names in allcaps, but there may be corner-case
+   WADs where it helps improve compression slightly.
+
 ## 3.6 (2023-11-18)
 
  * A summary table is now printed after compression, listing how many
