@@ -1,4 +1,5 @@
 PREFIX = /usr/local
+MANPATH = $(PREFIX)/share/man
 EXECUTABLE = wadptr
 OBJECTS = main.o waddir.o errors.o wadmerge.o sort.o \
           graphics.o sidedefs.o blockmap.o sha1.o
@@ -34,8 +35,10 @@ $(EXECUTABLE): $(OBJECTS)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJECTS)
 
 install:
-	install -D wadptr $(DESTDIR)$(PREFIX)/bin/wadptr
-	install -D wadptr.1 $(DESTDIR)$(PREFIX)/share/man/man1/wadptr.1
+	mkdir -p $(DESTDIR)$(PREFIX)/bin
+	mkdir -p $(DESTDIR)$(MANPATH)/man1/wadptr.1
+	install wadptr $(DESTDIR)$(PREFIX)/bin/wadptr
+	install wadptr.1 $(DESTDIR)$(MANPATH)/man1/wadptr.1
 
 clean:
 	$(DELETE) $(EXECUTABLE)
