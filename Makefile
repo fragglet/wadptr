@@ -36,7 +36,7 @@ $(EXECUTABLE): $(OBJECTS)
 
 install:
 	mkdir -p $(DESTDIR)$(PREFIX)/bin
-	mkdir -p $(DESTDIR)$(MANPATH)/man1/wadptr.1
+	mkdir -p $(DESTDIR)$(MANPATH)/man1
 	install wadptr $(DESTDIR)$(PREFIX)/bin/wadptr
 	install wadptr.1 $(DESTDIR)$(MANPATH)/man1/wadptr.1
 
