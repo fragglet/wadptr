@@ -75,7 +75,7 @@ jobs:
         make windist VERSION=${{steps.version.outputs.VERSION}} \
                      STRIP=x86_64-w64-mingw32-strip
     - name: Upload build
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v4
       with:
         path: "dist"
         name: wadptr-${{steps.version.outputs.VERSION}}
