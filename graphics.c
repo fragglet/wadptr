@@ -12,10 +12,13 @@
  * lumps to make them smaller
  */
 
+#include "graphics.h"
+
 #include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
 
-#include "graphics.h"
+#include "errors.h"
 #include "sort.h"
 #include "waddir.h"
 #include "wadptr.h"

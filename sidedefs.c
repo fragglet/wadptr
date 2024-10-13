@@ -12,12 +12,14 @@
  * identical in a level, and shares them between multiple linedefs.
  */
 
+#include "sidedefs.h"
+
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 
 #include "errors.h"
-#include "sidedefs.h"
 #include "sort.h"
 #include "waddir.h"
 #include "wadptr.h"

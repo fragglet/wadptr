@@ -17,9 +17,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
-#include <stdlib.h>
-
-#include "errors.h"
 
 typedef struct {
     uint32_t offset;

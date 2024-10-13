@@ -11,10 +11,10 @@
  * Generic code for sorting data.
  */
 
-#include <stdbool.h>
+#include "sort.h"
+
 #include <stdlib.h>
 
-#include "sort.h"
 #include "wadptr.h"
 
 static void SortMapElements(unsigned int *elements, size_t num_elements,

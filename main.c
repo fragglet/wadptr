@@ -11,9 +11,14 @@
 #include <ctype.h>
 #include <errno.h>
 #include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <time.h>
 
 #include "blockmap.h"
+#include "errors.h"
 #include "graphics.h"
 #include "sidedefs.h"
 #include "waddir.h"

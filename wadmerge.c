@@ -12,12 +12,15 @@
  * sharing them between multiple wad directory entries.
  */
 
+#include "wadmerge.h"
+
+#include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "sha1.h"
 #include "sort.h"
 #include "waddir.h"
-#include "wadmerge.h"
 #include "wadptr.h"
 
 typedef struct {

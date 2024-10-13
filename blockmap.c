@@ -11,10 +11,13 @@
  * Functions for compressing ("stacking") BLOCKMAP lumps.
  */
 
+#include "blockmap.h"
+
 #include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
 
-#include "blockmap.h"
+#include "errors.h"
 #include "sort.h"
 #include "waddir.h"
 #include "wadptr.h"

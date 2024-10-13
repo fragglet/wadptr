@@ -16,7 +16,6 @@
 #define __SIDEDEFS_H_INCLUDED__
 
 #include <stdbool.h>
-#include <stdint.h>
 #include <stdio.h>
 
 #include "waddir.h"

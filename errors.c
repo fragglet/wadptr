@@ -8,12 +8,11 @@
  * FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-#include <signal.h>
+#include "errors.h"
+
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
-
-#include "errors.h"
 
 static const char *context_filename, *context_lump;
 

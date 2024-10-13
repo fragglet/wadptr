@@ -11,11 +11,15 @@
  * WAD loading and reading routines: by me, me, me!
  */
 
+#include "waddir.h"
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-#include "waddir.h"
+#include "errors.h"
 #include "wadptr.h"
 
 static uint32_t ReadWadHeader(wad_file_t *wf)
