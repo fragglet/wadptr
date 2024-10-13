@@ -1,0 +1,5 @@
+[
+# Override for a bug at time of writing (8.22):
+{ symbol: [ "va_start", private, "<stdarg.h>", public ] },
+{ symbol: [ "size_t", private, "<stdlib.h>", public ] },
+]

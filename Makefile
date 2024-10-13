@@ -5,13 +5,21 @@ OBJECTS = main.o waddir.o errors.o wadmerge.o sort.o \
           graphics.o sidedefs.o blockmap.o sha1.o
 DELETE = rm -f
 STRIP = strip
+IWYU = iwyu
 CFLAGS = -Wall -O3 -Wextra
+IWYU_FLAGS = --no_comments --error --mapping_file=.iwyu-overrides.imp
+IWYU_TRANSFORMED_FLAGS = $(patsubst %,-Xiwyu %,$(IWYU_FLAGS)) $(CFLAGS)
 PANDOC_FLAGS = -s --template=default.html5 -H style.html
 
 all: $(EXECUTABLE)
 
 %.o: %.c
 	$(CC) $(CFLAGS) -o $@ -c $<
+
+iwyu: $(patsubst %.o,%.iwyu,$(OBJECTS))
+
+%.iwyu: %.c
+	$(IWYU) $(IWYU_TRANSFORMED_FLAGS) $<
 
 blockmap.o: blockmap.c blockmap.h waddir.h errors.h sort.h wadptr.h
 errors.o: errors.c errors.h
@@ -42,7 +50,7 @@ install:
 
 clean:
 	$(DELETE) $(EXECUTABLE)
-	$(DELETE) *.o
+	$(DELETE) $(OBJECTS)
 
 windist:
 	rm -rf dist
