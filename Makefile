@@ -7,7 +7,8 @@ DELETE = rm -f
 STRIP = strip
 IWYU = iwyu
 CFLAGS = -Wall -O3 -Wextra
-IWYU_FLAGS = --no_comments --error --mapping_file=.iwyu-overrides.imp
+IWYU = iwyu
+IWYU_FLAGS = --error --mapping_file=.iwyu-overrides.imp
 IWYU_TRANSFORMED_FLAGS = $(patsubst %,-Xiwyu %,$(IWYU_FLAGS)) $(CFLAGS)
 PANDOC_FLAGS = -s --template=default.html5 -H style.html
 
@@ -16,10 +17,10 @@ all: $(EXECUTABLE)
 %.o: %.c
 	$(CC) $(CFLAGS) -o $@ -c $<
 
-iwyu: $(patsubst %.o,%.iwyu,$(OBJECTS))
-
-%.iwyu: %.c
-	$(IWYU) $(IWYU_TRANSFORMED_FLAGS) $<
+fixincludes:
+	for d in $(patsubst %.o,%.c,$(OBJECTS)); do \
+		$(IWYU) $(IWYU_TRANSFORMED_FLAGS) 2>&1 $$d | fix_include; \
+	done
 
 blockmap.o: blockmap.c blockmap.h waddir.h errors.h sort.h wadptr.h
 errors.o: errors.c errors.h
