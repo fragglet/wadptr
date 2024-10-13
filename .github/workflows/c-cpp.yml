@@ -21,7 +21,7 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt update
-        sudo apt -q install chocolate-doom deutex
+        sudo apt -q install chocolate-doom deutex iwyu
     - name: make
       run: make -j ${{ matrix.makeopts }}
     - name: iwyu
