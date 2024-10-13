@@ -49,6 +49,10 @@ install:
 	install wadptr $(DESTDIR)$(PREFIX)/bin/wadptr
 	install wadptr.1 $(DESTDIR)$(MANPATH)/man1/wadptr.1
 
+uninstall:
+	rm -f $(DESTDIR)$(PREFIX)/bin/wadptr
+	rm -f $(DESTDIR)$(MANPATH)/man1/wadptr.1
+
 clean:
 	$(DELETE) $(EXECUTABLE)
 	$(DELETE) $(OBJECTS)
@@ -77,4 +81,4 @@ quickcheck: $(EXECUTABLE)
 	./wadptr -q -u quickcheck/extract/*.wad
 	$(MAKE) -C quickcheck check
 
-.PHONY: all install clean dist quickcheck check windist fixincludes
+.PHONY: all install uninstall clean dist quickcheck check windist fixincludes
