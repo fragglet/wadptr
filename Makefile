@@ -77,5 +77,4 @@ quickcheck: $(EXECUTABLE)
 	./wadptr -q -u quickcheck/extract/*.wad
 	$(MAKE) -C quickcheck check
 
-.PHONY: install clean dist quickcheck check
-
+.PHONY: all install clean dist quickcheck check windist fixincludes
