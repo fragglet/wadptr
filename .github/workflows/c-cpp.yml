@@ -24,6 +24,9 @@ jobs:
         sudo apt -q install chocolate-doom deutex
     - name: make
       run: make -j ${{ matrix.makeopts }}
+    - name: iwyu
+      continue-on-error: true
+      run: make iwyu
     - name: run tests
       run: make -j check ${{ matrix.makeopts }}
     - name: quickcheck
