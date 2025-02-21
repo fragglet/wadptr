@@ -92,11 +92,7 @@ void RebuildMergedWad(wad_file_t *wf, FILE *newwad)
         const lump_data_t *ld;
         int lumpnum = sorted_map[i];
 
-        if ((i % 100) == 0)
-        {
-            PrintProgress(i, wf->num_entries);
-        }
-
+        PrintProgress(i, wf->num_entries);
         cached = CacheLump(wf, lumpnum);
         HashData(cached, wf->entries[lumpnum].length, hash);
         ld = FindExistingLump(lumps, num_lumps, hash);

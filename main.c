@@ -157,12 +157,18 @@ failed:
 
 void PrintProgress(int numerator, int denominator)
 {
-    static clock_t last_progress_time = 0;
+    static uint64_t last_progress_time;
     static int last_numerator = 0;
-    clock_t now = clock();
+    /*
+     * Tracking time-since-last-update needs a clock that is independent of CPU
+     * cycles spent, so clock(3) is out the question.
+     */
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    uint64_t now = (uint64_t)ts.tv_sec * 1000000000 + ts.tv_nsec;
 
     if (numerator < last_numerator ||
-        now - last_progress_time >= (CLOCKS_PER_SEC / 20))
+        now - last_progress_time > 50000000)
     {
         SPAMMY_PRINTF("%4d%%\b\b\b\b\b", (int) (100 * numerator) / denominator);
         fflush(stdout);
