@@ -436,10 +436,7 @@ static sidedef_array_t DoPack(const sidedef_array_t *sidedefs)
     // one.
     for (mi = 0; mi < sidedefs->len; mi++)
     {
-        if ((mi % 100) == 0)
-        {
-            PrintProgress(mi, sidedefs->len);
-        }
+        PrintProgress(mi, sidedefs->len);
         sdi = map[mi];
         sidedef = &sidedefs->sides[sdi];
 #ifdef DEBUG
