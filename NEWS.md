@@ -1,6 +1,6 @@
 # wadptr revision history
 
-## ...
+## 3.7 (2025-02-22)
 
  * A new option, `-wipesides`, cleans upper and lower textures from
    one-sided lines where they are not used. This allows some sidedefs
@@ -9,6 +9,13 @@
    logic of Doom itself. This won't make a lot of difference since most
    editors store texture names in allcaps, but there may be corner-case
    WADs where it helps improve compression slightly.
+ * The progress counter now uses wall time instead of CPU time (thanks Jan
+   Engelhardt).
+ * The `make install` target has been fixed to work correctly with the BSD
+   version of `install`.
+ * A `make uninstall` target has been added.
+ * URLs in the manpage are now shown correctly on BSD systems.
+ * The codebase has been refactored to use include-what-you-use.
 
 ## 3.6 (2023-11-18)
 
