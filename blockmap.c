@@ -180,10 +180,7 @@ static blockmap_t RebuildBlockmap(const blockmap_t *blockmap, bool compress)
         const block_t *block = &blocklist[bi];
         int match_index = -1;
 
-        if ((i % 100) == 0)
-        {
-            PrintProgress(i, blockmap->num_blocks);
-        }
+        PrintProgress(i, blockmap->num_blocks);
 #ifdef DEBUG
         printf("block %5d: len=%d\n", bi, block->len);
 #endif
