@@ -62,7 +62,7 @@ test_wad_file() {
         return 1
     fi
 
-    if ! ./wadptr -u $fn; then
+    if ! ./wadptr -d $fn; then
         return 1
     fi
 
@@ -70,8 +70,8 @@ test_wad_file() {
         return 1
     fi
 
-    if ! ./wadptr -o $wd/uncompr2.wad -u $fn ||
-       ! diff $fn $wd/uncompr2.wad; then
+    if ! ./wadptr -o $wd/decompr2.wad -d $fn ||
+       ! diff $fn $wd/decompr2.wad; then
         echo "WAD differs after decompression a second time"
         return 1
     fi
@@ -89,7 +89,7 @@ test_wad_file() {
     fi
 
     local decompr_size=$(file_size "$fn")
-    # TODO: Do something to check the uncompressed file vs. original
+    # TODO: Do something to check the decompressed file vs. original
     #echo "$fn $orig_size $new_size $decompr_size"
 }
 

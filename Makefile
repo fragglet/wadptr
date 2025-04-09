@@ -77,8 +77,8 @@ quickcheck: $(EXECUTABLE)
 	$(MAKE) -C quickcheck wads
 	./wadptr -q -c quickcheck/extract/*.wad
 	$(MAKE) -C quickcheck check
-	# We check the demos play back if we uncompress the WADs again.
-	./wadptr -q -u quickcheck/extract/*.wad
+	# We check the demos play back if we decompress the WADs again.
+	./wadptr -q -d quickcheck/extract/*.wad
 	$(MAKE) -C quickcheck check
 
 .PHONY: all install uninstall clean dist quickcheck check windist fixincludes

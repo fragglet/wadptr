@@ -4,7 +4,7 @@ wadptr \- compression tool for .wad files
 .SH SYNOPSIS
 .B wadptr
 .RB [options]
-[ -c | -u | -l ]
+[ -c | -d | -l ]
 .I wadfile...
 .SH DESCRIPTION
 .PP
@@ -23,8 +23,8 @@ are compressed or merged with other lumps.
 \fB-c\fR
 Compress the specified .wad file.
 .TP
-\fB-u\fR
-Uncompress the specified .wad file.
+\fB-d\fR
+Decompress the specified .wad file.
 .PP
 .SH OPTIONS
 wadptr has several additional options:
@@ -40,19 +40,19 @@ normal Unix tool that only prints output when an error occurs.
 .TP
 \fB-nomerge\fR
 Disables WAD lump merging (see the \fBcompression schemes\fR section
-below). Cannot be used with uncompress mode.
+below). Cannot be used with decompress mode.
 .TP
 \fB-nopack\fR
 Disables sidedef packing (see the \fBcompression schemes\fR section
-below). In uncompress mode, this disables sidedef \fIunpacking\fR.
+below). In decompress mode, this disables sidedef \fIunpacking\fR.
 .TP
 \fB-nosquash\fR
 Disables graphic squashing (see the \fBcompression schemes\fR section
-below). In uncompress mode, this disables graphic \fIunsquashing\fR.
+below). In decompress mode, this disables graphic \fIunsquashing\fR.
 .TP
 \fB-nostack\fR
 Disables blockmap stacking (see the \fBcompression schemes\fR section
-below). In uncompress mode, this disables blockmap \fIunstacking\fR.
+below). In decompress mode, this disables blockmap \fIunstacking\fR.
 .TP
 \fB-extblocks\fR
 Enables extended BLOCKMAP size limit, for WADs targeting limit-removing
@@ -140,8 +140,8 @@ purpose of the program is to make WADs smaller, this is almost certainly
 what you want to happen; other tools that do sidedef packing less
 cautiously may cause unintended visual glitches to occur.
 .SH LIMITATIONS
-The \fB-c\fR command will compress a WAD file and the \fB-u\fR command
-can then be used to restore the original uncompressed file. However, the
+The \fB-c\fR command will compress a WAD file and the \fB-d\fR command
+can then be used to restore the original decompressed file. However, the
 decompressed file may not exactly match the original file byte-for-byte.
 For example, some editors already pack sidedefs, and sometimes WAD files
 include junk data that wadptr will discard. If for some reason it's
@@ -159,7 +159,7 @@ ZokumBSP.
 .PP
 Some levels are so large that it is impossible to unpack their sidedefs
 or unstack their blockmap without exceeding the limits of the Doom level
-format. If this happens when uncompressing a level, "failed" will be
+format. If this happens when decompressing a level, "failed" will be
 shown in the program output for that lump and the original (compressed)
 lump will be copied into the output file unchanged. The \fB-extblocks\fR
 and \fB-extsides\fR command line arguments can be specified to use the
@@ -167,15 +167,15 @@ extended limits instead of the vanilla limits, but the resulting levels
 will only work in a limit-removing source port.
 .PP
 Some level editors get confused by packed sidedefs. If your level editor
-has problems, use \fB-u\fR to uncompress the file before editing.
+has problems, use \fB-d\fR to decompress the file before editing.
 .SH EXAMPLES
 Here are some examples for how to invoke the program:
 .TP
 wadptr -c foo.wad
 Compress \fBfoo.wad\fR, overwriting the original file.
 .TP
-wadptr -u foo.wad
-Uncompress \fBfoo.wad\fR, overwriting the original file.
+wadptr -d foo.wad
+Decompress \fBfoo.wad\fR, overwriting the original file.
 .TP
 wadptr -o newfoo.wad -c foo.wad
 Compress \fBfoo.wad\fR but write the resulting file to \fBnewfoo.wad\fR.

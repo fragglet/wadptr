@@ -41,7 +41,7 @@ typedef struct {
 } compress_stats_t;
 
 static bool Compress(const char *filename);
-static bool Uncompress(const char *filename);
+static bool Decompress(const char *filename);
 static bool ListEntries(const char *filename);
 static bool DoAction(const char *filename);
 static const char *PercentSmaller(int before, int after);
@@ -55,7 +55,7 @@ static char **g_argv;
 
 static int filelist_index;
 static const char *outputwad = NULL;
-static enum { HELP, COMPRESS, UNCOMPRESS, LIST } action;
+static enum { HELP, COMPRESS, DECOMPRESS, LIST } action;
 
 bool allowpack = true;   // level packing on
 bool allowsquash = true; // picture squashing on
@@ -230,9 +230,10 @@ static void ParseCommandLine(void)
         {
             action = COMPRESS;
         }
-        else if (!strcmp(arg, "-uncompress") || !strcmp(arg, "-u"))
+        else if (!strcmp(arg, "-decompress") || !strcmp(arg, "-d")
+              || !strcmp(arg, "-uncompress") || !strcmp(arg, "-u"))
         {
-            action = UNCOMPRESS;
+            action = DECOMPRESS;
         }
         else if (!strcmp(arg, "-quiet") || !strcmp(arg, "-q"))
         {
@@ -311,11 +312,11 @@ static void ParseCommandLine(void)
         ErrorExit("Only one input file can be specified when using -output.");
     }
 
-    if (action == UNCOMPRESS && !allowmerge)
+    if (action == DECOMPRESS && !allowmerge)
     {
-        ErrorExit("Sorry, uncompressing will undo any lump merging on WADs. \n"
+        ErrorExit("Sorry, decompressing will undo any lump merging on WADs. \n"
                   "The -nomerge command is not available with the "
-                  "-u (uncompress) option.");
+                  "-d (decompress) option.");
     }
 }
 
@@ -326,8 +327,8 @@ static bool DoAction(const char *wadname)
     {
     case LIST:
         return ListEntries(wadname);
-    case UNCOMPRESS:
-        return Uncompress(wadname);
+    case DECOMPRESS:
+        return Decompress(wadname);
     case COMPRESS:
         return Compress(wadname);
     default:
@@ -343,11 +344,11 @@ static void Help(void)
         "Distributed under the GNU GPL v2; see COPYING for details\n"
         "<https://soulsphere.org/projects/wadptr/>\n"
         "\n"
-        "Usage: wadptr [options] <-c|-u|-l> inputwad [inputwad inputwad...]\n"
+        "Usage: wadptr [options] <-c|-d|-l> inputwad [inputwad inputwad...]\n"
         "\n"
         " Commands:            Options:\n"
         " -c  Compress WAD     -o <file>  Write output WAD to <file>\n"
-        " -u  Uncompress WAD   -q         Quiet mode; suppress normal output\n"
+        " -d  Decompress WAD   -q         Quiet mode; suppress normal output\n"
         " -l  List WAD         -nomerge   Disable lump merging\n"
         " -v  Display version  -nosquash  Disable graphic squashing\n"
         "                      -nopack    Disable sidedef packing\n"
@@ -516,7 +517,7 @@ static void PrintStats(const compress_stats_t *stats)
 }
 
 // ExpectedSize returns the size we should expect the WAD to be if it were
-// uncompressed and contained no junk data.
+// decompressed and contained no junk data.
 static long ExpectedSize(wad_file_t *wf)
 {
     long result;
@@ -758,7 +759,7 @@ static bool TryUnsquash(wad_file_t *wf, unsigned int lump_index, FILE *out_file)
     return true;
 }
 
-static bool Uncompress(const char *wadname)
+static bool Decompress(const char *wadname)
 {
     wad_file_t wf;
     char *tempwad_name;
