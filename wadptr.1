@@ -159,6 +159,10 @@ against the blockmap size limit. If you need this, check out
 ZokumBSP.
 .UE
 .IP \(bu
+WADs for PSX Doom and Doom 64 use a different level format to PC Doom and are
+not yet supported. To avoid unintentional corruption, levels in this format are
+detected and ignored (by looking for lumps named \fBLEAFS\fR or \fBLIGHTS\fR).
+.IP \(bu
 Some levels are so large that it is impossible to unpack their sidedefs
 or unstack their blockmap without exceeding the limits of the Doom level
 format. If this happens when decompressing a level, "failed" will be
