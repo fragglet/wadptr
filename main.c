@@ -165,10 +165,9 @@ void PrintProgress(int numerator, int denominator)
      */
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC, &ts);
-    uint64_t now = (uint64_t)ts.tv_sec * 1000000000 + ts.tv_nsec;
+    uint64_t now = (uint64_t) ts.tv_sec * 1000000000 + ts.tv_nsec;
 
-    if (numerator < last_numerator ||
-        now - last_progress_time > 50000000)
+    if (numerator < last_numerator || now - last_progress_time > 50000000)
     {
         SPAMMY_PRINTF("%4d%%\b\b\b\b\b", (int) (100 * numerator) / denominator);
         fflush(stdout);
@@ -230,8 +229,8 @@ static void ParseCommandLine(void)
         {
             action = COMPRESS;
         }
-        else if (!strcmp(arg, "-decompress") || !strcmp(arg, "-d")
-              || !strcmp(arg, "-uncompress") || !strcmp(arg, "-u"))
+        else if (!strcmp(arg, "-decompress") || !strcmp(arg, "-d") ||
+                 !strcmp(arg, "-uncompress") || !strcmp(arg, "-u"))
         {
             action = DECOMPRESS;
         }

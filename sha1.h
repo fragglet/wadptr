@@ -18,8 +18,8 @@
 #ifndef __SHA1_H__
 #define __SHA1_H__
 
-#include <stdlib.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 typedef struct sha1_context_s sha1_context_t;
 typedef uint8_t sha1_digest_t[20];
