@@ -30,9 +30,12 @@ extern bool wipesides;   // clear unneeded texture references
 #define DIRSEP "/"
 #endif
 
+// TODO: Remove clang-format overrides once Github is on clang-format 19
+// clang-format off
 #define READ_SHORT(p) (uint16_t) ((p)[0] | ((p)[1] << 8))
 #define READ_LONG(p) \
     (uint32_t) ((p)[0] | ((p)[1] << 8) | ((p)[2] << 16) | ((p)[3] << 24))
+// clang-format on
 #define WRITE_SHORT(p, s) (p)[0] = (s) & 0xff, (p)[1] = ((s) >> 8) & 0xff
 #define WRITE_LONG(p, l)                             \
     (p)[0] = (l) & 0xff, (p)[1] = ((l) >> 8) & 0xff, \
