@@ -1,0 +1,33 @@
+name: Continuous Integration
+
+on: [push, pull_request, workflow_dispatch]
+
+jobs:
+  code_health_checks:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install tools
+      run: |
+        sudo apt update
+        sudo apt -q install iwyu clang-format
+    - name: Run checks
+      run: |
+        make fixincludes
+        make format
+        git diff > formatting-fixes.diff
+        if ! grep "" formatting-fixes.diff; then
+          rm -f formatting-fixes.diff
+        else
+          (echo "Formatting errors detected by clang-format. Please run" \
+                "\`make fixincludes && make format\` or apply" \
+                "formatting-fixes.diff below.";
+           echo) >> $GITHUB_STEP_SUMMARY
+          false
+        fi
+    - uses: actions/upload-artifact@v4
+      if: '!cancelled()'
+      with:
+        if-no-files-found: ignore
+        name: formatting-fixes.diff
+        path: formatting-fixes.diff
