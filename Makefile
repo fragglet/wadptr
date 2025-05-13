@@ -22,6 +22,9 @@ fixincludes:
 		$(IWYU) $(IWYU_TRANSFORMED_FLAGS) 2>&1 $$d | fix_include; \
 	done
 
+format:
+	clang-format -i *.[ch]
+
 blockmap.o: blockmap.c blockmap.h waddir.h errors.h sort.h wadptr.h
 errors.o: errors.c errors.h
 graphics.o: graphics.c graphics.h waddir.h errors.h sort.h wadptr.h
