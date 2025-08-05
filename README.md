@@ -8,7 +8,8 @@
 
 wadptr is a tool for compressing Doom .wad files. It takes advantage of the
 structure of the WAD format and some of the lumps stored inside it to merge
-repeated data.
+repeated data. [The manpage](https://soulsphere.org/projects/wadptr/manual.html)
+has some more information.
 
 Building wadptr requires a toolchain with at least C99 and POSIX.1-2008
 support, plus GNU make. Contemporary systems based on Linux, BSD,
