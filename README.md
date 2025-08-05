@@ -1,4 +1,5 @@
 ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/fragglet/wadptr/c-cpp.yml)
+[![CodeFactor](https://www.codefactor.io/repository/github/fragglet/wadptr/badge)](https://www.codefactor.io/repository/github/fragglet/wadptr)
 ![GitHub License](https://img.shields.io/github/license/fragglet/wadptr)
 ![GitHub Release](https://img.shields.io/github/v/release/fragglet/wadptr)
 ![GitHub Downloads (all assets, latest release)](https://img.shields.io/github/downloads/fragglet/wadptr/latest/total)
