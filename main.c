@@ -15,7 +15,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
+#include <sys/time.h>
 
 #include "blockmap.h"
 #include "errors.h"
@@ -157,21 +157,19 @@ failed:
 
 void PrintProgress(int numerator, int denominator)
 {
-    static uint64_t last_progress_time;
+    static uint64_t last_time_ms;
     static int last_numerator = 0;
-    /*
-     * Tracking time-since-last-update needs a clock that is independent of CPU
-     * cycles spent, so clock(3) is out the question.
-     */
-    struct timespec ts;
-    clock_gettime(CLOCK_MONOTONIC, &ts);
-    uint64_t now = (uint64_t) ts.tv_sec * 1000000000 + ts.tv_nsec;
+    struct timeval tv;
+    uint64_t now_ms;
 
-    if (numerator < last_numerator || now - last_progress_time > 50000000)
+    gettimeofday(&tv, NULL);
+    now_ms = (uint64_t) tv.tv_sec * 1000 + tv.tv_usec / 1000;
+
+    if (numerator < last_numerator || now_ms - last_time_ms > 50)
     {
         SPAMMY_PRINTF("%4d%%\b\b\b\b\b", (int) (100 * numerator) / denominator);
         fflush(stdout);
-        last_progress_time = now;
+        last_time_ms = now_ms;
     }
 
     last_numerator = numerator;
