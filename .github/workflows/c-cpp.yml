@@ -65,7 +65,7 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt update
-        sudo apt -q install gcc-mingw-w64-x86-64-posix zip pandoc
+        sudo apt -q install mingw-w64 zip pandoc
     - name: make
       run: |
         make -j CC=x86_64-w64-mingw32-gcc \
