@@ -140,6 +140,14 @@ be slightly larger than the original. While counterintuitive given the
 purpose of the program is to make WADs smaller, this is almost certainly
 what you want to happen; other tools that do sidedef packing less
 cautiously may cause unintended visual glitches to occur.
+.PP
+As a special case, if a linedef has a tag number in the range 9700-9799
+(decimal), its sidedefs will be made eligible for merging with those of
+other linedefs that have the same tag, even if the linedefs are special
+lines. This is to facilitate special effects; for example, by making
+scrolling walls scroll faster than normal as described above. The sidedefs
+must still be identical in all other respects (ie. same textures, sector
+references, etc.) or they will not be merged.
 .SH LIMITATIONS
 .IP \(bu
 The \fB-c\fR command will compress a WAD file and the \fB-d\fR command

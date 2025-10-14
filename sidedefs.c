@@ -24,6 +24,15 @@
 #include "waddir.h"
 #include "wadptr.h"
 
+// Linedefs with tags in this range will have their sidedefs merged, even if
+// they're special lines.
+#define MERGE_RANGE_START 9700
+#define MERGE_RANGE_END   9799
+
+// Sidedefs in this merge domain are attached to special lines and are never
+// merged.
+#define MERGE_DOMAIN_SPECIAL 0
+
 // Vanilla Doom treats sidedef indexes as signed, but Boom and other ports
 // allow the full unsigned 16-bit range to be used. Note that MAX_EXT_SIDEDEFS
 // is one less than 0xffff since it's used to indicate "no sidedef".
@@ -75,10 +84,9 @@ typedef struct {
     char lower[8];
     unsigned short sector_ref;
 
-    // If true, this sidedef is referenced by a linedef with a special
-    // type. This fixes the "scrolling linedefs bug" most notably,
-    // although switches are also potentially affected.
-    bool special;
+    // Sidedefs can only be merged if they are in the same merge domain. A
+    // domain of MERGE_DOMAIN_SPECIAL means that the sidedef cannot be merged.
+    uint8_t merge_domain;
 } sidedef_t;
 
 typedef struct {
@@ -374,7 +382,7 @@ static int CompareSidedefs(const sidedef_t *s1, const sidedef_t *s2)
     CHECK_DIFF(strncasecmp(s1->middle, s2->middle, 8));
     CHECK_DIFF(strncasecmp(s1->upper, s2->upper, 8));
     CHECK_DIFF(strncasecmp(s1->lower, s2->lower, 8));
-    CHECK_DIFF(s2->special - s1->special);
+    CHECK_DIFF(s2->merge_domain - s1->merge_domain);
     CHECK_DIFF(s2->xoffset - s1->xoffset);
     CHECK_DIFF(s2->yoffset - s1->yoffset);
     CHECK_DIFF(s2->sector_ref - s1->sector_ref);
@@ -399,9 +407,9 @@ static void PrintLinedef(const linedef_t *l)
 
 static void PrintSidedef(const sidedef_t *s)
 {
-    printf("x: %5d y: %5d s: %7d m: %-8.8s l: %-8.8s: u: %-8.8s sp: %d\n",
+    printf("x: %5d y: %5d s: %7d m: %-8.8s l: %-8.8s: u: %-8.8s md: %d\n",
            s->xoffset, s->yoffset, s->sector_ref, s->middle, s->upper, s->lower,
-           s->special);
+           s->merge_domain);
 }
 #endif
 
@@ -442,10 +450,10 @@ static sidedef_array_t DoPack(const sidedef_array_t *sidedefs)
 #ifdef DEBUG
         PrintSidedef(sidedef);
 #endif
-        // Special sidedefs (those attached to special lines) never get merged.
-        if (!sidedef->special && prev_sidedef != NULL &&
-            !prev_sidedef->special &&
-            CompareSidedefs(sidedef, prev_sidedef) == 0)
+        // We only ever merge sidedefs that are in the same merge domain, and
+        // sidedefs in MERGE_DOMAIN_SPECIAL are never merged.
+        if (sidedef->merge_domain != MERGE_DOMAIN_SPECIAL &&
+            prev_sidedef != NULL && CompareSidedefs(sidedef, prev_sidedef) == 0)
         {
             newsidedef_index[sdi] = newsidedef_index[map[mi - 1]];
         }
@@ -516,13 +524,51 @@ static void CheckLumpSizes(wad_file_t *wf, unsigned int linedef_num,
     }
 }
 
+// Calculate the "merge domain" of a linedef. The sidedefs attached to the
+// linedef inherit this merge domain, which controls whether they get merged
+// or not (sidedefs are only merged with others in the same domain). Almost all
+// sidedefs get put into merge domain 1 (normal linedefs) or
+// MERGE_DOMAIN_SPECIAL (special line; do not merge).
+static uint8_t LinedefMergeDomain(const linedef_t *ld)
+{
+    // As a special case to facilitate special effects, if the linedef has a
+    // tag in the magic range, merging is performed even if it is a special
+    // line. However, they are only merged with other lines that share the
+    // same tag.
+    if (!hexen_format && ld->x.tag >= MERGE_RANGE_START &&
+        ld->x.tag <= MERGE_RANGE_END)
+    {
+        return ld->x.tag + 2 - MERGE_RANGE_START;
+    }
+
+    // Special lines always get their own dedicated sidedefs, because:
+    //  * If a scrolling linedef shares a sidedef with another linedef,
+    //    it will make that other linedef scroll, or if multiple
+    //    scrolling linedefs share a sidedef, it will scroll too fast.
+    //    An example is with the spinning podium at the top of the stairs
+    //    at the start of E1M1.
+    //  * Switch linedefs change the texture of the front sidedef when
+    //    the switch is activated. Similarly this could cause multiple
+    //    switches to all mistakenly animate.
+    // This could be more selective but different source ports add their
+    // own new linedef types. For simplicity we just exclude sidedef
+    // packing for all special lines.
+    if (ld->type != 0)
+    {
+        return MERGE_DOMAIN_SPECIAL;
+    }
+
+    // Sidedefs attached to other linedefs are mergeable.
+    return 1;
+}
+
 static bool RebuildSidedefs(const linedef_array_t *linedefs,
                             const sidedef_array_t *sidedefs,
                             linedef_array_t *ldresult,
                             sidedef_array_t *sdresult)
 {
-    bool is_special;
     unsigned int count;
+    uint8_t merge_domain;
 
     ldresult->len = linedefs->len;
     ldresult->lines = ALLOC_ARRAY(linedef_t, ldresult->len);
@@ -542,24 +588,12 @@ static bool RebuildSidedefs(const linedef_array_t *linedefs,
             free(sdresult->sides);
             return false;
         }
-        // Special lines always get their own dedicated sidedefs, because:
-        //  * If a scrolling linedef shares a sidedef with another linedef,
-        //    it will make that other linedef scroll, or if multiple
-        //    scrolling linedefs share a sidedef, it will scroll too fast.
-        //    An example is with the spinning podium at the top of the stairs
-        //    at the start of E1M1.
-        //  * Switch linedefs change the texture of the front sidedef when
-        //    the switch is activated. Similarly this could cause multiple
-        //    switches to all mistakenly animate.
-        // This could be more selective but different source ports add their
-        // own new linedef types. For simplicity we just exclude sidedef
-        // packing for all special lines.
-        is_special = ld->type != 0;
+        merge_domain = LinedefMergeDomain(ld);
         if (ld->sidedef1 != NO_SIDEDEF)
         {
             ld->sidedef1 =
                 AppendNewSidedef(sdresult, &sidedefs->sides[ld->sidedef1]);
-            sdresult->sides[ld->sidedef1].special = is_special;
+            sdresult->sides[ld->sidedef1].merge_domain = merge_domain;
 
             // One-sided line?
             if (wipesides && ld->sidedef2 == NO_SIDEDEF)
@@ -572,7 +606,7 @@ static bool RebuildSidedefs(const linedef_array_t *linedefs,
         {
             ld->sidedef2 =
                 AppendNewSidedef(sdresult, &sidedefs->sides[ld->sidedef2]);
-            sdresult->sides[ld->sidedef2].special = is_special;
+            sdresult->sides[ld->sidedef2].merge_domain = merge_domain;
         }
     }
 
@@ -717,7 +751,7 @@ static sidedef_array_t ReadSidedefs(wad_file_t *wf, unsigned int lumpnum)
         memset(result.sides[i].lower, 0, 8);
         strncpy(result.sides[i].lower, (char *) cptr + SDEF_LOWER, 8);
         result.sides[i].sector_ref = READ_SHORT(cptr + SDEF_SECTOR);
-        result.sides[i].special = false;
+        result.sides[i].merge_domain = 0;
         cptr += SDEF_SIZE;
     }
     free(lump);

@@ -46,3 +46,7 @@ Mini / unit test WADs:
 * `bad_sdi.wad` is a copy of `packable.wad` containing a bad sidedef
   reference on one of its linedefs, to confirm that such WADs can
   still be processed successfully (albeit with an error message).
+* `special_tag.wad` contains special lines (scrolling walls), the sidedefs
+  of which would not normally be merged, except that they have a sector
+  tag of 9701, in the magic range that wadptr recognizes for special
+  effects.
