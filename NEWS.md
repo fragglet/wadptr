@@ -1,5 +1,19 @@
 # wadptr revision history
 
+## 3.8 (2025-10-14)
+
+ * The `-u` ("uncompress") option was renamed to `-d` ("decompress", the
+   usual terminology used by almost every other compression tool).
+ * A bug was fixed that made the Windows version for the previous release not
+   work properly; a dependency was unintentionally added on the pthreads API,
+   the DLL for which was not included in the release. That dependency has now
+   been removed. Thanks to Anonysussy and happygreenfairy for the bug report.
+ * A special sector tag range (9700-9799) is now recognized for special
+   effects. There are some cases where level authors may deliberately want
+   sidedefs to be merged even when they are attached to special lines, and
+   this allows that. Thanks to kitchen-ace for the suggestion.
+ * The manpage has been expanded somewhat.
+
 ## 3.7 (2025-02-22)
 
  * A new option, `-wipesides`, cleans upper and lower textures from
