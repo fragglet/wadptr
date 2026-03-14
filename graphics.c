@@ -237,7 +237,7 @@ static bool FindColumnLength(unsigned int x, const uint8_t *column, size_t len,
 {
     unsigned int i = 0;
 
-    while (1)
+    while (i < len)
     {
         if (column[i] == 0xff)
         {
@@ -245,15 +245,17 @@ static bool FindColumnLength(unsigned int x, const uint8_t *column, size_t len,
             return true;
         }
         // jump to the beginning of the next post
-        i += column[i + 1] + 4;
-        if (i > len)
+        if (i + 1 >= len)
         {
-            Warning("Column %d overruns the end of the lump with no 0xff "
-                    "terminating byte.",
-                    x);
-            return false;
+            break;
         }
+        i += column[i + 1] + 4;
     }
+
+    Warning("Column %d overruns the end of the lump with no 0xff terminating "
+            "byte.",
+            x);
+    return false;
 }
 
 static int ColumnOffsetCompare(unsigned int a, unsigned int b,
