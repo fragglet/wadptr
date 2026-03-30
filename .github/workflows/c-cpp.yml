@@ -31,8 +31,10 @@ jobs:
       run: make -j ${{ matrix.makeopts }}
     - name: run tests
       run: make -j check ${{ matrix.makeopts }}
+      timeout-minutes: 20
     - name: quickcheck
       run: make -j quickcheck ${{ matrix.makeopts }}
+      timeout-minutes: 20
 
   macos_build:
     runs-on: macos-latest
