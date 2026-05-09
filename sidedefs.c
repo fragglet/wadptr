@@ -334,13 +334,11 @@ bool P_IsPacked(wad_file_t *wf, unsigned int sidedef_num)
         {
             packed = packed || sidedef_used[sdi1];
             sidedef_used[sdi1] = 1;
-            break;
         }
         if (sdi2 != NO_SIDEDEF)
         {
             packed = packed || sidedef_used[sdi2];
             sidedef_used[sdi2] = 1;
-            break;
         }
     }
     free(linedefs.lines);
