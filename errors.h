@@ -14,9 +14,11 @@
 #ifndef __ERRORS_H_INCLUDED__
 #define __ERRORS_H_INCLUDED__
 
+#include "wadptr.h"
+
 void SetContextFilename(const char *filename);
 void SetContextLump(const char *lump);
-void Warning(char *s, ...);
-void ErrorExit(char *s, ...);
+void Warning(char *s, ...) PRINTF_ATTRIBUTE(1, 2);
+void ErrorExit(char *s, ...) PRINTF_ATTRIBUTE(1, 2) NORETURN_ATTRIBUTE;
 
 #endif
