@@ -264,16 +264,17 @@ static bool IsValidBlockmap(blockmap_t *blockmap)
 
     if (blockmap->len < 4)
     {
-        Warning("Lump too short: %d < %d header size", blockmap->len, 4);
+        Warning("Lump too short: %ld < %d header size", (long) blockmap->len,
+                4);
         return false;
     }
 
     num_blocks = blockmap->elements[2] * blockmap->elements[3];
     if (blockmap->len < num_blocks + 4U)
     {
-        Warning("Lump too short: %d blocks < %d "
+        Warning("Lump too short: %ld blocks < %d "
                 "(%d x %d = %d blocks, + 4 for header",
-                blockmap->len, num_blocks + 4, blockmap->elements[2],
+                (long) blockmap->len, num_blocks + 4, blockmap->elements[2],
                 blockmap->elements[3], num_blocks);
         return false;
     }

@@ -137,8 +137,8 @@ static void WriteWadHeader(FILE *fp, wad_file_type_t type, uint32_t num_entries,
     bytes = fwrite(buf, 1, WAD_HEADER_SIZE, fp);
     if (bytes != WAD_HEADER_SIZE)
     {
-        ErrorExit("Failed to write WAD header: wrote %d / %d bytes", bytes,
-                  WAD_HEADER_SIZE);
+        ErrorExit("Failed to write WAD header: wrote %ld / %ld bytes",
+                  (long) bytes, (long) WAD_HEADER_SIZE);
     }
 }
 
@@ -154,8 +154,8 @@ static void WriteWadEntry(FILE *fp, entry_t *entry)
     bytes = fwrite(buf, 1, ENTRY_SIZE, fp);
     if (bytes != ENTRY_SIZE)
     {
-        ErrorExit("Failed to write WAD entry: wrote %d / %d bytes", bytes,
-                  ENTRY_SIZE);
+        ErrorExit("Failed to write WAD entry: wrote %ld / %ld bytes",
+                  (long) bytes, (long) ENTRY_SIZE);
     }
 }
 
@@ -211,7 +211,8 @@ uint32_t WriteWadLump(FILE *fp, void *buf, size_t len)
     bytes = fwrite(buf, 1, len, fp);
     if (bytes != len)
     {
-        ErrorExit("Failed writing WAD lump: wrote %d / %d bytes", bytes, len);
+        ErrorExit("Failed writing WAD lump: wrote %ld / %ld bytes",
+                  (long) bytes, (long) len);
     }
 
     return result;
@@ -245,9 +246,9 @@ void *CacheLump(wad_file_t *wf, unsigned int entrynum)
     if (read < wf->entries[entrynum].length)
     {
         perror("fread");
-        ErrorExit("Error reading %.8s lump: %d of %d bytes read",
-                  wf->entries[entrynum].name, read,
-                  wf->entries[entrynum].length);
+        ErrorExit("Error reading %.8s lump: %ld of %ld bytes read",
+                  wf->entries[entrynum].name, (long) read,
+                  (long) wf->entries[entrynum].length);
     }
 
     return working;
