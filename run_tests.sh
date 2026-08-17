@@ -29,6 +29,8 @@ deutex_extract() {
     pushd "$dir"
     if ! deutex $DEUTEX_OPTS -xtract "$fn"; then
         echo "deutex exited with status $? when extracting $fn"
+	popd
+	return 1
     fi
     popd
 }
@@ -36,7 +38,9 @@ deutex_extract() {
 test_wad_file() {
     local fn=$1
     local orig_size=$(file_size "$fn")
-    deutex_extract $fn $wd/deutex-orig
+    if ! deutex_extract $fn $wd/deutex-orig; then
+	return 1
+    fi
     if ! ./wadptr -c $fn; then
         return 1
     fi
