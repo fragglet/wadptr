@@ -97,6 +97,11 @@ test_wad_file() {
     #echo "$fn $orig_size $new_size $decompr_size"
 }
 
+if ! deutex --version >/dev/null; then
+    echo "deutex not installed; cannot run tests."
+    exit 1
+fi
+
 all_success=true
 
 for wad in $(find test -name '*.wad'); do
