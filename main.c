@@ -401,7 +401,8 @@ static bool TryPack(wad_file_t *wf, unsigned int lump_index, FILE *out_file,
                 PercentSmaller(orig_lump_len, wf->entries[lump_index].length));
             *sidedefs_larger = *sidedefs_larger ||
                                wf->entries[lump_index].length > orig_lump_len;
-            stats->packed += orig_lump_len - wf->entries[lump_index].length;
+            stats->packed += (long) orig_lump_len
+                           - (long) wf->entries[lump_index].length;
         }
         else
         {
@@ -437,7 +438,8 @@ static bool TryStack(wad_file_t *wf, unsigned int lump_index, FILE *out_file,
         SPAMMY_PRINTF(
             "(%s), done.\n",
             PercentSmaller(orig_lump_len, wf->entries[lump_index].length));
-        stats->stacked += orig_lump_len - wf->entries[lump_index].length;
+        stats->stacked += (long) orig_lump_len
+                        - (long) wf->entries[lump_index].length;
     }
     else
     {
@@ -472,7 +474,8 @@ static bool TrySquash(wad_file_t *wf, unsigned int lump_index, FILE *out_file,
     SPAMMY_PRINTF(
         "(%s), done.\n",
         PercentSmaller(orig_lump_len, wf->entries[lump_index].length));
-    stats->squashed += orig_lump_len - wf->entries[lump_index].length;
+    stats->squashed += (long) orig_lump_len
+                     - (long) wf->entries[lump_index].length;
 
     return true;
 }
